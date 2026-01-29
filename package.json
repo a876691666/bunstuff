@@ -1,0 +1,10 @@
+{
+  "name": "bunstuff",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:backend": "cd backend && bun run dev",
+    "dev:frontend": "cd frontend && bun run dev"
+  }
+}
