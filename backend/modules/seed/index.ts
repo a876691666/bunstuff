@@ -24,7 +24,7 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
     }, 0);
   }
 
-  return new Elysia({ prefix: "/seed", tags: ["Seed管理"] })
+  return new Elysia({ prefix: "/seed", tags: ["管理 - Seed"] })
   /** 获取所有 Seed 日志 */
   .get("/logs", async () => {
     const data = await seedService.getLogs();
