@@ -12,6 +12,8 @@ import userSeed from "../../models/users/seed";
 import rolePermissionSeed from "../../models/role-permission/seed";
 import roleMenuSeed from "../../models/role-menu/seed";
 import permissionScopeSeed from "../../models/permission-scope/seed";
+import vipTierSeed from "../../models/vip-tier/seed";
+import vipResourceLimitSeed from "../../models/vip-resource-limit/seed";
 
 /**
  * 注册所有 Seeds
@@ -23,6 +25,8 @@ import permissionScopeSeed from "../../models/permission-scope/seed";
  * 5. role-permission-default: 关联角色权限（依赖角色和权限）
  * 6. role-menu-default: 关联角色菜单（依赖角色和菜单）
  * 7. permission-scope-default: 创建数据过滤规则（依赖权限）
+ * 8. vip-tier-default: 创建 VIP 等级
+ * 9. vip-resource-limit-default: 创建 VIP 资源限制（依赖 VIP 等级）
  */
 export function registerSeeds() {
   seedService.registerMany([
@@ -33,6 +37,8 @@ export function registerSeeds() {
     rolePermissionSeed,
     roleMenuSeed,
     permissionScopeSeed,
+    vipTierSeed,
+    vipResourceLimitSeed,
   ]);
 
   console.log("✅ Seeds registered");

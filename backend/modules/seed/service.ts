@@ -39,7 +39,7 @@ export class SeedService {
   /** 获取所有 Seed 日志 */
   async getLogs() {
     return await SeedLog.findMany({
-      orderBy: { executedAt: "DESC" },
+      orderBy: [{ column: "executedAt", order: "DESC" }],
     });
   }
 

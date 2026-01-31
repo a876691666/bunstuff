@@ -73,7 +73,7 @@ export class MenuService {
   /** 获取菜单树 */
   async getTree() {
     const menus = await Menu.findMany({
-      orderBy: { sort: "ASC" },
+      orderBy: [{ column: "sort", order: "ASC" }],
     });
     return this.buildTree(menus);
   }

@@ -1,9 +1,12 @@
-import { Elysia } from "elysia";
+/**
+ * Permission-Scope 模块统一导出
+ */
 
-// 导出管理端控制器
-export { permissionScopeAdminController } from "./admin";
+// 管理端控制器
+export { permissionScopeAdminController, default } from "./api_admin";
 
-/** 数据权限模块控制器（客户端） */
-export const permissionScopeController = new Elysia({ prefix: "/permission-scope", tags: ["数据权限"] });
+// 服务
+export { permissionScopeService } from "./service";
 
-export default permissionScopeController;
+// 模型
+export * from "./model";

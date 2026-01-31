@@ -1,9 +1,12 @@
-import { Elysia } from "elysia";
+/**
+ * Menu 模块统一导出
+ */
 
-// 导出管理端控制器
-export { menuAdminController } from "./admin";
+// 管理端控制器
+export { menuAdminController, default } from "./api_admin";
 
-/** 菜单模块控制器（客户端） */
-export const menuController = new Elysia({ prefix: "/menu", tags: ["菜单"] });
+// 服务
+export { menuService } from "./service";
 
-export default menuController;
+// 模型
+export * from "./model";

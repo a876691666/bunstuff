@@ -1,9 +1,12 @@
-import { Elysia } from "elysia";
+/**
+ * Role-Menu 模块统一导出
+ */
 
-// 导出管理端控制器
-export { roleMenuAdminController } from "./admin";
+// 管理端控制器
+export { roleMenuAdminController, default } from "./api_admin";
 
-/** 角色菜单模块控制器（客户端） */
-export const roleMenuController = new Elysia({ prefix: "/role-menu", tags: ["角色菜单"] });
+// 服务
+export { roleMenuService } from "./service";
 
-export default roleMenuController;
+// 模型
+export * from "./model";

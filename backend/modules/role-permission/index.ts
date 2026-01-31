@@ -1,9 +1,12 @@
-import { Elysia } from "elysia";
+/**
+ * Role-Permission 模块统一导出
+ */
 
-// 导出管理端控制器
-export { rolePermissionAdminController } from "./admin";
+// 管理端控制器
+export { rolePermissionAdminController, default } from "./api_admin";
 
-/** 角色权限模块控制器（客户端） */
-export const rolePermissionController = new Elysia({ prefix: "/role-permission", tags: ["角色权限"] });
+// 服务
+export { rolePermissionService } from "./service";
 
-export default rolePermissionController;
+// 模型
+export * from "./model";

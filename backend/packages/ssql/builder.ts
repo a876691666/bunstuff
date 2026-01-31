@@ -12,12 +12,12 @@ export class Builder {
   or(): this { this.logic = Logic.Or; return this; }
 
   // 比较操作
-  eq(field: string, value: Value): this { this.exprs.push(new FieldExpr(field, Op.Eq, value)); return this; }
-  neq(field: string, value: Value): this { this.exprs.push(new FieldExpr(field, Op.Neq, value)); return this; }
-  gt(field: string, value: Value): this { this.exprs.push(new FieldExpr(field, Op.Gt, value)); return this; }
-  gte(field: string, value: Value): this { this.exprs.push(new FieldExpr(field, Op.Gte, value)); return this; }
-  lt(field: string, value: Value): this { this.exprs.push(new FieldExpr(field, Op.Lt, value)); return this; }
-  lte(field: string, value: Value): this { this.exprs.push(new FieldExpr(field, Op.Lte, value)); return this; }
+  eq(field: string, value?: Value): this { this.exprs.push(new FieldExpr(field, Op.Eq, value)); return this; }
+  neq(field: string, value?: Value): this { this.exprs.push(new FieldExpr(field, Op.Neq, value)); return this; }
+  gt(field: string, value?: Value): this { this.exprs.push(new FieldExpr(field, Op.Gt, value)); return this; }
+  gte(field: string, value?: Value): this { this.exprs.push(new FieldExpr(field, Op.Gte, value)); return this; }
+  lt(field: string, value?: Value): this { this.exprs.push(new FieldExpr(field, Op.Lt, value)); return this; }
+  lte(field: string, value?: Value): this { this.exprs.push(new FieldExpr(field, Op.Lte, value)); return this; }
 
   // 模糊匹配
   like(field: string, value: string): this { this.exprs.push(new FieldExpr(field, Op.Like, value)); return this; }

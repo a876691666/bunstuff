@@ -141,16 +141,11 @@ export class Model<S extends SchemaDefinition> {
 		}
 
 		// ORDER BY
-		if (options.orderBy) {
-			const orderParts: string[] = [];
-			for (const [key, dir] of Object.entries(options.orderBy)) {
-				if (dir) {
-					orderParts.push(`${this.quote(key)} ${dir}`);
-				}
-			}
-			if (orderParts.length > 0) {
-				sql += ` ORDER BY ${orderParts.join(", ")}`;
-			}
+		if (options.orderBy && options.orderBy.length > 0) {
+			const orderParts = options.orderBy.map(
+				(item) => `${this.quote(String(item.column))} ${item.order ?? "ASC"}`
+			);
+			sql += ` ORDER BY ${orderParts.join(", ")}`;
 		}
 
 		// LIMIT & OFFSET

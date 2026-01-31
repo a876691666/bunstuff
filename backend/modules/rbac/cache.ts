@@ -97,12 +97,12 @@ class RbacCache {
 
     // 1. 加载原始数据
     const [roles, permissions, scopes, rolePermissions, roleMenus, menus] = await Promise.all([
-      Role.findMany({ orderBy: { sort: "ASC" } }),
+      Role.findMany({ orderBy: [{ column: "sort", order: "ASC" }] }),
       Permission.findMany({}),
       PermissionScope.findMany({}),
       RolePermission.findMany({}),
       RoleMenu.findMany({}),
-      Menu.findMany({ orderBy: { sort: "ASC" } }),
+      Menu.findMany({ orderBy: [{ column: "sort", order: "ASC" }] }),
     ]);
 
     // 2. 构建索引

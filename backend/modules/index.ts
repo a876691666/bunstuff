@@ -1,16 +1,18 @@
 import { Elysia } from "elysia";
-import menuController, { menuAdminController } from "./menu";
-import userController, { userAdminController } from "./users";
-import roleController, { roleAdminController } from "./role";
-import permissionController, { permissionAdminController } from "./permission";
-import permissionScopeController, { permissionScopeAdminController } from "./permission-scope";
-import roleMenuController, { roleMenuAdminController } from "./role-menu";
-import rolePermissionController, { rolePermissionAdminController } from "./role-permission";
-import rbacController, { rbacAdminController } from "./rbac";
-import authController, { authAdminController } from "./auth";
+import { menuAdminController } from "./menu";
+import { userAdminController } from "./users";
+import { roleAdminController } from "./role";
+import { permissionAdminController } from "./permission";
+import { permissionScopeAdminController } from "./permission-scope";
+import { roleMenuAdminController } from "./role-menu";
+import { rolePermissionAdminController } from "./role-permission";
+import { rbacController, rbacAdminController } from "./rbac";
+import { authController, authAdminController } from "./auth";
 import { createSeedController } from "./seed";
 import { authPlugin } from "./auth/plugin";
 import { rbacPlugin } from "./rbac/plugin";
+import { vipAdminController } from "./vip";
+import { vipPlugin } from "./vip/plugin";
 
 /** API 模块配置 */
 export interface ApiOptions {
@@ -27,15 +29,9 @@ export const createApi = (options: ApiOptions = {}) => {
     // 全局插件
     .use(authPlugin()) // Auth 插件默认启用
     .use(rbacPlugin()) // RBAC 插件默认不启用，通过 scope 配置启用
-    // 客户端路由
+    .use(vipPlugin()) // VIP 插件默认不启用，通过 scope.vip 配置启用
+    // 客户端路由（只有 auth 和 rbac 有客户端接口）
     .use(authController)
-    .use(menuController)
-    .use(userController)
-    .use(roleController)
-    .use(permissionController)
-    .use(permissionScopeController)
-    .use(roleMenuController)
-    .use(rolePermissionController)
     .use(rbacController)
 };
 
@@ -45,6 +41,7 @@ export const createAdminApi = (options: ApiOptions = {}) => {
     // 全局插件
     .use(authPlugin()) // Auth 插件默认启用
     .use(rbacPlugin()) // RBAC 插件默认不启用，通过 scope 配置启用
+    .use(vipPlugin()) // VIP 插件默认不启用，通过 scope.vip 配置启用
     // 管理端路由
     .use(authAdminController)
     .use(menuAdminController)
@@ -55,6 +52,7 @@ export const createAdminApi = (options: ApiOptions = {}) => {
     .use(roleMenuAdminController)
     .use(rolePermissionAdminController)
     .use(rbacAdminController)
+    .use(vipAdminController)
     .use(createSeedController(options.seed));
 };
 

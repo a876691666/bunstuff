@@ -89,7 +89,7 @@ export class RoleService {
   /** 获取角色树 */
   async getTree() {
     const roles = await Role.findMany({
-      orderBy: { sort: "ASC" },
+      orderBy: [{ column: "sort", order: "ASC" }],
     });
     return this.buildTree(roles);
   }

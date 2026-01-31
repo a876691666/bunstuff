@@ -1,9 +1,12 @@
-import { Elysia } from "elysia";
+/**
+ * Users 模块统一导出
+ */
 
-// 导出管理端控制器
-export { userAdminController } from "./admin";
+// 管理端控制器
+export { userAdminController, default } from "./api_admin";
 
-/** 用户模块控制器（客户端） */
-export const userController = new Elysia({ prefix: "/users", tags: ["用户"] });
+// 服务
+export { userService } from "./service";
 
-export default userController;
+// 模型
+export * from "./model";

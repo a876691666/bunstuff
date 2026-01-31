@@ -116,12 +116,16 @@ export type UpdateData<S extends SchemaDefinition> = Partial<InferRow<S>>;
 // ============ 排序和分页 ============
 
 /** 排序方向 */
-export type OrderDirection = "ASC" | "DESC";
+export type OrderDirection = "ASC" | "DESC" | "asc" | "desc";
 
-/** 排序配置 */
-export type OrderBy<S extends SchemaDefinition> = {
-  [K in keyof S]?: OrderDirection;
+/** 单个排序项 */
+export type OrderByItem<S extends SchemaDefinition> = {
+  column: keyof S;
+  order?: OrderDirection;
 };
+
+/** 排序配置（列表形式） */
+export type OrderBy<S extends SchemaDefinition> = OrderByItem<S>[];
 
 /** 分页配置 */
 export interface Pagination {
