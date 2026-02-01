@@ -1,18 +1,22 @@
 import { Elysia } from "elysia";
-import { menuAdminController } from "./menu";
-import { userAdminController } from "./users";
-import { roleAdminController } from "./role";
-import { permissionAdminController } from "./permission";
-import { permissionScopeAdminController } from "./permission-scope";
-import { roleMenuAdminController } from "./role-menu";
-import { rolePermissionAdminController } from "./role-permission";
-import { rbacController, rbacAdminController } from "./rbac";
-import { authController, authAdminController } from "./auth";
+// Auth 模块
+import { authController, authAdminController, userAdminController, authPlugin } from "./auth";
+// RBAC 模块
+import {
+  rbacController,
+  rbacAdminController,
+  menuAdminController,
+  roleAdminController,
+  permissionAdminController,
+  permissionScopeAdminController,
+  roleMenuAdminController,
+  rolePermissionAdminController,
+  rbacPlugin,
+} from "./rbac";
+// VIP 模块
+import { vipAdminController, vipPlugin } from "./vip";
+// Seed 模块
 import { createSeedController } from "./seed";
-import { authPlugin } from "./auth/plugin";
-import { rbacPlugin } from "./rbac/plugin";
-import { vipAdminController } from "./vip";
-import { vipPlugin } from "./vip/plugin";
 
 /** API 模块配置 */
 export interface ApiOptions {

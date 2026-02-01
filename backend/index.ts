@@ -1,9 +1,9 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { createAdminApi, createApi } from "./modules";
-import { rbacService } from "./modules/rbac/service";
-import { sessionStore } from "./modules/auth/session";
 import { openapi } from "@elysiajs/openapi";
+import { sessionStore } from "@/modules/auth";
+import { rbacService } from "@/modules/rbac";
 
 // 从环境变量或命令行参数读取配置
 const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === "true" || Bun.argv.includes("--seed");

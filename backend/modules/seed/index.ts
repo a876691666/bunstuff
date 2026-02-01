@@ -1,8 +1,11 @@
+/**
+ * Seed 模块统一导出
+ */
 import { Elysia, t } from "elysia";
-import { seedService } from "./service";
-import { registerSeeds } from "./register";
-import { R, SuccessResponse, MessageResponse, ErrorResponse } from "../response";
-import { rbacCache } from "../rbac/cache";
+import { seedService } from "./main/service";
+import { registerSeeds } from "./main/register";
+import { R, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { rbacCache } from "@/modules/rbac/main/cache";
 
 /** Seed 模块配置 */
 export interface SeedModuleOptions {
@@ -150,6 +153,13 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
     },
   });
 };
+
+// 服务导出
+export { seedService, SeedService } from "./main/service";
+export type { SeedDefinition } from "./main/service";
+
+// 注册导出
+export { registerSeeds } from "./main/register";
 
 /** 默认 Seed 控制器（不自动执行） */
 export const seedController = createSeedController();
