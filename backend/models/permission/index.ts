@@ -1,19 +1,21 @@
 import type { InferRow, InsertData, UpdateData } from "../../packages/orm";
 import { db } from "../main";
-import schema from "./schema";
+import Schema from "./schema";
 
 /** Permission Model */
 const Permission = await db.model({
   tableName: "permission",
-  schema,
+  schema: Schema,
 });
 
+type SchemaType = ReturnType<typeof Schema.getDefinition>;
+
 /** 权限行类型 */
-export type PermissionRow = InferRow<typeof schema>;
+export type PermissionRow = InferRow<SchemaType>;
 /** 权限插入类型 */
-export type PermissionInsert = InsertData<typeof schema>;
+export type PermissionInsert = InsertData<SchemaType>;
 /** 权限更新类型 */
-export type PermissionUpdate = UpdateData<typeof schema>;
+export type PermissionUpdate = UpdateData<SchemaType>;
 
 export default Permission;
-export { schema };
+export { Schema };

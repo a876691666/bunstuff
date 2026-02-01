@@ -1,19 +1,21 @@
 import type { InferRow, InsertData, UpdateData } from "../../packages/orm";
 import { db } from "../main";
-import schema from "./schema";
+import Schema from "./schema";
 
 /** RolePermission Model - 角色权限关联 */
 const RolePermission = await db.model({
   tableName: "role_permission",
-  schema,
+  schema: Schema,
 });
 
+type SchemaType = ReturnType<typeof Schema.getDefinition>;
+
 /** 角色权限关联行类型 */
-export type RolePermissionRow = InferRow<typeof schema>;
+export type RolePermissionRow = InferRow<SchemaType>;
 /** 角色权限关联插入类型 */
-export type RolePermissionInsert = InsertData<typeof schema>;
+export type RolePermissionInsert = InsertData<SchemaType>;
 /** 角色权限关联更新类型 */
-export type RolePermissionUpdate = UpdateData<typeof schema>;
+export type RolePermissionUpdate = UpdateData<SchemaType>;
 
 export default RolePermission;
-export { schema };
+export { Schema };

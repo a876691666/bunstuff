@@ -7,13 +7,34 @@ import type {
 	QueryOptions,
 	ListOptions,
 	ListResult,
-	ModelConfig,
 	SqlValue,
 	WhereInput,
 	FormatConfig,
 } from "./types";
 import { escape } from "./utils";
 import { Builder, parse, type Dialect } from "@pkg/ssql";
+
+/** Model 内部配置（schema 已解析） */
+interface ModelInternalConfig<S extends SchemaDefinition> {
+	tableName: string;
+	schema: S;
+	primaryKey?: keyof S;
+}
+
+/** 从 schema 定义中提取 format 配置 */
+function extractFormatFromSchema<S extends SchemaDefinition>(schema: S): FormatConfig<S> {
+	const format: FormatConfig<S> = {};
+	for (const [key, column] of Object.entries(schema)) {
+		const config = column._config;
+		if (config.serialize || config.deserialize) {
+			(format as any)[key] = {
+				serialize: config.serialize,
+				deserialize: config.deserialize,
+			};
+		}
+	}
+	return format;
+}
 
 /** 解析 where 条件为 SQL 字符串 */
 function resolveWhereSQL(dialect: Dialect, where: WhereInput | undefined): string {
@@ -38,12 +59,13 @@ export class Model<S extends SchemaDefinition> {
 	constructor(
 		private db: SQL,
 		private dialect: Dialect,
-		config: ModelConfig<S>
+		config: ModelInternalConfig<S>
 	) {
 		this.tableName = config.tableName;
 		this.schema = config.schema;
 		this.primaryKey = config.primaryKey ?? this.detectPrimaryKey();
-		this.format = config.format ?? {};
+		// 从 schema 中提取 format 配置
+		this.format = extractFormatFromSchema(config.schema);
 	}
 
 	/** 检测主键 */

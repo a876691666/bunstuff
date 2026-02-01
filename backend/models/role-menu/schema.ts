@@ -1,16 +1,13 @@
-import { column } from "../../packages/orm";
-import type { SchemaDefinition } from "../../packages/orm";
+import { Schema, column } from "../../packages/orm";
 
 /** 角色菜单关联表 Schema */
-const schema = {
+export default class RoleMenuSchema extends Schema {
   /** 关联 ID */
-  id: column.number().primaryKey().autoIncrement(),
+  id = column.number().primaryKey().autoIncrement();
   /** 角色ID (外键) */
-  roleId: column.number(),
+  roleId = column.number().default(0);
   /** 菜单ID (外键) */
-  menuId: column.number(),
+  menuId = column.number().default(0);
   /** 创建时间 */
-  createdAt: column.date(),
-} satisfies SchemaDefinition;
-
-export default schema;
+  createdAt = Schema.createdAt();
+}

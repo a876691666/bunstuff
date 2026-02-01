@@ -151,10 +151,15 @@ export class DB {
 
   /**
    * 创建 Model 实例
-   * @param config Model 配置
+   * @param config Model 配置（schema 参数为 Schema 类）
    */
   async model<S extends SchemaDefinition>(config: ModelConfig<S>): Promise<Model<S>> {
-    await this.syncTable(config.tableName, config.schema);
-    return new Model(this.sql, this.dialect, config);
+    // 从 Schema 类获取定义
+    const schemaDefinition = config.schema.getDefinition() as S;
+    await this.syncTable(config.tableName, schemaDefinition);
+    return new Model(this.sql, this.dialect, {
+      ...config,
+      schema: schemaDefinition,
+    });
   }
 }

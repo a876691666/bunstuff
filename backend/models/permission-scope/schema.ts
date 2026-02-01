@@ -1,24 +1,17 @@
-import { column } from "../../packages/orm";
-import type { SchemaDefinition } from "../../packages/orm";
+import { TimestampSchema, column } from "../../packages/orm";
 
 /** 数据过滤规则表 Schema */
-const schema = {
+export default class PermissionScopeSchema extends TimestampSchema {
   /** 规则 ID */
-  id: column.number().primaryKey().autoIncrement(),
+  id = column.number().primaryKey().autoIncrement();
   /** 权限ID (外键) */
-  permissionId: column.number(),
+  permissionId = column.number().default(0);
   /** 规则名称 */
-  name: column.string(),
+  name = column.string().default("");
   /** 规则指向的表名 */
-  tableName: column.string(),
+  tableName = column.string().default("");
   /** SSQL过滤表达式，例如: dept_id == $user.dept_id */
-  ssqlRule: column.string(),
+  ssqlRule = column.string().default("");
   /** 规则描述 */
-  description: column.string().nullable(),
-  /** 创建时间 */
-  createdAt: column.date(),
-  /** 更新时间 */
-  updatedAt: column.date(),
-} satisfies SchemaDefinition;
-
-export default schema;
+  description = column.string().nullable().default(null);
+}

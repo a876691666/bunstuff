@@ -1,36 +1,29 @@
-import { column } from "../../packages/orm";
-import type { SchemaDefinition } from "../../packages/orm";
+import { TimestampSchema, column } from "../../packages/orm";
 
 /** 菜单表 Schema (树形结构) */
-const schema = {
+export default class MenuSchema extends TimestampSchema {
   /** 菜单 ID */
-  id: column.number().primaryKey().autoIncrement(),
+  id = column.number().primaryKey().autoIncrement();
   /** 父菜单ID (用于目录-页面两级结构) */
-  parentId: column.number().nullable(),
+  parentId = column.number().nullable().default(null);
   /** 菜单名称 */
-  name: column.string(),
+  name = column.string().default("");
   /** 路由路径 */
-  path: column.string(),
+  path = column.string().default("");
   /** 组件路径 */
-  component: column.string().nullable(),
+  component = column.string().nullable().default(null);
   /** 图标 */
-  icon: column.string().nullable(),
+  icon = column.string().nullable().default(null);
   /** 菜单类型: 1-目录 2-菜单 3-按钮 */
-  type: column.number().default(2),
+  type = column.number().default(2);
   /** 是否可见: 0-隐藏 1-显示 */
-  visible: column.number().default(1),
+  visible = column.number().default(1);
   /** 状态: 0-禁用 1-启用 */
-  status: column.number().default(1),
+  status = MenuSchema.status(1);
   /** 重定向地址 */
-  redirect: column.string().nullable(),
+  redirect = column.string().nullable().default(null);
   /** 排序 */
-  sort: column.number().default(0),
+  sort = MenuSchema.sort(0);
   /** 权限编码 (关联Permission.code) */
-  permCode: column.string().nullable(),
-  /** 创建时间 */
-  createdAt: column.date(),
-  /** 更新时间 */
-  updatedAt: column.date(),
-} satisfies SchemaDefinition;
-
-export default schema;
+  permCode = column.string().nullable().default(null);
+}

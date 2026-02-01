@@ -1,19 +1,21 @@
 import type { InferRow, InsertData, UpdateData } from "../../packages/orm";
 import { db } from "../main";
-import schema from "./schema";
+import Schema from "./schema";
 
 /** SeedLog Model - Seed执行日志 */
 const SeedLog = await db.model({
   tableName: "seed_log",
-  schema,
+  schema: Schema,
 });
 
+type SchemaType = ReturnType<typeof Schema.getDefinition>;
+
 /** Seed日志行类型 */
-export type SeedLogRow = InferRow<typeof schema>;
+export type SeedLogRow = InferRow<SchemaType>;
 /** Seed日志插入类型 */
-export type SeedLogInsert = InsertData<typeof schema>;
+export type SeedLogInsert = InsertData<SchemaType>;
 /** Seed日志更新类型 */
-export type SeedLogUpdate = UpdateData<typeof schema>;
+export type SeedLogUpdate = UpdateData<SchemaType>;
 
 export default SeedLog;
-export { schema };
+export { Schema };

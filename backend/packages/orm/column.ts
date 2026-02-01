@@ -4,6 +4,8 @@ import type {
   ColumnTypeMap,
   ColumnBuilder,
   NumberColumnBuilder,
+  SerializeFn,
+  DeserializeFn,
 } from "./types";
 
 /** 基础列构建器实现 */
@@ -41,10 +43,28 @@ class BaseColumnBuilder<T extends ColumnTypeName, Nullable extends boolean>
     });
   }
 
-  default(value: ColumnTypeMap[T] | (() => ColumnTypeMap[T])): ColumnBuilder<T, Nullable> {
+  default(
+    value: Nullable extends true
+      ? ColumnTypeMap[T] | null | (() => ColumnTypeMap[T] | null)
+      : ColumnTypeMap[T] | (() => ColumnTypeMap[T])
+  ): ColumnBuilder<T, Nullable> {
     return new BaseColumnBuilder(this._type, this._nullable, {
       ...this._config,
-      default: value,
+      default: value as any,
+    });
+  }
+
+  serialize(fn: SerializeFn<ColumnTypeMap[T]>): ColumnBuilder<T, Nullable> {
+    return new BaseColumnBuilder(this._type, this._nullable, {
+      ...this._config,
+      serialize: fn,
+    });
+  }
+
+  deserialize(fn: DeserializeFn<ColumnTypeMap[T]>): ColumnBuilder<T, Nullable> {
+    return new BaseColumnBuilder(this._type, this._nullable, {
+      ...this._config,
+      deserialize: fn,
     });
   }
 }
@@ -79,10 +99,28 @@ class NumberColumnBuilderImpl<Nullable extends boolean>
     });
   }
 
-  override default(value: number | (() => number)): NumberColumnBuilder<Nullable> {
+  override default(
+    value: Nullable extends true
+      ? number | null | (() => number | null)
+      : number | (() => number)
+  ): NumberColumnBuilder<Nullable> {
     return new NumberColumnBuilderImpl(this._nullable, {
       ...this._config,
-      default: value,
+      default: value as any,
+    });
+  }
+
+  override serialize(fn: SerializeFn<number>): NumberColumnBuilder<Nullable> {
+    return new NumberColumnBuilderImpl(this._nullable, {
+      ...this._config,
+      serialize: fn,
+    });
+  }
+
+  override deserialize(fn: DeserializeFn<number>): NumberColumnBuilder<Nullable> {
+    return new NumberColumnBuilderImpl(this._nullable, {
+      ...this._config,
+      deserialize: fn,
     });
   }
 

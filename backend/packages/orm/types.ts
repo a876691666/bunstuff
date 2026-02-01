@@ -22,13 +22,21 @@ export type ColumnTypeName = keyof ColumnTypeMap;
 // ============ 列定义 ============
 
 /** 列配置 */
+/** 序列化/反序列化函数类型 */
+export type SerializeFn<T> = (value: T) => T | Promise<T>;
+export type DeserializeFn<T> = (value: T) => T | Promise<T>;
+
 export interface ColumnConfig<T extends ColumnTypeName = ColumnTypeName> {
   type: T;
   nullable?: boolean;
   primaryKey?: boolean;
   autoIncrement?: boolean;
-  default?: ColumnTypeMap[T] | (() => ColumnTypeMap[T]);
+  default?: ColumnTypeMap[T] | null | (() => ColumnTypeMap[T] | null);
   unique?: boolean;
+  /** 序列化：从数据库读取后的转换（数据库 -> 应用） */
+  serialize?: SerializeFn<ColumnTypeMap[T]>;
+  /** 反序列化：写入数据库前的转换（应用 -> 数据库） */
+  deserialize?: DeserializeFn<ColumnTypeMap[T]>;
 }
 
 /** 列构建器接口 */
@@ -47,7 +55,17 @@ export interface ColumnBuilder<T extends ColumnTypeName, Nullable extends boolea
   unique(): ColumnBuilder<T, Nullable>;
 
   /** 设置默认值 */
-  default(value: ColumnTypeMap[T] | (() => ColumnTypeMap[T])): ColumnBuilder<T, Nullable>;
+  default(
+    value: Nullable extends true
+      ? ColumnTypeMap[T] | null | (() => ColumnTypeMap[T] | null)
+      : ColumnTypeMap[T] | (() => ColumnTypeMap[T])
+  ): ColumnBuilder<T, Nullable>;
+
+  /** 设置序列化函数（数据库 -> 应用） */
+  serialize(fn: SerializeFn<ColumnTypeMap[T]>): ColumnBuilder<T, Nullable>;
+
+  /** 设置反序列化函数（应用 -> 数据库） */
+  deserialize(fn: DeserializeFn<ColumnTypeMap[T]>): ColumnBuilder<T, Nullable>;
 }
 
 /** 数字列构建器接口（支持自增） */
@@ -63,7 +81,17 @@ export interface NumberColumnBuilder<Nullable extends boolean>
   unique(): NumberColumnBuilder<Nullable>;
 
   /** 设置默认值 */
-  default(value: number | (() => number)): NumberColumnBuilder<Nullable>;
+  default(
+    value: Nullable extends true
+      ? number | null | (() => number | null)
+      : number | (() => number)
+  ): NumberColumnBuilder<Nullable>;
+
+  /** 设置序列化函数（数据库 -> 应用） */
+  serialize(fn: SerializeFn<number>): NumberColumnBuilder<Nullable>;
+
+  /** 设置反序列化函数（应用 -> 数据库） */
+  deserialize(fn: DeserializeFn<number>): NumberColumnBuilder<Nullable>;
 
   /** 设置为自增 */
   autoIncrement(): NumberColumnBuilder<Nullable>;
@@ -181,11 +209,15 @@ export type FormatConfig<S extends SchemaDefinition> = {
 
 // ============ Model 配置 ============
 
+/** Schema 类构造器类型 */
+export type SchemaClass<S extends SchemaDefinition = SchemaDefinition> = {
+  new (): any;
+  getDefinition(): S;
+};
+
 /** Model 配置 */
 export interface ModelConfig<S extends SchemaDefinition> {
   tableName: string;
-  schema: S;
+  schema: SchemaClass<S>;
   primaryKey?: keyof S;
-  /** 字段序列化/反序列化配置 */
-  format?: FormatConfig<S>;
 }

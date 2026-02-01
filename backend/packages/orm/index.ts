@@ -9,6 +9,7 @@ export type {
   ColumnDef,
   InferColumnType,
   SchemaDefinition,
+  SchemaClass,
   InferRow,
   InsertData,
   UpdateData,
@@ -47,6 +48,9 @@ export {
 
 // Column builders
 export { column } from "./column";
+
+// Schema base classes
+export { Schema, TimestampSchema, BaseSchema } from "./schema";
 
 // Re-export dialect from ssql
 export { 
