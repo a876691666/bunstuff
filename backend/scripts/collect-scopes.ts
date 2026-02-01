@@ -11,8 +11,8 @@ import { mkdir } from "fs/promises";
 const BACKEND_DIR = resolve(import.meta.dir, "..");
 const TEMP_DIR = resolve(BACKEND_DIR, "temp");
 
-// 匹配 permissions: ["xxx:yyy", "aaa:bbb"] 格式的正则
-const PERMISSIONS_REGEX = /permissions:\s*\[([\s\S]*?)\]/g;
+// 匹配 rbac: { scope: { permissions: ["xxx:yyy", "aaa:bbb"] } } 格式的正则
+const RBAC_SCOPE_REGEX = /rbac:\s*\{\s*scope:\s*\{\s*permissions:\s*\[([\s\S]*?)\]\s*\}\s*\}/g;
 // 匹配字符串内容的正则
 const STRING_REGEX = /["'`]([^"'`]+)["'`]/g;
 
@@ -36,9 +36,9 @@ async function collectScopes(): Promise<Map<string, ScopeInfo>> {
       const file = Bun.file(filePath);
       const content = await file.text();
 
-      // 查找所有 permissions: [...] 模式
+      // 查找所有 rbac: { scope: { permissions: [...] } } 模式
       let match;
-      while ((match = PERMISSIONS_REGEX.exec(content)) !== null) {
+      while ((match = RBAC_SCOPE_REGEX.exec(content)) !== null) {
         const permissionsContent = match[1];
 
         // 提取字符串值

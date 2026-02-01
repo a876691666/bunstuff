@@ -40,7 +40,7 @@ export const permissionScopeIdParams = t.Object({
 /** 数据过滤规则查询参数模型 */
 export const permissionScopeQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: "页码", default: 1, minimum: 1 })),
-  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1, maximum: 100 })),
+  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1 })),
   permissionId: t.Optional(t.Numeric({ description: "权限ID筛选" })),
   name: t.Optional(t.String({ description: "规则名称（模糊搜索）" })),
   tableName: t.Optional(t.String({ description: "表名（模糊搜索）" })),

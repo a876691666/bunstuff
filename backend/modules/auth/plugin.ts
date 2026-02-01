@@ -1,6 +1,6 @@
 /**
  * Auth 插件 - 全局认证中间件
- * 
+ *
  * 默认启用，可通过路由配置禁用
  */
 
@@ -17,13 +17,20 @@ export interface AuthPluginOptions {
   excludePaths?: string[];
 }
 
+// 扩展 Elysia 的 DocumentDecoration 类型，支持 scope 配置
+declare module "elysia" {
+  interface DocumentDecoration {
+    auth?: {
+      /**
+       * 是否跳过认证检查
+       */
+      skipAuth?: boolean;
+    };
+  }
+}
+
 /** 默认排除路径 */
-const DEFAULT_EXCLUDE_PATHS = [
-  "/api/auth/login",
-  "/api/auth/register",
-  "/api/health",
-  "/",
-];
+const DEFAULT_EXCLUDE_PATHS = ["/api/auth/login", "/api/auth/register", "/api/health", "/"];
 
 /** 从请求中提取 token */
 function defaultExtractToken(request: Request): string | null {
@@ -49,26 +56,32 @@ function isPathExcluded(path: string, excludePaths: string[]): boolean {
 
 /**
  * Auth 插件
- * 
- * 在路由中使用 `skipAuth: true` 可以跳过认证检查
- * 
+ *
+ * 在路由中使用 `auth.skipAuth: true` 可以跳过认证检查
+ *
  * @example
  * ```ts
  * app
  *   .use(authPlugin())
- *   .get("/public", () => "public", { detail: { skipAuth: true } })
+ *   .get("/public", () => "public", { detail: { auth: { skipAuth: true } } })
  *   .get("/private", ({ store }) => `user: ${store.userId}`)
  * ```
  */
 export function authPlugin(options: AuthPluginOptions = {}) {
   const extractToken = options.extractToken ?? defaultExtractToken;
-  const excludePaths = [
-    ...DEFAULT_EXCLUDE_PATHS,
-    ...(options.excludePaths ?? []),
-  ];
+  const excludePaths = [...DEFAULT_EXCLUDE_PATHS, ...(options.excludePaths ?? [])];
+  const app = new Elysia({ name: "auth-plugin" });
+  const routerHooksMap = new Map<any, any>();
 
-  return new Elysia({ name: "auth-plugin" })
-    .derive(async ({ request }) => {
+  app
+    .on("start", () => {
+      // @ts-ignore
+      app.getGlobalRoutes().forEach((route) => {
+        routerHooksMap.set(`${route.method}:::${route.path}`, route.hooks || {});
+      });
+    })
+    .derive({ as: "global" }, async (arg) => {
+      const { request } = arg;
       // 提取 token 并验证
       const token = extractToken(request);
       const session = token ? authService.verifyToken(token) : null;
@@ -86,9 +99,11 @@ export function authPlugin(options: AuthPluginOptions = {}) {
         rbac,
       };
     })
-    .onBeforeHandle(({ request, session, set, path, route }) => {
+    .onBeforeHandle({ as: "global" }, (arg) => {
+      const { request, session, set, path, route } = arg;
+      const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {};
       // 获取路由配置
-      const routeConfig = (route as any)?.hooks?.detail;
+      const routeConfig = hooks?.detail?.auth || {};
       const skipAuth = routeConfig?.skipAuth === true;
 
       // 检查是否需要跳过认证
@@ -105,6 +120,7 @@ export function authPlugin(options: AuthPluginOptions = {}) {
         };
       }
     });
+  return app;
 }
 
 export default authPlugin;

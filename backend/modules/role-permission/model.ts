@@ -30,7 +30,7 @@ export const rolePermissionIdParams = t.Object({
 /** 角色权限关联查询参数模型 */
 export const rolePermissionQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: "页码", default: 1, minimum: 1 })),
-  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1, maximum: 100 })),
+  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1 })),
   roleId: t.Optional(t.Numeric({ description: "角色ID筛选" })),
   permissionId: t.Optional(t.Numeric({ description: "权限ID筛选" })),
 }, { description: "角色权限关联列表查询参数" });

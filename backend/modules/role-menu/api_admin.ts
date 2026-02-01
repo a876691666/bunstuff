@@ -25,7 +25,7 @@ export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: 
       summary: "获取角色菜单关联列表",
       description: "分页获取角色菜单关联列表，支持按角色ID、菜单ID筛选\n\n🔐 **所需权限**: `role-menu:list`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["role-menu:list"] },
+      rbac: { scope: { permissions: ["role-menu:list"] } },
     },
   })
 
@@ -42,7 +42,7 @@ export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: 
       summary: "获取角色的菜单ID列表",
       description: "获取指定角色关联的所有菜单ID，用于菜单权限分配\n\n🔐 **所需权限**: `role-menu:list`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["role-menu:list"] },
+      rbac: { scope: { permissions: ["role-menu:list"] } },
     },
   })
 
@@ -61,7 +61,7 @@ export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: 
       summary: "获取角色菜单关联详情",
       description: "根据ID获取角色菜单关联详细信息\n\n🔐 **所需权限**: `role-menu:read`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["role-menu:read"] },
+      rbac: { scope: { permissions: ["role-menu:read"] } },
     },
   })
 
@@ -78,7 +78,7 @@ export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: 
       summary: "创建角色菜单关联",
       description: "为角色添加单个菜单关联\n\n🔐 **所需权限**: `role-menu:create`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["role-menu:create"] },
+      rbac: { scope: { permissions: ["role-menu:create"] } },
     },
   })
 
@@ -95,7 +95,7 @@ export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: 
       summary: "批量设置角色菜单",
       description: "批量设置角色的菜单关联，会先删除原有关联再创建新的（全量更新）\n\n🔐 **所需权限**: `role-menu:batch`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["role-menu:batch"] },
+      rbac: { scope: { permissions: ["role-menu:batch"] } },
     },
   })
 
@@ -115,7 +115,7 @@ export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: 
       summary: "删除角色菜单关联",
       description: "删除指定的角色菜单关联\n\n🔐 **所需权限**: `role-menu:delete`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["role-menu:delete"] },
+      rbac: { scope: { permissions: ["role-menu:delete"] } },
     },
   });
 

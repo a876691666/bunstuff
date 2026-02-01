@@ -1,0 +1,5 @@
+export { default as Users } from './Users.vue'
+export { default as Roles } from './Roles.vue'
+export { default as Permissions } from './Permissions.vue'
+export { default as PermissionScopes } from './PermissionScopes.vue'
+export { default as Menus } from './Menus.vue'

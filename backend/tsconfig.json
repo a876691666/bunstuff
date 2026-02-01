@@ -31,6 +31,7 @@
     "paths": {
       "@pkg/ssql": ["./packages/ssql/index.ts"],
       "@pkg/orm": ["./packages/orm/index.ts"]
-    }
-  }
+    },
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.js", "./**/*.jsx", "./**/*.d.ts"],
 }

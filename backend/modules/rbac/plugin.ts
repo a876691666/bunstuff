@@ -1,7 +1,7 @@
 /**
  * RBAC 插件 - 权限检查中间件
  *
- * 默认不启用，通过路由配置 scope 来启用权限检查
+ * 默认不启用，通过路由配置 rbac.scope 来启用权限检查
  */
 
 import { Elysia } from "elysia";
@@ -16,10 +16,12 @@ export interface RbacScope {
   roles?: string[];
 }
 
-// 扩展 Elysia 的 DocumentDecoration 类型，支持 scope 配置
+// 扩展 Elysia 的 DocumentDecoration 类型，支持 rbac.scope 配置
 declare module "elysia" {
   interface DocumentDecoration {
-    scope?: RbacScope;
+    rbac?: {
+      scope?: RbacScope;
+    };
   }
 }
 
@@ -36,7 +38,7 @@ export interface DataScope {
 /**
  * RBAC 插件
  *
- * 在路由中使用 `scope` 配置来启用权限检查
+ * 在路由中使用 `rbac.scope` 配置来启用权限检查
  * 配置了 permissions 后，会自动注入相关的 dataScope 数据权限
  *
  * @example
@@ -50,22 +52,32 @@ export interface DataScope {
  *     const rules = dataScope?.getSsqlRules("users");
  *     // ...
  *   }, {
- *     detail: { scope: { permissions: ["user:read"] } }
+ *     detail: { rbac: { scope: { permissions: ["user:read"] } } }
  *   })
  *   // 需要特定角色
  *   .delete("/users/:id", () => {...}, {
- *     detail: { scope: { roles: ["admin", "super-admin"] } }
+ *     detail: { rbac: { scope: { roles: ["admin", "super-admin"] } } }
  *   })
  * ```
  */
 export function rbacPlugin() {
-  return new Elysia({ name: "rbac-plugin" })
-    .derive(({ route, ...ctx }) => {
+  const app = new Elysia({ name: "rbac-plugin" });
+  const routerHooksMap = new Map<string, any>();
+
+  app
+    .on("start", () => {
+      // @ts-ignore
+      app.getGlobalRoutes().forEach((route) => {
+        routerHooksMap.set(`${route.method}:::${route.path}`, route.hooks || {});
+      });
+    })
+    .derive({ as: "global" }, ({ request, route, ...ctx }) => {
       // 从 derive 中获取 roleId (由 authPlugin 注入)
       const roleId = (ctx as any).roleId as number | null;
 
       // 获取路由配置
-      const routeConfig = (route as any)?.hooks?.detail;
+      const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {};
+      const routeConfig = hooks?.detail?.rbac || {};
       const scope = routeConfig?.scope as RbacScope | undefined;
 
       // 没有配置 scope 或未登录，不注入 dataScope
@@ -88,12 +100,13 @@ export function rbacPlugin() {
 
       return { dataScope };
     })
-    .onBeforeHandle(({ set, route, ...ctx }) => {
+    .onBeforeHandle({ as: "global" }, ({ set, request, route, ...ctx }) => {
       // 从 derive 中获取 roleId (由 authPlugin 注入)
       const roleId = (ctx as any).roleId as number | null;
 
       // 获取路由配置
-      const routeConfig = (route as any)?.hooks?.detail;
+      const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {};
+      const routeConfig = hooks?.detail?.rbac || {};
       const scope = routeConfig?.scope as RbacScope | undefined;
 
       // 没有配置 scope，跳过权限检查
@@ -135,6 +148,8 @@ export function rbacPlugin() {
         }
       }
     });
+
+  return app;
 }
 
 export default rbacPlugin;

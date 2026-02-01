@@ -2,10 +2,14 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { createAdminApi, createApi } from "./modules";
 import { rbacService } from "./modules/rbac/service";
+import { sessionStore } from "./modules/auth/session";
 import { openapi } from "@elysiajs/openapi";
 
 // 从环境变量或命令行参数读取配置
 const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === "true" || Bun.argv.includes("--seed");
+
+// 初始化会话存储（从数据库加载）
+await sessionStore.init();
 
 // 初始化 RBAC 缓存
 await rbacService.init();

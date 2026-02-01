@@ -66,7 +66,7 @@ export class AuthService {
     }
 
     // 创建会话
-    const session = sessionStore.create({
+    const session = await sessionStore.create({
       userId: user.id,
       username: user.username,
       roleId: user.roleId,
@@ -141,7 +141,7 @@ export class AuthService {
   }
 
   /** 用户登出 */
-  logout(token: string): boolean {
+  async logout(token: string): Promise<boolean> {
     return sessionStore.delete(token);
   }
 
@@ -200,7 +200,7 @@ export class AuthService {
   }
 
   /** 刷新 token */
-  refreshToken(token: string): Session | null {
+  async refreshToken(token: string): Promise<Session | null> {
     return sessionStore.refresh(token);
   }
 
@@ -210,21 +210,18 @@ export class AuthService {
   }
 
   /** 踢用户下线 */
-  kickUser(userId: number): number {
+  async kickUser(userId: number): Promise<number> {
     return sessionStore.kickUser(userId);
   }
 
   /** 踢指定会话下线 */
-  kickSession(token: string): boolean {
+  async kickSession(token: string): Promise<boolean> {
     return sessionStore.kickSession(token);
   }
 
   /** 获取在线统计 */
   getOnlineStats() {
-    return {
-      onlineUsers: sessionStore.getOnlineUserCount(),
-      activeSessions: sessionStore.getSessionCount(),
-    };
+    return sessionStore.getStats();
   }
 
   /** 获取所有会话（管理用） */

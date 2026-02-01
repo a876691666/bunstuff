@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { seedService } from "./service";
 import { registerSeeds } from "./register";
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from "../response";
+import { rbacCache } from "../rbac/cache";
 
 /** Seed 模块配置 */
 export interface SeedModuleOptions {
@@ -17,10 +18,15 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
   // 如果配置了自动执行，则在初始化时执行
   if (options.autoRun) {
     // 使用 setTimeout 确保在服务启动后执行
-    setTimeout(() => {
-      seedService.autoRun().catch((err) => {
+    setTimeout(async () => {
+      try {
+        await seedService.autoRun();
+        // Seed 执行完成后重新加载 RBAC 缓存
+        await rbacCache.reload();
+        console.log("✅ RBAC cache reloaded after seed");
+      } catch (err) {
         console.error("[Seed] 自动执行失败:", err);
-      });
+      }
     }, 0);
   }
 
@@ -43,7 +49,7 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
       summary: "获取Seed执行日志",
       description: "获取所有Seed的执行日志记录，包括成功和失败的记录\n\n🔐 **所需权限**: `seed:logs`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["seed:logs"] },
+      rbac: { scope: { permissions: ["seed:logs"] } },
     },
   })
 
@@ -66,7 +72,7 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
       summary: "获取已注册的Seeds",
       description: "获取所有已注册的Seed列表及其描述\n\n🔐 **所需权限**: `seed:list`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["seed:list"] },
+      rbac: { scope: { permissions: ["seed:list"] } },
     },
   })
 
@@ -88,7 +94,7 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
       summary: "执行单个Seed",
       description: "执行指定名称的Seed，可通过force参数强制重新执行\n\n🔐 **所需权限**: `seed:run`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["seed:run"] },
+      rbac: { scope: { permissions: ["seed:run"] } },
     },
   })
 
@@ -117,7 +123,7 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
       summary: "执行所有Seeds",
       description: "执行所有未执行过的Seeds，可通过force参数强制重新执行所有\n\n🔐 **所需权限**: `seed:run`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["seed:run"] },
+      rbac: { scope: { permissions: ["seed:run"] } },
     },
   })
 
@@ -140,7 +146,7 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
       summary: "重置Seed",
       description: "删除指定Seed的执行记录，使其可以重新执行\n\n🔐 **所需权限**: `seed:reset`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["seed:reset"] },
+      rbac: { scope: { permissions: ["seed:reset"] } },
     },
   });
 };

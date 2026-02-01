@@ -27,7 +27,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取角色树",
       description: "获取角色的树形结构，每个节点包含汇聚的权限信息\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -51,7 +51,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取角色父级链",
       description: "获取从当前角色到根角色的完整继承链路\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -70,7 +70,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取子角色ID列表",
       description: "获取角色的所有后代角色ID（递归查询）\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -96,7 +96,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取角色权限列表",
       description: "获取角色的所有权限，包含从子角色汇聚的权限\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -120,7 +120,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "检查角色权限",
       description: "检查角色是否拥有指定的单个权限\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -144,7 +144,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "检查任一权限",
       description: "检查角色是否拥有给定权限列表中的任意一个\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -168,7 +168,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "检查所有权限",
       description: "检查角色是否同时拥有给定的所有权限\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -189,7 +189,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取角色菜单列表",
       description: "获取角色的所有菜单（包含从子角色汇聚的菜单）\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -222,7 +222,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取角色菜单树",
       description: "获取角色的菜单树形结构，用于前端渲染导航\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -254,7 +254,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取角色数据权限",
       description: "获取角色的所有数据过滤规则，按表名分组\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -282,7 +282,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取表数据权限",
       description: "获取角色对指定表的数据过滤规则\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -304,7 +304,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取SSQL过滤规则",
       description: "获取角色对指定表的SSQL格式过滤规则，可直接用于查询\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -341,7 +341,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取用户权限信息",
       description: "获取用户的完整权限信息，包括角色、权限编码、菜单列表、数据权限规则\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -365,7 +365,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "检查用户权限",
       description: "检查用户是否拥有指定的单个权限\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -389,7 +389,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "检查用户任一权限",
       description: "检查用户是否拥有给定权限列表中的任意一个\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -422,7 +422,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取用户菜单树",
       description: "获取用户的菜单树形结构，用于前端渲染导航\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -450,7 +450,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取用户表数据权限",
       description: "获取用户对指定表的数据过滤规则\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -474,7 +474,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "获取缓存状态",
       description: "获取RBAC缓存的当前状态，包括缓存数量和最后更新时间\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   })
 
@@ -490,7 +490,7 @@ export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 
       summary: "刷新缓存",
       description: "手动刷新RBAC缓存，会重新从数据库加载所有权限数据\n\n🔐 **所需权限**: `rbac:admin`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["rbac:admin"] },
+      rbac: { scope: { permissions: ["rbac:admin"] } },
     },
   });
 

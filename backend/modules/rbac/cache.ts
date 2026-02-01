@@ -434,10 +434,11 @@ class RbacCache {
   getStatus() {
     return {
       initialized: this.state.initialized,
-      lastUpdated: this.state.lastUpdated,
+      lastUpdated: this.state.lastUpdated?.toISOString() ?? '',
       roleCount: this.state.roles.size,
       permissionCount: this.state.permissions.size,
       menuCount: this.state.menus.size,
+      scopeCount: this.state.scopesByTable.size,
     };
   }
 }

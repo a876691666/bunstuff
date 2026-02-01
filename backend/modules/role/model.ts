@@ -57,7 +57,7 @@ export const roleIdParams = t.Object({
 /** 角色查询参数模型 */
 export const roleQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: "页码", default: 1, minimum: 1 })),
-  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1, maximum: 100 })),
+  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1 })),
   name: t.Optional(t.String({ description: "角色名称（模糊搜索）" })),
   code: t.Optional(t.String({ description: "角色编码（模糊搜索）" })),
   status: t.Optional(t.Numeric({ description: "状态筛选：1启用 0禁用" })),

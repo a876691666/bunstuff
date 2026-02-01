@@ -1,7 +1,7 @@
 /**
  * VIP 插件 - VIP 等级和资源限制校验中间件
  *
- * 默认不启用，通过路由配置 scope.vip 来启用 VIP 检查
+ * 默认不启用，通过路由配置 vip.scope 来启用 VIP 检查
  */
 
 import { Elysia } from "elysia";
@@ -15,11 +15,13 @@ export interface VipScope {
   required?: boolean;
 }
 
-// 扩展 Elysia 的 DocumentDecoration 类型，支持 vip 配置
+// 扩展 Elysia 的 DocumentDecoration 类型，支持 vip.scope 配置
 declare module "elysia" {
   interface DocumentDecoration {
-    /** VIP 配置（独立于 scope） */
-    vip?: VipScope;
+    /** VIP 配置 */
+    vip?: {
+      scope?: VipScope;
+    };
   }
 }
 
@@ -51,7 +53,7 @@ export interface VipContext {
 /**
  * VIP 插件
  *
- * 在路由中使用 `scope.vip` 配置来启用 VIP 检查
+ * 在路由中使用 `vip.scope` 配置来启用 VIP 检查
  *
  * @example
  * ```ts
@@ -62,11 +64,11 @@ export interface VipContext {
  *   .get("/pro-feature", ({ vip }) => {
  *     // vip 包含 VIP 上下文
  *   }, {
- *     detail: { vip: { vipTier: "pro" } }
+ *     detail: { vip: { scope: { vipTier: "pro" } } }
  *   })
  *   // 需要任意有效 VIP
  *   .get("/vip-feature", () => {...}, {
- *     detail: { vip: { required: true } }
+ *     detail: { vip: { scope: { required: true } } }
  *   })
  *   // 在业务中手动检查资源限制
  *   .post("/scene", async ({ vip }) => {
@@ -76,13 +78,22 @@ export interface VipContext {
  *     // 业务逻辑...
  *     await vip.incrementResource("scene:create");
  *   }, {
- *     detail: { vip: { required: true } }
+ *     detail: { vip: { scope: { required: true } } }
  *   })
  * ```
  */
 export function vipPlugin() {
-  return new Elysia({ name: "vip-plugin" })
-    .derive(async ({ route, ...ctx }) => {
+  const app = new Elysia({ name: "vip-plugin" });
+  const routerHooksMap = new Map<string, any>();
+
+  app
+    .on("start", () => {
+      // @ts-ignore
+      app.getGlobalRoutes().forEach((route) => {
+        routerHooksMap.set(`${route.method}:::${route.path}`, route.hooks || {});
+      });
+    })
+    .derive({ as: "global" }, async ({ request, route, ...ctx }) => {
       // 从 derive 中获取 userId (由 authPlugin 注入)
       const userId = (ctx as any).userId as number | null;
 
@@ -144,14 +155,15 @@ export function vipPlugin() {
 
       return { vip: vipContext };
     })
-    .onBeforeHandle(async ({ set, route, ...ctx }) => {
+    .onBeforeHandle({ as: "global" }, async ({ set, request, route, ...ctx }) => {
       // 从 derive 中获取 userId 和 vip (由 authPlugin 和 derive 注入)
       const userId = (ctx as any).userId as number | null;
       const vip = (ctx as any).vip as VipContext;
 
       // 获取路由配置
-      const routeConfig = (route as any)?.hooks?.detail;
-      const vipScope = routeConfig?.vip as VipScope | undefined;
+      const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {};
+      const routeConfig = hooks?.detail?.vip || {};
+      const vipScope = routeConfig?.scope as VipScope | undefined;
 
       // 没有配置 vip，跳过检查
       if (!vipScope) {
@@ -198,6 +210,8 @@ export function vipPlugin() {
         }
       }
     });
+
+  return app;
 }
 
 export default vipPlugin;

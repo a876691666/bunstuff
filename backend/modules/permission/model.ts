@@ -37,7 +37,7 @@ export const permissionIdParams = t.Object({
 /** 权限查询参数模型 */
 export const permissionQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: "页码", default: 1, minimum: 1 })),
-  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1, maximum: 100 })),
+  pageSize: t.Optional(t.Numeric({ description: "每页条数", default: 10, minimum: 1 })),
   name: t.Optional(t.String({ description: "权限名称（模糊搜索）" })),
   code: t.Optional(t.String({ description: "权限编码（模糊搜索）" })),
   resource: t.Optional(t.String({ description: "资源标识（模糊搜索）" })),

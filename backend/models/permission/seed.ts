@@ -3,6 +3,9 @@ import Permission from "./index";
 
 /** 默认权限数据 */
 const defaultPermissions = [
+  // 认证管理权限
+  { code: "auth:admin", name: "认证管理", resource: "/api/auth/admin", description: "管理端认证相关操作" },
+
   // 用户管理权限
   { code: "user:list", name: "查看用户列表", resource: "/api/users", description: "获取用户列表" },
   { code: "user:read", name: "查看用户详情", resource: "/api/users/:id", description: "获取用户详细信息" },
@@ -54,11 +57,39 @@ const defaultPermissions = [
   { code: "role-menu:batch", name: "批量设置角色菜单", resource: "/api/role-menu/batch", description: "批量设置角色菜单" },
   { code: "role-menu:delete", name: "删除角色菜单关联", resource: "/api/role-menu/:id", description: "删除角色菜单关联" },
 
+  // RBAC 管理权限
+  { code: "rbac:admin", name: "RBAC管理", resource: "/api/rbac/admin", description: "RBAC权限管理相关操作" },
+
   // Seed管理权限
   { code: "seed:logs", name: "查看Seed日志", resource: "/api/seed/logs", description: "获取Seed执行日志" },
   { code: "seed:list", name: "查看Seed列表", resource: "/api/seed/registered", description: "获取已注册的Seed列表" },
   { code: "seed:run", name: "执行Seed", resource: "/api/seed/run", description: "执行Seed" },
   { code: "seed:reset", name: "重置Seed", resource: "/api/seed/reset", description: "重置Seed执行记录" },
+
+  // VIP 等级管理权限
+  { code: "vip:tier:list", name: "查看VIP等级列表", resource: "/api/vip/tier", description: "获取VIP等级列表" },
+  { code: "vip:tier:read", name: "查看VIP等级详情", resource: "/api/vip/tier/:id", description: "获取VIP等级详细信息" },
+  { code: "vip:tier:create", name: "创建VIP等级", resource: "/api/vip/tier", description: "创建新VIP等级" },
+  { code: "vip:tier:update", name: "更新VIP等级", resource: "/api/vip/tier/:id", description: "更新VIP等级信息" },
+  { code: "vip:tier:delete", name: "删除VIP等级", resource: "/api/vip/tier/:id", description: "删除VIP等级" },
+
+  // VIP 资源限制管理权限
+  { code: "vip:resource-limit:list", name: "查看资源限制列表", resource: "/api/vip/tier/:id/resource-limits", description: "获取VIP等级资源限制列表" },
+  { code: "vip:resource-limit:create", name: "创建资源限制", resource: "/api/vip/resource-limit", description: "创建资源限制" },
+  { code: "vip:resource-limit:update", name: "更新资源限制", resource: "/api/vip/resource-limit/:id", description: "更新资源限制" },
+  { code: "vip:resource-limit:delete", name: "删除资源限制", resource: "/api/vip/resource-limit/:id", description: "删除资源限制" },
+
+  // 用户 VIP 管理权限
+  { code: "vip:user:list", name: "查看用户VIP列表", resource: "/api/vip/user-vips", description: "获取用户VIP列表" },
+  { code: "vip:user:read", name: "查看用户VIP详情", resource: "/api/vip/user/:userId", description: "获取用户VIP详细信息" },
+  { code: "vip:user:upgrade", name: "升级用户VIP", resource: "/api/vip/upgrade", description: "升级用户VIP等级" },
+  { code: "vip:user:confirm", name: "确认VIP绑定", resource: "/api/vip/confirm-binding", description: "确认或取消VIP绑定" },
+  { code: "vip:user:cancel", name: "取消用户VIP", resource: "/api/vip/cancel/:userId", description: "取消用户VIP" },
+
+  // 资源使用管理权限
+  { code: "vip:resource:check", name: "检查资源使用", resource: "/api/vip/resource/check", description: "检查用户资源使用情况" },
+  { code: "vip:resource:increment", name: "增加资源使用", resource: "/api/vip/resource/increment", description: "增加用户资源使用量" },
+  { code: "vip:resource:usage", name: "查看资源使用详情", resource: "/api/vip/resource/usage/:userId", description: "获取用户资源使用详情" },
 ];
 
 /** 权限表 Seed */

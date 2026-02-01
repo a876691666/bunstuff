@@ -121,6 +121,45 @@ export class VipService {
 
   // ============ 用户 VIP 管理 ============
 
+  /** 获取所有用户 VIP 列表 */
+  async findAllUserVips(query?: {
+    page?: number;
+    pageSize?: number;
+    userId?: number;
+    vipTierId?: number;
+    status?: number;
+    bindingStatus?: number;
+  }) {
+    const page = query?.page ?? 1;
+    const pageSize = query?.pageSize ?? 10;
+    const offset = (page - 1) * pageSize;
+
+    let whereClause = where();
+    if (query?.userId) {
+      whereClause = whereClause.eq("userId", query.userId);
+    }
+    if (query?.vipTierId) {
+      whereClause = whereClause.eq("vipTierId", query.vipTierId);
+    }
+    if (query?.status !== undefined) {
+      whereClause = whereClause.eq("status", query.status);
+    }
+    if (query?.bindingStatus !== undefined) {
+      whereClause = whereClause.eq("bindingStatus", query.bindingStatus);
+    }
+
+    const data = await UserVip.findMany({
+      where: whereClause,
+      limit: pageSize,
+      offset,
+      orderBy: [{ column: "id", order: "desc" }],
+    });
+
+    const total = await UserVip.count(whereClause);
+
+    return { data, total, page, pageSize };
+  }
+
   /** 获取用户的 VIP 信息 */
   async getUserVip(userId: number) {
     const userVip = await UserVip.findOne({

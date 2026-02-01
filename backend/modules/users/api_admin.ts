@@ -24,7 +24,7 @@ export const userAdminController = new Elysia({ prefix: "/users", tags: ["管理
       summary: "获取用户列表",
       description: "分页获取用户列表，支持按用户名、昵称、状态、角色筛选\n\n🔐 **所需权限**: `user:list`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["user:list"] },
+      rbac: { scope: { permissions: ["user:list"] } },
     },
   })
 
@@ -45,7 +45,7 @@ export const userAdminController = new Elysia({ prefix: "/users", tags: ["管理
       summary: "获取用户详情",
       description: "根据用户ID获取用户详细信息（不含密码）\n\n🔐 **所需权限**: `user:read`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["user:read"] },
+      rbac: { scope: { permissions: ["user:read"] } },
     },
   })
 
@@ -66,7 +66,7 @@ export const userAdminController = new Elysia({ prefix: "/users", tags: ["管理
       summary: "创建用户",
       description: "创建新用户，用户名必须唯一\n\n🔐 **所需权限**: `user:create`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["user:create"] },
+      rbac: { scope: { permissions: ["user:create"] } },
     },
   })
 
@@ -87,7 +87,7 @@ export const userAdminController = new Elysia({ prefix: "/users", tags: ["管理
       summary: "更新用户",
       description: "更新指定用户的信息，支持部分更新\n\n🔐 **所需权限**: `user:update`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["user:update"] },
+      rbac: { scope: { permissions: ["user:update"] } },
     },
   })
 
@@ -107,7 +107,7 @@ export const userAdminController = new Elysia({ prefix: "/users", tags: ["管理
       summary: "删除用户",
       description: "删除指定用户，此操作不可恢复\n\n🔐 **所需权限**: `user:delete`",
       security: [{ bearerAuth: [] }],
-      scope: { permissions: ["user:delete"] },
+      rbac: { scope: { permissions: ["user:delete"] } },
     },
   });
 
