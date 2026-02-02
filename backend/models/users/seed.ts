@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 import User from './index'
 
 /** 默认用户数据 */

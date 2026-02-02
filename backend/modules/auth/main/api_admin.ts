@@ -38,9 +38,9 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
       detail: {
         summary: '获取在线统计',
         description:
-          '获取当前在线用户数和会话数统计（管理员接口）\n\n🔐 **所需权限**: `auth:admin`',
+          '获取当前在线用户数和会话数统计（管理员接口）\n\n🔐 **所需权限**: `auth:admin:stats`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['auth:admin'] } },
+        rbac: { scope: { permissions: ['auth:admin:stats'] } },
       },
     },
   )
@@ -88,9 +88,9 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
       },
       detail: {
         summary: '获取所有会话',
-        description: '获取系统中所有登录会话列表（管理员接口）\n\n🔐 **所需权限**: `auth:admin`',
+        description: '获取系统中所有登录会话列表（管理员接口）\n\n🔐 **所需权限**: `auth:admin:sessions`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['auth:admin'] } },
+        rbac: { scope: { permissions: ['auth:admin:sessions'] } },
       },
     },
   )
@@ -111,9 +111,9 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
       },
       detail: {
         summary: '踢用户下线',
-        description: '强制指定用户的所有会话下线（管理员接口）\n\n🔐 **所需权限**: `auth:admin`',
+        description: '强制指定用户的所有会话下线（管理员接口）\n\n🔐 **所需权限**: `auth:admin:kick-user`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['auth:admin'] } },
+        rbac: { scope: { permissions: ['auth:admin:kick-user'] } },
       },
     },
   )
@@ -139,9 +139,9 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
       detail: {
         summary: '踢会话下线',
         description:
-          '强制指定会话下线，需要提供完整令牌（管理员接口）\n\n🔐 **所需权限**: `auth:admin`',
+          '强制指定会话下线，需要提供完整令牌（管理员接口）\n\n🔐 **所需权限**: `auth:admin:kick-session`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['auth:admin'] } },
+        rbac: { scope: { permissions: ['auth:admin:kick-session'] } },
       },
     },
   )

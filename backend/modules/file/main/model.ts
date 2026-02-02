@@ -28,7 +28,5 @@ export const fileIdParams = t.Object({
 export const fileQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
   pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-  originalName: t.Optional(t.String({ description: '原始文件名' })),
-  storageType: t.Optional(t.String({ description: '存储类型' })),
-  mimeType: t.Optional(t.String({ description: 'MIME类型' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })

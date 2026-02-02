@@ -37,7 +37,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
       detail: {
         summary: '获取通知公告列表',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:list'] } },
+        rbac: { scope: { permissions: ['notice:admin:list'] } },
       },
     },
   )
@@ -55,7 +55,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
       detail: {
         summary: '获取通知公告详情',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:read'] } },
+        rbac: { scope: { permissions: ['notice:admin:read'] } },
       },
     },
   )
@@ -72,7 +72,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
       detail: {
         summary: '创建通知公告',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:create'] } },
+        rbac: { scope: { permissions: ['notice:admin:create'] } },
       },
     },
   )
@@ -92,7 +92,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
       detail: {
         summary: '更新通知公告',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:update'] } },
+        rbac: { scope: { permissions: ['notice:admin:update'] } },
       },
     },
   )
@@ -111,7 +111,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
       detail: {
         summary: '删除通知公告',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:delete'] } },
+        rbac: { scope: { permissions: ['notice:admin:delete'] } },
       },
     },
   )
@@ -131,7 +131,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
         summary: '发布通知公告',
         description: '将通知公告状态改为正常并广播给所有在线用户',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:publish'] } },
+        rbac: { scope: { permissions: ['notice:admin:publish'] } },
       },
     },
   )

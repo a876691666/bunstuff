@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 import Role from './index'
 
 /** 默认角色数据 */

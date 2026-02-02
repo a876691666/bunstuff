@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 import VipTier from './index'
 
 /** 默认 VIP 等级数据 */

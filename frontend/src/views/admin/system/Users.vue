@@ -1,46 +1,22 @@
 <script setup lang="ts">
-import { shallowRef, onMounted, h, reactive } from 'vue'
+import { h, onMounted, shallowRef } from 'vue'
 import { NButton, NTag, NSpace, useMessage, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
-import type { SearchFieldConfig } from '@/components'
+import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
+import { useTable, useModal } from '@/composables'
 import { userApi, roleApi } from '@/api'
 import type { User, Role, CreateUserRequest, UpdateUserRequest } from '@/types'
+import { Op } from '@/utils/ssql'
 
-defineOptions({
-  name: 'SystemUsers',
-})
+defineOptions({ name: 'SystemUsers' })
 
 const message = useMessage()
 
-// 数据状态
-const loading = shallowRef(false)
-const data = shallowRef<User[]>([])
-const total = shallowRef(0)
-const page = shallowRef(1)
-const pageSize = shallowRef(10)
+// 角色列表
 const roles = shallowRef<Role[]>([])
 
-// 搜索条件
-const searchParams = shallowRef<Record<string, string>>({})
-
-// 弹窗状态
-const modalVisible = shallowRef(false)
-const modalLoading = shallowRef(false)
-const modalTitle = shallowRef('新增用户')
-const editingId = shallowRef<number | null>(null)
-const formData = reactive<CreateUserRequest & { id?: number }>({
-  username: '',
-  password: '',
-  nickname: '',
-  email: '',
-  phone: '',
-  roleId: undefined,
-  status: 1,
-})
-
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [
+const searchFields: SearchField[] = [
   { key: 'username', label: '用户名', type: 'input' },
   { key: 'nickname', label: '昵称', type: 'input' },
   {
@@ -53,6 +29,49 @@ const searchFields: SearchFieldConfig[] = [
     ],
   },
 ]
+
+// 使用 useTable
+const table = useTable<User, { username?: string; nickname?: string; status?: number }>({
+  api: (params) => userApi.list(params),
+  opMap: { username: Op.Like, nickname: Op.Like, status: Op.Eq },
+})
+
+// 使用 useModal
+const modal = useModal<CreateUserRequest & { id?: number }>({
+  defaultData: {
+    username: '',
+    password: '',
+    nickname: '',
+    email: '',
+    phone: '',
+    roleId: undefined,
+    status: 1,
+  },
+  validate: (data, isEdit) => {
+    if (!data.username) return '请输入用户名'
+    if (!isEdit && !data.password) return '请输入密码'
+    return null
+  },
+  createApi: (data) => userApi.create(data),
+  updateApi: (id, data) => {
+    const updateData: UpdateUserRequest = {
+      nickname: data.nickname || undefined,
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+      roleId: data.roleId,
+      status: data.status,
+    }
+    if (data.password) {
+      updateData.password = data.password
+    }
+    return userApi.update(id, updateData)
+  },
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    table.reload()
+  },
+  onError: (err) => message.error(err.message || '操作失败'),
+})
 
 // 表格列定义
 const columns: DataTableColumns<User> = [
@@ -67,7 +86,7 @@ const columns: DataTableColumns<User> = [
     width: 100,
     render: (row) => {
       const role = roles.value.find((r) => r.id === row.roleId)
-      return role?.name || row.roleId
+      return role?.name || row.roleId || '-'
     },
   },
   {
@@ -88,15 +107,10 @@ const columns: DataTableColumns<User> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleEdit(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleEdit(row) },
           () => '编辑',
         ),
-        h(ConfirmButton, {
+        h(CrudConfirm, {
           title: '确定要删除该用户吗？',
           onConfirm: () => handleDelete(row.id),
         }),
@@ -104,67 +118,8 @@ const columns: DataTableColumns<User> = [
   },
 ]
 
-// 加载数据
-async function loadData() {
-  loading.value = true
-  try {
-    const res = await userApi.list({
-      page: page.value,
-      pageSize: pageSize.value,
-      ...searchParams.value,
-    })
-    data.value = res.data
-    total.value = res.total
-  } catch (err: any) {
-    message.error(err.message || '加载失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 加载角色列表
-async function loadRoles() {
-  try {
-    const res = await roleApi.list({ pageSize: 1000 })
-    roles.value = res.data
-  } catch (err: any) {
-    console.error('加载角色失败', err)
-  }
-}
-
-// 搜索
-function handleSearch() {
-  page.value = 1
-  loadData()
-}
-
-// 重置
-function handleReset() {
-  page.value = 1
-  loadData()
-}
-
-// 新增
-function handleAdd() {
-  editingId.value = null
-  modalTitle.value = '新增用户'
-  Object.assign(formData, {
-    username: '',
-    password: '',
-    nickname: '',
-    email: '',
-    phone: '',
-    roleId: undefined,
-    status: 1,
-  })
-  modalVisible.value = true
-}
-
-// 编辑
 function handleEdit(row: User) {
-  editingId.value = row.id
-  modalTitle.value = '编辑用户'
-  Object.assign(formData, {
+  modal.edit(row.id, {
     username: row.username,
     password: '',
     nickname: row.nickname || '',
@@ -173,145 +128,95 @@ function handleEdit(row: User) {
     roleId: row.roleId,
     status: row.status,
   })
-  modalVisible.value = true
 }
 
-// 删除
 async function handleDelete(id: number) {
   try {
     await userApi.delete(id)
     message.success('删除成功')
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '删除失败')
+    table.reload()
+  } catch (err: unknown) {
+    message.error((err as Error).message || '删除失败')
   }
 }
 
-// 保存
-async function handleSave() {
-  if (!formData.username) {
-    message.warning('请输入用户名')
-    return
-  }
-
-  if (!editingId.value && !formData.password) {
-    message.warning('请输入密码')
-    return
-  }
-
-  modalLoading.value = true
+// 加载角色列表
+async function loadRoles() {
   try {
-    if (editingId.value) {
-      const updateData: UpdateUserRequest = {
-        nickname: formData.nickname || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        roleId: formData.roleId,
-        status: formData.status,
-      }
-      if (formData.password) {
-        updateData.password = formData.password
-      }
-      await userApi.update(editingId.value, updateData)
-      message.success('更新成功')
-    } else {
-      await userApi.create(formData as CreateUserRequest)
-      message.success('创建成功')
-    }
-    modalVisible.value = false
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '保存失败')
-  } finally {
-    modalLoading.value = false
+    const res = await roleApi.list({ pageSize: 1000 })
+    roles.value = res.data
+  } catch (err) {
+    console.error('加载角色失败', err)
   }
-}
-
-// 分页
-function handlePageChange(p: number) {
-  page.value = p
-  loadData()
-}
-
-function handlePageSizeChange(ps: number) {
-  pageSize.value = ps
-  page.value = 1
-  loadData()
 }
 
 onMounted(() => {
-  loadData()
   loadRoles()
 })
 </script>
 
 <template>
   <div class="page-users">
-    <PageTable
+    <CrudTable
       title="用户管理"
       :columns="columns"
-      :data="data"
-      :loading="loading"
-      :pagination="{
-        page: page,
-        pageSize: pageSize,
-        pageCount: Math.ceil(total / pageSize),
-        showSizePicker: true,
-        pageSizes: [10, 20, 50, 100],
-        itemCount: total,
-      }"
-      @update:page="handlePageChange"
-      @update:page-size="handlePageSizeChange"
+      :data="table.data.value"
+      :loading="table.loading.value"
+      v-model:page="table.page.value"
+      v-model:page-size="table.pageSize.value"
+      :total="table.total.value"
+      @update:page="table.setPage"
+      @update:page-size="table.setPageSize"
     >
       <template #toolbar>
-        <SearchForm
-          v-model="searchParams"
+        <CrudSearch
+          v-model="table.query.value"
           :fields="searchFields"
-          :loading="loading"
-          @search="handleSearch"
-          @reset="handleReset"
+          :loading="table.loading.value"
+          @search="table.search"
+          @reset="table.reset"
         />
       </template>
 
       <template #header-extra>
-        <NButton type="primary" @click="handleAdd">新增用户</NButton>
+        <NButton type="primary" @click="modal.open('新增用户')">新增用户</NButton>
       </template>
-    </PageTable>
+    </CrudTable>
 
-    <FormModal
-      v-model:show="modalVisible"
-      :title="modalTitle"
-      :loading="modalLoading"
-      @confirm="handleSave"
+    <CrudModal
+      v-model:show="modal.visible.value"
+      :title="modal.title.value"
+      :loading="modal.loading.value"
+      @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
         <NFormItem label="用户名" required>
           <NInput
-            v-model:value="formData.username"
+            v-model:value="modal.formData.username"
             placeholder="请输入用户名"
-            :disabled="!!editingId"
+            :disabled="modal.isEdit.value"
           />
         </NFormItem>
-        <NFormItem :label="editingId ? '新密码' : '密码'" :required="!editingId">
+        <NFormItem :label="modal.isEdit.value ? '新密码' : '密码'" :required="!modal.isEdit.value">
           <NInput
-            v-model:value="formData.password"
+            v-model:value="modal.formData.password"
             type="password"
-            :placeholder="editingId ? '不修改请留空' : '请输入密码'"
+            :placeholder="modal.isEdit.value ? '不修改请留空' : '请输入密码'"
             show-password-on="click"
           />
         </NFormItem>
         <NFormItem label="昵称">
-          <NInput v-model:value="formData.nickname" placeholder="请输入昵称" />
+          <NInput v-model:value="modal.formData.nickname" placeholder="请输入昵称" />
         </NFormItem>
         <NFormItem label="邮箱">
-          <NInput v-model:value="formData.email" placeholder="请输入邮箱" />
+          <NInput v-model:value="modal.formData.email" placeholder="请输入邮箱" />
         </NFormItem>
         <NFormItem label="手机号">
-          <NInput v-model:value="formData.phone" placeholder="请输入手机号" />
+          <NInput v-model:value="modal.formData.phone" placeholder="请输入手机号" />
         </NFormItem>
         <NFormItem label="角色">
           <NSelect
-            v-model:value="formData.roleId"
+            v-model:value="modal.formData.roleId"
             :options="roles.map((r) => ({ label: r.name, value: r.id }))"
             placeholder="请选择角色"
             clearable
@@ -319,7 +224,7 @@ onMounted(() => {
         </NFormItem>
         <NFormItem label="状态">
           <NSelect
-            v-model:value="formData.status"
+            v-model:value="modal.formData.status"
             :options="[
               { label: '正常', value: 1 },
               { label: '禁用', value: 0 },
@@ -327,7 +232,7 @@ onMounted(() => {
           />
         </NFormItem>
       </NForm>
-    </FormModal>
+    </CrudModal>
   </div>
 </template>
 

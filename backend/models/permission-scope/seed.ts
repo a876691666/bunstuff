@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 import { where } from '@pkg/ssql'
 import PermissionScope from './index'
 import Permission from '../permission'

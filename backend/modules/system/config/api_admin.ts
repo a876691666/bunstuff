@@ -37,7 +37,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       detail: {
         summary: '获取参数配置列表',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['config:list'] } },
+        rbac: { scope: { permissions: ['config:admin:list'] } },
       },
     },
   )
@@ -55,7 +55,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       detail: {
         summary: '获取参数配置详情',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['config:read'] } },
+        rbac: { scope: { permissions: ['config:admin:read'] } },
       },
     },
   )
@@ -74,7 +74,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       detail: {
         summary: '创建参数配置',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['config:create'] } },
+        rbac: { scope: { permissions: ['config:admin:create'] } },
       },
     },
   )
@@ -98,7 +98,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       detail: {
         summary: '更新参数配置',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['config:update'] } },
+        rbac: { scope: { permissions: ['config:admin:update'] } },
       },
     },
   )
@@ -118,7 +118,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       detail: {
         summary: '删除参数配置',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['config:delete'] } },
+        rbac: { scope: { permissions: ['config:admin:delete'] } },
       },
     },
   )

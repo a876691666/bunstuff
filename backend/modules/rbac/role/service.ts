@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import Role from '@/models/role'
 import type { RoleInsert, RoleUpdate } from '@/models/role'
 import RolePermission from '@/models/role-permission'
@@ -12,21 +12,22 @@ export class RoleService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    name?: string
-    code?: string
-    status?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // TODO: 添加过滤条件
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await Role.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
     })
 
-    const total = await Role.count()
+    const total = await Role.count(whereClause)
 
     return {
       data,

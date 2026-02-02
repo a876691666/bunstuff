@@ -384,3 +384,176 @@ export interface RbacCacheStatus {
   scopeCount: number
   lastUpdated: string
 }
+
+// ============ 系统管理类型 ============
+
+/** 字典类型 */
+export interface DictType {
+  id: number
+  name: string
+  type: string
+  status: number
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 字典数据 */
+export interface DictData {
+  id: number
+  dictType: string
+  label: string
+  value: string
+  cssClass: string | null
+  listClass: string | null
+  sort: number
+  status: number
+  isDefault: number
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 系统配置 */
+export interface SysConfig {
+  id: number
+  name: string
+  key: string
+  value: string
+  isBuiltin: number
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 登录日志 */
+export interface LoginLog {
+  id: number
+  userId: number | null
+  username: string
+  ip: string | null
+  location: string | null
+  browser: string | null
+  os: string | null
+  status: number
+  action: string
+  msg: string | null
+  loginTime: string
+}
+
+/** 创建字典类型请求 */
+export interface CreateDictTypeRequest {
+  name: string
+  type: string
+  status?: number
+  remark?: string
+}
+
+/** 更新字典类型请求 */
+export interface UpdateDictTypeRequest {
+  name?: string
+  type?: string
+  status?: number
+  remark?: string
+}
+
+/** 创建字典数据请求 */
+export interface CreateDictDataRequest {
+  dictType: string
+  label: string
+  value: string
+  cssClass?: string
+  listClass?: string
+  sort?: number
+  status?: number
+  isDefault?: number
+  remark?: string
+}
+
+/** 更新字典数据请求 */
+export interface UpdateDictDataRequest {
+  dictType?: string
+  label?: string
+  value?: string
+  cssClass?: string
+  listClass?: string
+  sort?: number
+  status?: number
+  isDefault?: number
+  remark?: string
+}
+
+/** 创建系统配置请求 */
+export interface CreateSysConfigRequest {
+  name: string
+  key: string
+  value: string
+  isBuiltin?: number
+  remark?: string
+}
+
+/** 更新系统配置请求 */
+export interface UpdateSysConfigRequest {
+  name?: string
+  key?: string
+  value?: string
+  remark?: string
+}
+
+// ============ 通知公告类型 ============
+
+/** 通知公告 */
+export interface Notice {
+  id: number
+  title: string
+  content: string
+  type: string
+  status: number
+  createBy: number
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 通知公告（带已读状态） */
+export interface NoticeWithRead extends Notice {
+  isRead: boolean
+  readAt: string | null
+}
+
+/** 创建通知公告请求 */
+export interface CreateNoticeRequest {
+  title: string
+  content: string
+  type?: string
+  status?: number
+  remark?: string
+}
+
+/** 更新通知公告请求 */
+export interface UpdateNoticeRequest {
+  title?: string
+  content?: string
+  type?: string
+  status?: number
+  remark?: string
+}
+
+// ============ 文件管理类型 ============
+
+/** 系统文件 */
+export interface SysFile {
+  id: number
+  originalName: string
+  storageName: string
+  storagePath: string
+  size: number
+  mimeType: string | null
+  extension: string | null
+  storageType: string
+  s3Bucket: string | null
+  uploadBy: number
+  md5: string | null
+  createdAt?: string
+  updatedAt?: string
+}

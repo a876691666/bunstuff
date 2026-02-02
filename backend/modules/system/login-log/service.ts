@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import LoginLog from '@/models/login-log'
 import type { LoginLogInsert } from '@/models/login-log'
 
@@ -11,23 +11,22 @@ export class LoginLogService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    username?: string
-    ip?: string
-    status?: number
-    action?: string
-    startTime?: string
-    endTime?: string
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await LoginLog.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'loginTime', order: 'DESC' }],
     })
-    const total = await LoginLog.count()
+    const total = await LoginLog.count(whereClause)
 
     return { data, total, page, pageSize }
   }

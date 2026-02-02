@@ -60,9 +60,9 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
           detail: {
             summary: '获取Seed执行日志',
             description:
-              '获取所有Seed的执行日志记录，包括成功和失败的记录\n\n🔐 **所需权限**: `seed:logs`',
+              '获取所有Seed的执行日志记录，包括成功和失败的记录\n\n🔐 **所需权限**: `seed:admin:logs`',
             security: [{ bearerAuth: [] }],
-            rbac: { scope: { permissions: ['seed:logs'] } },
+            rbac: { scope: { permissions: ['seed:admin:logs'] } },
           },
         },
       )
@@ -92,9 +92,9 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
           },
           detail: {
             summary: '获取已注册的Seeds',
-            description: '获取所有已注册的Seed列表及其描述\n\n🔐 **所需权限**: `seed:list`',
+            description: '获取所有已注册的Seed列表及其描述\n\n🔐 **所需权限**: `seed:admin:list`',
             security: [{ bearerAuth: [] }],
-            rbac: { scope: { permissions: ['seed:list'] } },
+            rbac: { scope: { permissions: ['seed:admin:list'] } },
           },
         },
       )
@@ -121,9 +121,9 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
           detail: {
             summary: '执行单个Seed',
             description:
-              '执行指定名称的Seed，可通过force参数强制重新执行\n\n🔐 **所需权限**: `seed:run`',
+              '执行指定名称的Seed，可通过force参数强制重新执行\n\n🔐 **所需权限**: `seed:admin:run`',
             security: [{ bearerAuth: [] }],
-            rbac: { scope: { permissions: ['seed:run'] } },
+            rbac: { scope: { permissions: ['seed:admin:run'] } },
           },
         },
       )
@@ -162,9 +162,9 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
           detail: {
             summary: '执行所有Seeds',
             description:
-              '执行所有未执行过的Seeds，可通过force参数强制重新执行所有\n\n🔐 **所需权限**: `seed:run`',
+              '执行所有未执行过的Seeds，可通过force参数强制重新执行所有\n\n🔐 **所需权限**: `seed:admin:run-all`',
             security: [{ bearerAuth: [] }],
-            rbac: { scope: { permissions: ['seed:run'] } },
+            rbac: { scope: { permissions: ['seed:admin:run-all'] } },
           },
         },
       )
@@ -190,9 +190,9 @@ export const createSeedController = (options: SeedModuleOptions = {}) => {
           detail: {
             summary: '重置Seed',
             description:
-              '删除指定Seed的执行记录，使其可以重新执行\n\n🔐 **所需权限**: `seed:reset`',
+              '删除指定Seed的执行记录，使其可以重新执行\n\n🔐 **所需权限**: `seed:admin:reset`',
             security: [{ bearerAuth: [] }],
-            rbac: { scope: { permissions: ['seed:reset'] } },
+            rbac: { scope: { permissions: ['seed:admin:reset'] } },
           },
         },
       )

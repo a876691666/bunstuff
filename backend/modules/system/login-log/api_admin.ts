@@ -34,7 +34,7 @@ export const loginLogAdminController = new Elysia({
       detail: {
         summary: '获取登录日志列表',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['loginLog:list'] } },
+        rbac: { scope: { permissions: ['loginLog:admin:list'] } },
       },
     },
   )
@@ -52,7 +52,7 @@ export const loginLogAdminController = new Elysia({
       detail: {
         summary: '获取登录日志详情',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['loginLog:read'] } },
+        rbac: { scope: { permissions: ['loginLog:admin:read'] } },
       },
     },
   )
@@ -71,7 +71,7 @@ export const loginLogAdminController = new Elysia({
       detail: {
         summary: '删除登录日志',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['loginLog:delete'] } },
+        rbac: { scope: { permissions: ['loginLog:admin:delete'] } },
       },
     },
   )
@@ -87,7 +87,7 @@ export const loginLogAdminController = new Elysia({
       detail: {
         summary: '清空登录日志',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['loginLog:clear'] } },
+        rbac: { scope: { permissions: ['loginLog:admin:clear'] } },
       },
     },
   )

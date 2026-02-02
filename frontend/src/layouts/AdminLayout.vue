@@ -133,6 +133,26 @@ const sideMenuOptions = (): MenuOption[] => {
           key: '/system/menus',
           icon: renderIcon('menu'),
         },
+        {
+          label: '字典类型',
+          key: '/system/dict-types',
+          icon: renderIcon('list'),
+        },
+        {
+          label: '字典数据',
+          key: '/system/dict-data',
+          icon: renderIcon('list'),
+        },
+        {
+          label: '参数配置',
+          key: '/system/configs',
+          icon: renderIcon('settings'),
+        },
+        {
+          label: '登录日志',
+          key: '/system/login-logs',
+          icon: renderIcon('document'),
+        },
       ],
     },
     {
@@ -181,6 +201,30 @@ const sideMenuOptions = (): MenuOption[] => {
           label: '资源限制',
           key: '/vip/resource-limits',
           icon: renderIcon('server'),
+        },
+      ],
+    },
+    {
+      label: '通知公告',
+      key: 'notice',
+      icon: renderIcon('bell'),
+      children: [
+        {
+          label: '公告管理',
+          key: '/notice/list',
+          icon: renderIcon('document'),
+        },
+      ],
+    },
+    {
+      label: '文件管理',
+      key: 'file',
+      icon: renderIcon('folder'),
+      children: [
+        {
+          label: '文件列表',
+          key: '/file/list',
+          icon: renderIcon('document'),
         },
       ],
     },

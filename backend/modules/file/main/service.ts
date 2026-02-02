@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import SysFile from '@/models/sys-file'
 import type { SysFileInsert, SysFileRow } from '@/models/sys-file'
 import * as path from 'path'
@@ -39,20 +39,22 @@ export class FileService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    originalName?: string
-    storageType?: string
-    mimeType?: string
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await SysFile.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'createdAt', order: 'DESC' }],
     })
-    const total = await SysFile.count()
+    const total = await SysFile.count(whereClause)
 
     return { data, total, page, pageSize }
   }

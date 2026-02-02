@@ -8,13 +8,29 @@ import { AdminLayout } from '@/layouts'
 import { Login, ChangePassword, Profile } from '@/views/auth'
 
 // 系统管理页面
-import { Users, Roles, Permissions, PermissionScopes, Menus } from '@/views/admin/system'
+import {
+  Users,
+  Roles,
+  Permissions,
+  PermissionScopes,
+  Menus,
+  DictTypes,
+  DictData,
+  Configs,
+  LoginLogs,
+} from '@/views/admin/system'
 
 // RBAC页面
 import { RoleMenus, RolePermissions, Sessions, Cache } from '@/views/admin/rbac'
 
 // VIP页面
 import { Tiers as VipTiers, Users as VipUsers, ResourceLimits } from '@/views/admin/vip'
+
+// 通知公告页面
+import { Notices } from '@/views/admin/notice'
+
+// 文件管理页面
+import { Files } from '@/views/admin/file'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -83,6 +99,30 @@ const routes: RouteRecordRaw[] = [
             component: Menus,
             meta: { title: '菜单管理' },
           },
+          {
+            path: 'dict-types',
+            name: 'SystemDictTypes',
+            component: DictTypes,
+            meta: { title: '字典类型' },
+          },
+          {
+            path: 'dict-data',
+            name: 'SystemDictData',
+            component: DictData,
+            meta: { title: '字典数据' },
+          },
+          {
+            path: 'configs',
+            name: 'SystemConfigs',
+            component: Configs,
+            meta: { title: '参数配置' },
+          },
+          {
+            path: 'login-logs',
+            name: 'SystemLoginLogs',
+            component: LoginLogs,
+            meta: { title: '登录日志' },
+          },
         ],
       },
       // RBAC管理
@@ -142,6 +182,36 @@ const routes: RouteRecordRaw[] = [
             name: 'VipResourceLimits',
             component: ResourceLimits,
             meta: { title: '资源限制' },
+          },
+        ],
+      },
+      // 通知公告
+      {
+        path: 'notice',
+        name: 'Notice',
+        redirect: '/notice/list',
+        meta: { title: '通知公告' },
+        children: [
+          {
+            path: 'list',
+            name: 'NoticeList',
+            component: Notices,
+            meta: { title: '公告管理' },
+          },
+        ],
+      },
+      // 文件管理
+      {
+        path: 'file',
+        name: 'File',
+        redirect: '/file/list',
+        meta: { title: '文件管理' },
+        children: [
+          {
+            path: 'list',
+            name: 'FileList',
+            component: Files,
+            meta: { title: '文件列表' },
           },
         ],
       },

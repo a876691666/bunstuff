@@ -54,9 +54,7 @@ export const permissionQueryParams = t.Object(
   {
     page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
     pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-    name: t.Optional(t.String({ description: '权限名称（模糊搜索）' })),
-    code: t.Optional(t.String({ description: '权限编码（模糊搜索）' })),
-    resource: t.Optional(t.String({ description: '资源标识（模糊搜索）' })),
+    filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
   },
   { description: '权限列表查询参数' },
 )

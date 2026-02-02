@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import Menu from '@/models/menu'
 import type { MenuInsert, MenuUpdate } from '@/models/menu'
 import RoleMenu from '@/models/role-menu'
@@ -10,21 +10,22 @@ export class MenuService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    name?: string
-    status?: number
-    type?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // TODO: 添加过滤条件
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await Menu.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
     })
 
-    const total = await Menu.count()
+    const total = await Menu.count(whereClause)
 
     return {
       data,

@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import User from '@/models/users'
 import type { UserInsert, UserUpdate } from '@/models/users'
 
@@ -8,22 +8,22 @@ export class UserService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    username?: string
-    nickname?: string
-    status?: number
-    roleId?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // TODO: 添加过滤条件
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await User.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
     })
 
-    const total = await User.count()
+    const total = await User.count(whereClause)
 
     return {
       data,

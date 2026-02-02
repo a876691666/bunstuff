@@ -41,9 +41,9 @@ export const permissionAdminController = new Elysia({
       detail: {
         summary: '获取权限列表',
         description:
-          '分页获取权限列表，支持按名称、编码、资源筛选\n\n🔐 **所需权限**: `permission:list`',
+          '分页获取权限列表，支持按名称、编码、资源筛选\n\n🔐 **所需权限**: `permission:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission:list'] } },
+        rbac: { scope: { permissions: ['permission:admin:list'] } },
       },
     },
   )
@@ -64,9 +64,9 @@ export const permissionAdminController = new Elysia({
       },
       detail: {
         summary: '获取权限详情',
-        description: '根据权限ID获取权限详细信息\n\n🔐 **所需权限**: `permission:read`',
+        description: '根据权限ID获取权限详细信息\n\n🔐 **所需权限**: `permission:admin:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission:read'] } },
+        rbac: { scope: { permissions: ['permission:admin:read'] } },
       },
     },
   )
@@ -90,9 +90,9 @@ export const permissionAdminController = new Elysia({
       detail: {
         summary: '创建权限',
         description:
-          '创建新权限，权限编码必须唯一，格式建议：资源:操作，如 user:create\n\n🔐 **所需权限**: `permission:create`',
+          '创建新权限，权限编码必须唯一，格式建议：资源:操作，如 user:create\n\n🔐 **所需权限**: `permission:admin:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission:create'] } },
+        rbac: { scope: { permissions: ['permission:admin:create'] } },
       },
     },
   )
@@ -121,9 +121,9 @@ export const permissionAdminController = new Elysia({
       },
       detail: {
         summary: '更新权限',
-        description: '更新指定权限的信息，支持部分更新\n\n🔐 **所需权限**: `permission:update`',
+        description: '更新指定权限的信息，支持部分更新\n\n🔐 **所需权限**: `permission:admin:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission:update'] } },
+        rbac: { scope: { permissions: ['permission:admin:update'] } },
       },
     },
   )
@@ -145,9 +145,9 @@ export const permissionAdminController = new Elysia({
       },
       detail: {
         summary: '删除权限',
-        description: '删除指定权限，此操作不可恢复\n\n🔐 **所需权限**: `permission:delete`',
+        description: '删除指定权限，此操作不可恢复\n\n🔐 **所需权限**: `permission:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission:delete'] } },
+        rbac: { scope: { permissions: ['permission:admin:delete'] } },
       },
     },
   )

@@ -1,42 +1,51 @@
 <script setup lang="ts">
-import { shallowRef, onMounted, h, reactive } from 'vue'
+import { h } from 'vue'
 import { NButton, NSpace, useMessage, NForm, NFormItem, NInput } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
-import type { SearchFieldConfig } from '@/components'
+import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
+import { useTable, useModal } from '@/composables'
 import { permissionApi } from '@/api'
 import type { Permission, CreatePermissionRequest, UpdatePermissionRequest } from '@/types'
+import { Op } from '@/utils/ssql'
+
+defineOptions({ name: 'SystemPermissions' })
 
 const message = useMessage()
 
-// 数据状态
-const loading = shallowRef(false)
-const data = shallowRef<Permission[]>([])
-const total = shallowRef(0)
-const page = shallowRef(1)
-const pageSize = shallowRef(10)
-
-// 搜索条件
-const searchParams = shallowRef<Record<string, any>>({})
-
-// 弹窗状态
-const modalVisible = shallowRef(false)
-const modalLoading = shallowRef(false)
-const modalTitle = shallowRef('新增权限')
-const editingId = shallowRef<number | null>(null)
-const formData = reactive<CreatePermissionRequest & { id?: number }>({
-  name: '',
-  code: '',
-  resource: '',
-  description: '',
-})
-
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [
+const searchFields: SearchField[] = [
   { key: 'name', label: '权限名称', type: 'input' },
   { key: 'code', label: '权限编码', type: 'input' },
   { key: 'resource', label: '资源标识', type: 'input' },
 ]
+
+// 使用 useTable
+const table = useTable<Permission, { name?: string; code?: string; resource?: string }>({
+  api: (params) => permissionApi.list(params),
+  opMap: { name: Op.Like, code: Op.Like, resource: Op.Like },
+})
+
+// 使用 useModal
+const modal = useModal<CreatePermissionRequest & { id?: number }>({
+  defaultData: {
+    name: '',
+    code: '',
+    resource: '',
+    description: '',
+  },
+  validate: (data) => {
+    if (!data.name) return '请输入权限名称'
+    if (!data.code) return '请输入权限编码'
+    return null
+  },
+  createApi: (data) => permissionApi.create(data),
+  updateApi: (id, data) => permissionApi.update(id, data as UpdatePermissionRequest),
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    table.reload()
+  },
+  onError: (err) => message.error(err.message || '操作失败'),
+})
 
 // 表格列定义
 const columns: DataTableColumns<Permission> = [
@@ -59,15 +68,10 @@ const columns: DataTableColumns<Permission> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleEdit(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleEdit(row) },
           () => '编辑',
         ),
-        h(ConfirmButton, {
+        h(CrudConfirm, {
           title: '确定要删除该权限吗？',
           onConfirm: () => handleDelete(row.id),
         }),
@@ -75,178 +79,84 @@ const columns: DataTableColumns<Permission> = [
   },
 ]
 
-// 加载数据
-async function loadData() {
-  loading.value = true
-  try {
-    const res = await permissionApi.list({
-      page: page.value,
-      pageSize: pageSize.value,
-      ...searchParams.value,
-    })
-    data.value = res.data
-    total.value = res.total
-  } catch (err: any) {
-    message.error(err.message || '加载失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 搜索
-function handleSearch() {
-  page.value = 1
-  loadData()
-}
-
-// 重置
-function handleReset() {
-  page.value = 1
-  loadData()
-}
-
-// 新增
-function handleAdd() {
-  editingId.value = null
-  modalTitle.value = '新增权限'
-  Object.assign(formData, {
-    name: '',
-    code: '',
-    resource: '',
-    description: '',
-  })
-  modalVisible.value = true
-}
-
-// 编辑
 function handleEdit(row: Permission) {
-  editingId.value = row.id
-  modalTitle.value = '编辑权限'
-  Object.assign(formData, {
+  modal.edit(row.id, {
     name: row.name,
     code: row.code,
     resource: row.resource || '',
     description: row.description || '',
   })
-  modalVisible.value = true
 }
 
-// 删除
 async function handleDelete(id: number) {
   try {
     await permissionApi.delete(id)
     message.success('删除成功')
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '删除失败')
+    table.reload()
+  } catch (err: unknown) {
+    message.error((err as Error).message || '删除失败')
   }
 }
-
-// 保存
-async function handleSave() {
-  if (!formData.name || !formData.code) {
-    message.warning('请填写必填项')
-    return
-  }
-
-  modalLoading.value = true
-  try {
-    if (editingId.value) {
-      await permissionApi.update(editingId.value, formData as UpdatePermissionRequest)
-      message.success('更新成功')
-    } else {
-      await permissionApi.create(formData as CreatePermissionRequest)
-      message.success('创建成功')
-    }
-    modalVisible.value = false
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '保存失败')
-  } finally {
-    modalLoading.value = false
-  }
-}
-
-// 分页
-function handlePageChange(p: number) {
-  page.value = p
-  loadData()
-}
-
-function handlePageSizeChange(ps: number) {
-  pageSize.value = ps
-  page.value = 1
-  loadData()
-}
-
-onMounted(() => {
-  loadData()
-})
 </script>
 
 <template>
   <div class="page-permissions">
-    <PageTable
+    <CrudTable
       title="权限管理"
       :columns="columns"
-      :data="data"
-      :loading="loading"
-      :pagination="{
-        page: page,
-        pageSize: pageSize,
-        pageCount: Math.ceil(total / pageSize),
-        showSizePicker: true,
-        pageSizes: [10, 20, 50, 100],
-        itemCount: total,
-      }"
-      @update:page="handlePageChange"
-      @update:page-size="handlePageSizeChange"
+      :data="table.data.value"
+      :loading="table.loading.value"
+      v-model:page="table.page.value"
+      v-model:page-size="table.pageSize.value"
+      :total="table.total.value"
+      @update:page="table.setPage"
+      @update:page-size="table.setPageSize"
     >
       <template #toolbar>
-        <SearchForm
-          v-model="searchParams"
+        <CrudSearch
+          v-model="table.query.value"
           :fields="searchFields"
-          :loading="loading"
-          @search="handleSearch"
-          @reset="handleReset"
+          :loading="table.loading.value"
+          @search="table.search"
+          @reset="table.reset"
         />
       </template>
 
       <template #header-extra>
-        <NButton type="primary" @click="handleAdd">新增权限</NButton>
+        <NButton type="primary" @click="modal.open('新增权限')">新增权限</NButton>
       </template>
-    </PageTable>
+    </CrudTable>
 
-    <FormModal
-      v-model:show="modalVisible"
-      :title="modalTitle"
-      :loading="modalLoading"
-      @confirm="handleSave"
+    <CrudModal
+      v-model:show="modal.visible.value"
+      :title="modal.title.value"
+      :loading="modal.loading.value"
+      @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
         <NFormItem label="权限名称" required>
-          <NInput v-model:value="formData.name" placeholder="请输入权限名称" />
+          <NInput v-model:value="modal.formData.name" placeholder="请输入权限名称" />
         </NFormItem>
         <NFormItem label="权限编码" required>
           <NInput
-            v-model:value="formData.code"
+            v-model:value="modal.formData.code"
             placeholder="格式：资源:操作，如 user:create"
-            :disabled="!!editingId"
+            :disabled="modal.isEdit.value"
           />
         </NFormItem>
         <NFormItem label="资源标识">
-          <NInput v-model:value="formData.resource" placeholder="请输入资源标识" />
+          <NInput v-model:value="modal.formData.resource" placeholder="请输入资源标识" />
         </NFormItem>
         <NFormItem label="描述">
           <NInput
-            v-model:value="formData.description"
+            v-model:value="modal.formData.description"
             type="textarea"
             placeholder="请输入描述"
             :rows="3"
           />
         </NFormItem>
       </NForm>
-    </FormModal>
+    </CrudModal>
   </div>
 </template>
 

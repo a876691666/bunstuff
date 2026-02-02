@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 import { where } from '@pkg/ssql'
 import RoleMenu from './index'
 import Role from '../role'

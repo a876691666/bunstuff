@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import SysConfig from '@/models/sys-config'
 import type { SysConfigInsert, SysConfigUpdate } from '@/models/sys-config'
 
@@ -44,13 +44,16 @@ export const configCache = new ConfigCache()
 /** 参数配置服务 */
 export class ConfigService {
   /** 获取参数配置列表 */
-  async findAll(query?: { page?: number; pageSize?: number; name?: string; key?: string }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    const data = await SysConfig.findMany({ limit: pageSize, offset })
-    const total = await SysConfig.count()
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
+    const data = await SysConfig.findMany({ where: whereClause, limit: pageSize, offset })
+    const total = await SysConfig.count(whereClause)
 
     return { data, total, page, pageSize }
   }

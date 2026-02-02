@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, onMounted, h, reactive } from 'vue'
+import { shallowRef, onMounted, h } from 'vue'
 import {
   NButton,
   NSpace,
@@ -13,50 +13,56 @@ import {
   NTag,
 } from 'naive-ui'
 import type { DataTableColumns, TreeSelectOption } from 'naive-ui'
-import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
-import type { SearchFieldConfig } from '@/components'
+import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
+import { useTable, useModal } from '@/composables'
 import { menuApi } from '@/api'
 import type { Menu, MenuTree, CreateMenuRequest, UpdateMenuRequest } from '@/types'
+import { Op } from '@/utils/ssql'
 
-defineOptions({
-  name: 'SystemMenus',
-})
+defineOptions({ name: 'SystemMenus' })
 
 const message = useMessage()
-
-// 数据状态
-const loading = shallowRef(false)
-const data = shallowRef<Menu[]>([])
-const total = shallowRef(0)
-const page = shallowRef(1)
-const pageSize = shallowRef(10)
 const menuTree = shallowRef<MenuTree[]>([])
 
-// 搜索条件
-const searchParams = shallowRef<Record<string, string>>({})
-
-// 弹窗状态
-const modalVisible = shallowRef(false)
-const modalLoading = shallowRef(false)
-const modalTitle = shallowRef('新增菜单')
-const editingId = shallowRef<number | null>(null)
-const formData = reactive<CreateMenuRequest & { id?: number }>({
-  name: '',
-  code: '',
-  path: '',
-  component: '',
-  icon: '',
-  sort: 0,
-  parentId: undefined,
-  isHidden: false,
-  isCache: true,
-})
-
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [
+const searchFields: SearchField[] = [
   { key: 'name', label: '菜单名称', type: 'input' },
   { key: 'code', label: '菜单编码', type: 'input' },
 ]
+
+// 使用 useTable
+const table = useTable<Menu, { name?: string; code?: string }>({
+  api: (params) => menuApi.list(params),
+  opMap: { name: Op.Like, code: Op.Like },
+})
+
+// 使用 useModal
+const modal = useModal<CreateMenuRequest & { id?: number }>({
+  defaultData: {
+    name: '',
+    code: '',
+    path: '',
+    component: '',
+    icon: '',
+    sort: 0,
+    parentId: undefined,
+    isHidden: false,
+    isCache: true,
+  },
+  validate: (data) => {
+    if (!data.name) return '请输入菜单名称'
+    if (!data.code) return '请输入菜单编码'
+    return null
+  },
+  createApi: (data) => menuApi.create(data),
+  updateApi: (id, data) => menuApi.update(id, data as UpdateMenuRequest),
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    table.reload()
+    loadMenuTree()
+  },
+  onError: (err) => message.error(err.message || '操作失败'),
+})
 
 // 菜单类型标签
 function getMenuTypeTag(row: Menu) {
@@ -118,25 +124,15 @@ const columns: DataTableColumns<Menu> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleAddChild(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleAddChild(row) },
           () => '添加子菜单',
         ),
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleEdit(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleEdit(row) },
           () => '编辑',
         ),
-        h(ConfirmButton, {
+        h(CrudConfirm, {
           title: '确定要删除该菜单吗？子菜单也会被删除！',
           onConfirm: () => handleDelete(row.id),
         }),
@@ -155,87 +151,24 @@ function convertToTreeOptions(tree: MenuTree[]): TreeSelectOption[] {
   }))
 }
 
-// 加载数据
-async function loadData() {
-  loading.value = true
-  try {
-    const res = await menuApi.list({
-      page: page.value,
-      pageSize: pageSize.value,
-      ...searchParams.value,
-    })
-    data.value = res.data
-    total.value = res.total
-  } catch (err: any) {
-    message.error(err.message || '加载失败')
-  } finally {
-    loading.value = false
-  }
-}
-
 // 加载菜单树
 async function loadMenuTree() {
   try {
     const res = await menuApi.tree()
     menuTree.value = res
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('加载菜单树失败', err)
   }
 }
 
-// 搜索
-function handleSearch() {
-  page.value = 1
-  loadData()
-}
-
-// 重置
-function handleReset() {
-  page.value = 1
-  loadData()
-}
-
-// 新增
-function handleAdd() {
-  editingId.value = null
-  modalTitle.value = '新增菜单'
-  Object.assign(formData, {
-    name: '',
-    code: '',
-    path: '',
-    component: '',
-    icon: '',
-    sort: 0,
-    parentId: undefined,
-    isHidden: false,
-    isCache: true,
-  })
-  modalVisible.value = true
-}
-
 // 添加子菜单
 function handleAddChild(row: Menu) {
-  editingId.value = null
-  modalTitle.value = '新增子菜单'
-  Object.assign(formData, {
-    name: '',
-    code: '',
-    path: '',
-    component: '',
-    icon: '',
-    sort: 0,
-    parentId: row.id,
-    isHidden: false,
-    isCache: true,
-  })
-  modalVisible.value = true
+  modal.open('新增子菜单')
+  modal.formData.parentId = row.id
 }
 
-// 编辑
 function handleEdit(row: Menu) {
-  editingId.value = row.id
-  modalTitle.value = '编辑菜单'
-  Object.assign(formData, {
+  modal.edit(row.id, {
     name: row.name,
     code: row.code,
     path: row.path || '',
@@ -246,149 +179,106 @@ function handleEdit(row: Menu) {
     isHidden: row.isHidden,
     isCache: row.isCache,
   })
-  modalVisible.value = true
 }
 
-// 删除
 async function handleDelete(id: number) {
   try {
     await menuApi.delete(id)
     message.success('删除成功')
-    loadData()
+    table.reload()
     loadMenuTree()
-  } catch (err: any) {
-    message.error(err.message || '删除失败')
+  } catch (err: unknown) {
+    message.error((err as Error).message || '删除失败')
   }
-}
-
-// 保存
-async function handleSave() {
-  if (!formData.name || !formData.code) {
-    message.warning('请填写必填项')
-    return
-  }
-
-  modalLoading.value = true
-  try {
-    if (editingId.value) {
-      await menuApi.update(editingId.value, formData as UpdateMenuRequest)
-      message.success('更新成功')
-    } else {
-      await menuApi.create(formData as CreateMenuRequest)
-      message.success('创建成功')
-    }
-    modalVisible.value = false
-    loadData()
-    loadMenuTree()
-  } catch (err: any) {
-    message.error(err.message || '保存失败')
-  } finally {
-    modalLoading.value = false
-  }
-}
-
-// 分页
-function handlePageChange(p: number) {
-  page.value = p
-  loadData()
-}
-
-function handlePageSizeChange(ps: number) {
-  pageSize.value = ps
-  page.value = 1
-  loadData()
 }
 
 onMounted(() => {
-  loadData()
   loadMenuTree()
 })
 </script>
 
 <template>
   <div class="page-menus">
-    <PageTable
+    <CrudTable
       title="菜单管理"
       :columns="columns"
-      :data="data"
-      :loading="loading"
-      :pagination="{
-        page: page,
-        pageSize: pageSize,
-        pageCount: Math.ceil(total / pageSize),
-        showSizePicker: true,
-        pageSizes: [10, 20, 50, 100],
-        itemCount: total,
-      }"
-      @update:page="handlePageChange"
-      @update:page-size="handlePageSizeChange"
+      :data="table.data.value"
+      :loading="table.loading.value"
+      v-model:page="table.page.value"
+      v-model:page-size="table.pageSize.value"
+      :total="table.total.value"
+      @update:page="table.setPage"
+      @update:page-size="table.setPageSize"
     >
       <template #toolbar>
-        <SearchForm
-          v-model="searchParams"
+        <CrudSearch
+          v-model="table.query.value"
           :fields="searchFields"
-          :loading="loading"
-          @search="handleSearch"
-          @reset="handleReset"
+          :loading="table.loading.value"
+          @search="table.search"
+          @reset="table.reset"
         />
       </template>
 
       <template #header-extra>
-        <NButton type="primary" @click="handleAdd">新增菜单</NButton>
+        <NButton type="primary" @click="modal.open('新增菜单')">新增菜单</NButton>
       </template>
-    </PageTable>
+    </CrudTable>
 
-    <FormModal
-      v-model:show="modalVisible"
-      :title="modalTitle"
-      :loading="modalLoading"
+    <CrudModal
+      v-model:show="modal.visible.value"
+      :title="modal.title.value"
+      :loading="modal.loading.value"
       width="600px"
-      @confirm="handleSave"
+      @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
         <NFormItem label="上级菜单">
           <NTreeSelect
-            v-model:value="formData.parentId"
+            v-model:value="modal.formData.parentId"
             :options="convertToTreeOptions(menuTree)"
             placeholder="选择上级菜单（不选则为顶级菜单）"
             clearable
-            :disabled="!!editingId && formData.parentId === null"
+            :disabled="modal.isEdit.value && modal.formData.parentId === null"
           />
         </NFormItem>
         <NFormItem label="菜单名称" required>
-          <NInput v-model:value="formData.name" placeholder="请输入菜单名称" />
+          <NInput v-model:value="modal.formData.name" placeholder="请输入菜单名称" />
         </NFormItem>
         <NFormItem label="菜单编码" required>
-          <NInput v-model:value="formData.code" placeholder="请输入菜单编码" />
+          <NInput v-model:value="modal.formData.code" placeholder="请输入菜单编码" />
         </NFormItem>
         <NFormItem label="路由路径">
-          <NInput v-model:value="formData.path" placeholder="请输入路由路径，如 /system/user" />
+          <NInput
+            v-model:value="modal.formData.path"
+            placeholder="请输入路由路径，如 /system/user"
+          />
         </NFormItem>
         <NFormItem label="组件路径">
           <NInput
-            v-model:value="formData.component"
+            v-model:value="modal.formData.component"
             placeholder="请输入组件路径，如 system/Users"
           />
         </NFormItem>
         <NFormItem label="菜单图标">
-          <NInput v-model:value="formData.icon" placeholder="请输入图标名称" />
+          <NInput v-model:value="modal.formData.icon" placeholder="请输入图标名称" />
         </NFormItem>
         <NFormItem label="排序">
           <NInputNumber
-            v-model:value="formData.sort"
+            v-model:value="modal.formData.sort"
             :min="0"
             placeholder="数字越小越靠前"
             style="width: 100%"
           />
         </NFormItem>
         <NFormItem label="是否隐藏">
-          <NSwitch v-model:value="formData.isHidden" />
+          <NSwitch v-model:value="modal.formData.isHidden" />
         </NFormItem>
         <NFormItem label="是否缓存">
-          <NSwitch v-model:value="formData.isCache" />
+          <NSwitch v-model:value="modal.formData.isCache" />
         </NFormItem>
       </NForm>
-    </FormModal>
+    </CrudModal>
   </div>
 </template>
 

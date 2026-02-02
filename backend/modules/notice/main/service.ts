@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import Notice from '@/models/notice'
 import NoticeRead from '@/models/notice-read'
 import type { NoticeInsert, NoticeUpdate, NoticeRow } from '@/models/notice'
@@ -60,20 +60,22 @@ export class NoticeService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    title?: string
-    type?: string
-    status?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await Notice.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'createdAt', order: 'DESC' }],
     })
-    const total = await Notice.count()
+    const total = await Notice.count(whereClause)
 
     return { data, total, page, pageSize }
   }

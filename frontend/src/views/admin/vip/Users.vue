@@ -16,26 +16,25 @@ import {
   NEmpty,
 } from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
-import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
-import type { SearchFieldConfig } from '@/components'
+import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
+import { useTable } from '@/composables'
 import { vipApi, userApi } from '@/api'
 import type { UserVip, VipTier, User, UserResourceUsageInfo } from '@/types'
+import { Op } from '@/utils/ssql'
+
+defineOptions({ name: 'VipUsers' })
 
 const message = useMessage()
-
-// 数据状态
-const loading = shallowRef(false)
-const data = shallowRef<UserVip[]>([])
-const total = shallowRef(0)
-const page = shallowRef(1)
-const pageSize = shallowRef(10)
 
 // 用户和VIP等级列表
 const users = shallowRef<User[]>([])
 const tiers = shallowRef<VipTier[]>([])
 
-// 搜索条件
-const searchParams = shallowRef<Record<string, any>>({})
+// 使用 useTable
+const table = useTable<UserVip, { userId?: number }>({
+  api: (params) => vipApi.listUserVips(params),
+  opMap: { userId: Op.Eq },
+})
 
 // 升级弹窗状态
 const upgradeVisible = shallowRef(false)
@@ -52,7 +51,7 @@ const currentUser = shallowRef<UserVip | null>(null)
 const resourceUsage = shallowRef<UserResourceUsageInfo[]>([])
 
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [{ key: 'userId', label: '用户ID', type: 'input' }]
+const searchFields: SearchField[] = [{ key: 'userId', label: '用户ID', type: 'input' }]
 
 // 表格列定义
 const columns: DataTableColumns<UserVip> = [
@@ -110,37 +109,22 @@ const columns: DataTableColumns<UserVip> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleViewDetail(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleViewDetail(row) },
           () => '资源详情',
         ),
         row.bindingStatus === 0
           ? h(
               NButton,
-              {
-                size: 'small',
-                quaternary: true,
-                type: 'success',
-                onClick: () => handleConfirmBinding(row.id, true),
-              },
+              { size: 'small', quaternary: true, type: 'success', onClick: () => handleConfirmBinding(row.id, true) },
               () => '确认绑定',
             )
           : null,
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'info',
-            onClick: () => handleUpgrade(row),
-          },
+          { size: 'small', quaternary: true, type: 'info', onClick: () => handleUpgrade(row) },
           () => '变更',
         ),
-        h(ConfirmButton, {
+        h(CrudConfirm, {
           title: '确定要取消该用户的VIP吗？',
           buttonText: '取消VIP',
           onConfirm: () => handleCancel(row.userId),
@@ -149,30 +133,12 @@ const columns: DataTableColumns<UserVip> = [
   },
 ]
 
-// 加载数据
-async function loadData() {
-  loading.value = true
-  try {
-    const res = await vipApi.listUserVips({
-      page: page.value,
-      pageSize: pageSize.value,
-      ...searchParams.value,
-    })
-    data.value = res.data
-    total.value = res.total
-  } catch (err: any) {
-    message.error(err.message || '加载失败')
-  } finally {
-    loading.value = false
-  }
-}
-
 // 加载用户列表
 async function loadUsers() {
   try {
     const res = await userApi.list({ pageSize: 1000 })
     users.value = res.data
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('加载用户列表失败', err)
   }
 }
@@ -182,38 +148,20 @@ async function loadTiers() {
   try {
     const res = await vipApi.listTiers({ pageSize: 100 })
     tiers.value = res.data.filter((t) => t.status === 1)
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('加载VIP等级失败', err)
   }
 }
 
-// 搜索
-function handleSearch() {
-  page.value = 1
-  loadData()
-}
-
-// 重置
-function handleReset() {
-  page.value = 1
-  loadData()
-}
-
 // 新增用户VIP
 function handleAdd() {
-  Object.assign(upgradeForm, {
-    userId: 0,
-    tierId: 0,
-  })
+  Object.assign(upgradeForm, { userId: 0, tierId: 0 })
   upgradeVisible.value = true
 }
 
 // 升级用户VIP
 function handleUpgrade(row: UserVip) {
-  Object.assign(upgradeForm, {
-    userId: row.userId,
-    tierId: row.vipTierId,
-  })
+  Object.assign(upgradeForm, { userId: row.userId, tierId: row.vipTierId })
   upgradeVisible.value = true
 }
 
@@ -222,9 +170,9 @@ async function handleConfirmBinding(userVipId: number, confirm: boolean) {
   try {
     await vipApi.confirmVipBinding(userVipId, confirm)
     message.success(confirm ? '绑定确认成功' : '绑定已取消')
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '操作失败')
+    table.reload()
+  } catch (err: unknown) {
+    message.error((err as Error).message || '操作失败')
   }
 }
 
@@ -233,9 +181,9 @@ async function handleCancel(userId: number) {
   try {
     await vipApi.cancelUserVip(userId)
     message.success('已取消VIP')
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '操作失败')
+    table.reload()
+  } catch (err: unknown) {
+    message.error((err as Error).message || '操作失败')
   }
 }
 
@@ -246,7 +194,6 @@ async function handleSaveUpgrade() {
     return
   }
 
-  // 获取 VIP 等级的 code
   const tier = tiers.value.find((t) => t.id === upgradeForm.tierId)
   if (!tier) {
     message.warning('无效的VIP等级')
@@ -258,9 +205,9 @@ async function handleSaveUpgrade() {
     await vipApi.upgradeUserVipDirect(upgradeForm.userId, tier.code)
     message.success('升级成功')
     upgradeVisible.value = false
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '升级失败')
+    table.reload()
+  } catch (err: unknown) {
+    message.error((err as Error).message || '升级失败')
   } finally {
     upgradeLoading.value = false
   }
@@ -274,23 +221,11 @@ async function handleViewDetail(row: UserVip) {
   try {
     const res = await vipApi.getUserResourceUsage(row.userId)
     resourceUsage.value = res
-  } catch (err: any) {
-    message.error(err.message || '加载资源详情失败')
+  } catch (err: unknown) {
+    message.error((err as Error).message || '加载资源详情失败')
   } finally {
     detailLoading.value = false
   }
-}
-
-// 分页
-function handlePageChange(p: number) {
-  page.value = p
-  loadData()
-}
-
-function handlePageSizeChange(ps: number) {
-  pageSize.value = ps
-  page.value = 1
-  loadData()
 }
 
 // 用户选项
@@ -310,7 +245,6 @@ function getTierOptions(): SelectOption[] {
 }
 
 onMounted(() => {
-  loadData()
   loadUsers()
   loadTiers()
 })
@@ -318,39 +252,34 @@ onMounted(() => {
 
 <template>
   <div class="page-vip-users">
-    <PageTable
+    <CrudTable
       title="用户VIP管理"
       :columns="columns"
-      :data="data"
-      :loading="loading"
-      :pagination="{
-        page: page,
-        pageSize: pageSize,
-        pageCount: Math.ceil(total / pageSize),
-        showSizePicker: true,
-        pageSizes: [10, 20, 50, 100],
-        itemCount: total,
-      }"
-      @update:page="handlePageChange"
-      @update:page-size="handlePageSizeChange"
+      :data="table.data.value"
+      :loading="table.loading.value"
+      v-model:page="table.page.value"
+      v-model:page-size="table.pageSize.value"
+      :total="table.total.value"
+      @update:page="table.setPage"
+      @update:page-size="table.setPageSize"
     >
       <template #toolbar>
-        <SearchForm
-          v-model="searchParams"
+        <CrudSearch
+          v-model="table.query.value"
           :fields="searchFields"
-          :loading="loading"
-          @search="handleSearch"
-          @reset="handleReset"
+          :loading="table.loading.value"
+          @search="table.search"
+          @reset="table.reset"
         />
       </template>
 
       <template #header-extra>
         <NButton type="primary" @click="handleAdd">添加用户VIP</NButton>
       </template>
-    </PageTable>
+    </CrudTable>
 
     <!-- 升级弹窗 -->
-    <FormModal
+    <CrudModal
       v-model:show="upgradeVisible"
       title="设置用户VIP"
       :loading="upgradeLoading"
@@ -373,7 +302,7 @@ onMounted(() => {
           />
         </NFormItem>
       </NForm>
-    </FormModal>
+    </CrudModal>
 
     <!-- 资源详情抽屉 -->
     <NDrawer v-model:show="detailVisible" :width="500">

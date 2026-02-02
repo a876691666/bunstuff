@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import VipTier from '@/models/vip-tier'
 import type { VipTierInsert, VipTierUpdate } from '@/models/vip-tier'
 import VipResourceLimit from '@/models/vip-resource-limit'
@@ -34,21 +34,23 @@ export class VipService {
   async findAllTiers(query?: {
     page?: number
     pageSize?: number
-    name?: string
-    code?: string
-    status?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await VipTier.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'id', order: 'asc' }],
     })
 
-    const total = await VipTier.count()
+    const total = await VipTier.count(whereClause)
 
     return { data, total, page, pageSize }
   }
@@ -125,28 +127,14 @@ export class VipService {
   async findAllUserVips(query?: {
     page?: number
     pageSize?: number
-    userId?: number
-    vipTierId?: number
-    status?: number
-    bindingStatus?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    let whereClause = where()
-    if (query?.userId) {
-      whereClause = whereClause.eq('userId', query.userId)
-    }
-    if (query?.vipTierId) {
-      whereClause = whereClause.eq('vipTierId', query.vipTierId)
-    }
-    if (query?.status !== undefined) {
-      whereClause = whereClause.eq('status', query.status)
-    }
-    if (query?.bindingStatus !== undefined) {
-      whereClause = whereClause.eq('bindingStatus', query.bindingStatus)
-    }
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
 
     const data = await UserVip.findMany({
       where: whereClause,

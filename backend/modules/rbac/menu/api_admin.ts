@@ -38,9 +38,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '获取菜单列表',
-        description: '分页获取菜单列表，支持按名称、状态、类型筛选\n\n🔐 **所需权限**: `menu:list`',
+        description: '分页获取菜单列表，支持按名称、状态、类型筛选\n\n🔐 **所需权限**: `menu:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['menu:list'] } },
+        rbac: { scope: { permissions: ['menu:admin:list'] } },
       },
     },
   )
@@ -58,9 +58,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '获取菜单树',
-        description: '获取菜单的树形结构，包含父子层级关系\n\n🔐 **所需权限**: `menu:tree`',
+        description: '获取菜单的树形结构，包含父子层级关系\n\n🔐 **所需权限**: `menu:admin:tree`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['menu:tree'] } },
+        rbac: { scope: { permissions: ['menu:admin:tree'] } },
       },
     },
   )
@@ -81,9 +81,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '获取菜单详情',
-        description: '根据菜单ID获取菜单详细信息\n\n🔐 **所需权限**: `menu:read`',
+        description: '根据菜单ID获取菜单详细信息\n\n🔐 **所需权限**: `menu:admin:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['menu:read'] } },
+        rbac: { scope: { permissions: ['menu:admin:read'] } },
       },
     },
   )
@@ -102,9 +102,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '创建菜单',
-        description: '创建新菜单，支持目录、菜单、按钮三种类型\n\n🔐 **所需权限**: `menu:create`',
+        description: '创建新菜单，支持目录、菜单、按钮三种类型\n\n🔐 **所需权限**: `menu:admin:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['menu:create'] } },
+        rbac: { scope: { permissions: ['menu:admin:create'] } },
       },
     },
   )
@@ -127,9 +127,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '更新菜单',
-        description: '更新指定菜单的信息，支持部分更新\n\n🔐 **所需权限**: `menu:update`',
+        description: '更新指定菜单的信息，支持部分更新\n\n🔐 **所需权限**: `menu:admin:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['menu:update'] } },
+        rbac: { scope: { permissions: ['menu:admin:update'] } },
       },
     },
   )
@@ -151,9 +151,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '删除菜单',
-        description: '删除指定菜单，此操作不可恢复\n\n🔐 **所需权限**: `menu:delete`',
+        description: '删除指定菜单，此操作不可恢复\n\n🔐 **所需权限**: `menu:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['menu:delete'] } },
+        rbac: { scope: { permissions: ['menu:admin:delete'] } },
       },
     },
   )

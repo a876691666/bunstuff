@@ -26,10 +26,5 @@ export const loginLogIdParams = t.Object({
 export const loginLogQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
   pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-  username: t.Optional(t.String({ description: '用户名' })),
-  ip: t.Optional(t.String({ description: 'IP地址' })),
-  status: t.Optional(t.Numeric({ description: '状态' })),
-  action: t.Optional(t.String({ description: '操作类型' })),
-  startTime: t.Optional(t.String({ description: '开始时间' })),
-  endTime: t.Optional(t.String({ description: '结束时间' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })

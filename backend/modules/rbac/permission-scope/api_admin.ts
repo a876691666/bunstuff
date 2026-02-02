@@ -41,9 +41,9 @@ export const permissionScopeAdminController = new Elysia({
       detail: {
         summary: '获取数据过滤规则列表',
         description:
-          '分页获取数据过滤规则列表，支持按权限ID、名称、表名筛选\n\n🔐 **所需权限**: `permission-scope:list`',
+          '分页获取数据过滤规则列表，支持按权限ID、名称、表名筛选\n\n🔐 **所需权限**: `permission-scope:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission-scope:list'] } },
+        rbac: { scope: { permissions: ['permission-scope:admin:list'] } },
       },
     },
   )
@@ -64,9 +64,9 @@ export const permissionScopeAdminController = new Elysia({
       },
       detail: {
         summary: '获取数据过滤规则详情',
-        description: '根据ID获取数据过滤规则详细信息\n\n🔐 **所需权限**: `permission-scope:read`',
+        description: '根据ID获取数据过滤规则详细信息\n\n🔐 **所需权限**: `permission-scope:admin:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission-scope:read'] } },
+        rbac: { scope: { permissions: ['permission-scope:admin:read'] } },
       },
     },
   )
@@ -86,9 +86,9 @@ export const permissionScopeAdminController = new Elysia({
       detail: {
         summary: '创建数据过滤规则',
         description:
-          '创建新的数据过滤规则，用于行级数据权限控制。ssqlRule 为 SSQL 格式的过滤表达式\n\n🔐 **所需权限**: `permission-scope:create`',
+          '创建新的数据过滤规则，用于行级数据权限控制。ssqlRule 为 SSQL 格式的过滤表达式\n\n🔐 **所需权限**: `permission-scope:admin:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission-scope:create'] } },
+        rbac: { scope: { permissions: ['permission-scope:admin:create'] } },
       },
     },
   )
@@ -112,9 +112,9 @@ export const permissionScopeAdminController = new Elysia({
       detail: {
         summary: '更新数据过滤规则',
         description:
-          '更新指定数据过滤规则的信息，支持部分更新\n\n🔐 **所需权限**: `permission-scope:update`',
+          '更新指定数据过滤规则的信息，支持部分更新\n\n🔐 **所需权限**: `permission-scope:admin:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission-scope:update'] } },
+        rbac: { scope: { permissions: ['permission-scope:admin:update'] } },
       },
     },
   )
@@ -137,9 +137,9 @@ export const permissionScopeAdminController = new Elysia({
       detail: {
         summary: '删除数据过滤规则',
         description:
-          '删除指定数据过滤规则，此操作不可恢复\n\n🔐 **所需权限**: `permission-scope:delete`',
+          '删除指定数据过滤规则，此操作不可恢复\n\n🔐 **所需权限**: `permission-scope:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['permission-scope:delete'] } },
+        rbac: { scope: { permissions: ['permission-scope:admin:delete'] } },
       },
     },
   )

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, onMounted, h, reactive } from 'vue'
+import { shallowRef, onMounted, h } from 'vue'
 import {
   NButton,
   NSpace,
@@ -12,8 +12,8 @@ import {
   NTag,
 } from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
-import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
-import type { SearchFieldConfig } from '@/components'
+import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
+import { useModal } from '@/composables'
 import { vipApi } from '@/api'
 import type {
   VipResourceLimit,
@@ -21,6 +21,8 @@ import type {
   CreateVipResourceLimitRequest,
   UpdateVipResourceLimitRequest,
 } from '@/types'
+
+defineOptions({ name: 'VipResourceLimits' })
 
 const message = useMessage()
 
@@ -31,24 +33,32 @@ const total = shallowRef(0)
 const page = shallowRef(1)
 const pageSize = shallowRef(10)
 const tiers = shallowRef<VipTier[]>([])
-
-// 搜索条件
 const searchParams = shallowRef<Record<string, any>>({})
 
-// 弹窗状态
-const modalVisible = shallowRef(false)
-const modalLoading = shallowRef(false)
-const modalTitle = shallowRef('新增资源限制')
-const editingId = shallowRef<number | null>(null)
-const formData = reactive<CreateVipResourceLimitRequest & { id?: number }>({
-  vipTierId: 0,
-  resourceKey: '',
-  limitValue: 0,
-  description: '',
+// 使用 useModal
+const modal = useModal<CreateVipResourceLimitRequest & { id?: number }>({
+  defaultData: {
+    vipTierId: 0,
+    resourceKey: '',
+    limitValue: 0,
+    description: '',
+  },
+  validate: (data) => {
+    if (!data.vipTierId) return '请选择VIP等级'
+    if (!data.resourceKey) return '请输入资源键'
+    return null
+  },
+  createApi: (data) => vipApi.createResourceLimit(data),
+  updateApi: (id, data) => vipApi.updateResourceLimit(id, data as UpdateVipResourceLimitRequest),
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    loadData()
+  },
+  onError: (err) => message.error(err.message || '操作失败'),
 })
 
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [{ key: 'resourceKey', label: '资源键', type: 'input' }]
+const searchFields: SearchField[] = [{ key: 'resourceKey', label: '资源键', type: 'input' }]
 
 // 表格列定义
 const columns: DataTableColumns<VipResourceLimit> = [
@@ -85,15 +95,10 @@ const columns: DataTableColumns<VipResourceLimit> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleEdit(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleEdit(row) },
           () => '编辑',
         ),
-        h(ConfirmButton, {
+        h(CrudConfirm, {
           title: '确定要删除该资源限制吗？',
           onConfirm: () => handleDelete(row.id),
         }),
@@ -102,19 +107,14 @@ const columns: DataTableColumns<VipResourceLimit> = [
 ]
 
 // 加载数据
-// TODO: 后端需要添加分页获取所有资源限制的接口
-// 目前只能按 vipTierId 获取，没有全局列表接口
 async function loadData() {
   loading.value = true
   try {
-    // 如果有选中的 vipTierId，则获取该等级的资源限制
     if (searchParams.value.vipTierId) {
       const res = await vipApi.getResourceLimits(searchParams.value.vipTierId)
       data.value = res
       total.value = res.length
     } else {
-      // 没有 vipTierId 时，需要遍历所有等级获取资源限制
-      // 或者等待后端添加全局列表接口
       const allLimits: VipResourceLimit[] = []
       for (const tier of tiers.value) {
         try {
@@ -127,8 +127,8 @@ async function loadData() {
       data.value = allLimits
       total.value = allLimits.length
     }
-  } catch (err: any) {
-    message.error(err.message || '加载失败')
+  } catch (err: unknown) {
+    message.error((err as Error).message || '加载失败')
   } finally {
     loading.value = false
   }
@@ -139,86 +139,40 @@ async function loadTiers() {
   try {
     const res = await vipApi.listTiers({ pageSize: 100 })
     tiers.value = res.data
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('加载VIP等级失败', err)
   }
 }
 
-// 搜索
 function handleSearch() {
   page.value = 1
   loadData()
 }
 
-// 重置
 function handleReset() {
   page.value = 1
   loadData()
 }
 
-// 新增
-function handleAdd() {
-  editingId.value = null
-  modalTitle.value = '新增资源限制'
-  Object.assign(formData, {
-    vipTierId: 0,
-    resourceKey: '',
-    limitValue: 0,
-    description: '',
-  })
-  modalVisible.value = true
-}
-
-// 编辑
 function handleEdit(row: VipResourceLimit) {
-  editingId.value = row.id
-  modalTitle.value = '编辑资源限制'
-  Object.assign(formData, {
+  modal.edit(row.id, {
     vipTierId: row.vipTierId,
     resourceKey: row.resourceKey,
     limitValue: row.limitValue,
     description: row.description || '',
   })
-  modalVisible.value = true
 }
 
-// 删除
 async function handleDelete(id: number) {
   try {
     await vipApi.deleteResourceLimit(id)
     message.success('删除成功')
     loadData()
-  } catch (err: any) {
-    message.error(err.message || '删除失败')
+  } catch (err: unknown) {
+    message.error((err as Error).message || '删除失败')
   }
 }
 
-// 保存
-async function handleSave() {
-  if (!formData.vipTierId || !formData.resourceKey) {
-    message.warning('请填写必填项')
-    return
-  }
-
-  modalLoading.value = true
-  try {
-    if (editingId.value) {
-      await vipApi.updateResourceLimit(editingId.value, formData as UpdateVipResourceLimitRequest)
-      message.success('更新成功')
-    } else {
-      await vipApi.createResourceLimit(formData as CreateVipResourceLimitRequest)
-      message.success('创建成功')
-    }
-    modalVisible.value = false
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '保存失败')
-  } finally {
-    modalLoading.value = false
-  }
-}
-
-// 分页
 function handlePageChange(p: number) {
   page.value = p
   loadData()
@@ -230,12 +184,8 @@ function handlePageSizeChange(ps: number) {
   loadData()
 }
 
-// VIP等级选项
 function getTierOptions(): SelectOption[] {
-  return tiers.value.map((t) => ({
-    label: t.name,
-    value: t.id,
-  }))
+  return tiers.value.map((t) => ({ label: t.name, value: t.id }))
 }
 
 onMounted(async () => {
@@ -246,24 +196,19 @@ onMounted(async () => {
 
 <template>
   <div class="page-resource-limits">
-    <PageTable
+    <CrudTable
       title="资源限制管理"
       :columns="columns"
       :data="data"
       :loading="loading"
-      :pagination="{
-        page: page,
-        pageSize: pageSize,
-        pageCount: Math.ceil(total / pageSize),
-        showSizePicker: true,
-        pageSizes: [10, 20, 50, 100],
-        itemCount: total,
-      }"
+      :page="page"
+      :page-size="pageSize"
+      :total="total"
       @update:page="handlePageChange"
       @update:page-size="handlePageSizeChange"
     >
       <template #toolbar>
-        <SearchForm
+        <CrudSearch
           v-model="searchParams"
           :fields="searchFields"
           :loading="loading"
@@ -273,33 +218,33 @@ onMounted(async () => {
       </template>
 
       <template #header-extra>
-        <NButton type="primary" @click="handleAdd">新增资源限制</NButton>
+        <NButton type="primary" @click="modal.open('新增资源限制')">新增资源限制</NButton>
       </template>
-    </PageTable>
+    </CrudTable>
 
-    <FormModal
-      v-model:show="modalVisible"
-      :title="modalTitle"
-      :loading="modalLoading"
-      @confirm="handleSave"
+    <CrudModal
+      v-model:show="modal.visible.value"
+      :title="modal.title.value"
+      :loading="modal.loading.value"
+      @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
         <NFormItem label="VIP等级" required>
           <NSelect
-            v-model:value="formData.vipTierId"
+            v-model:value="modal.formData.vipTierId"
             :options="getTierOptions()"
             placeholder="请选择VIP等级"
           />
         </NFormItem>
         <NFormItem label="资源键" required>
           <NInput
-            v-model:value="formData.resourceKey"
+            v-model:value="modal.formData.resourceKey"
             placeholder="请输入资源键，如：scene:create"
           />
         </NFormItem>
         <NFormItem label="限制值">
           <NInputNumber
-            v-model:value="formData.limitValue"
+            v-model:value="modal.formData.limitValue"
             :min="-1"
             placeholder="-1表示无限制"
             style="width: 100%"
@@ -307,14 +252,14 @@ onMounted(async () => {
         </NFormItem>
         <NFormItem label="描述">
           <NInput
-            v-model:value="formData.description"
+            v-model:value="modal.formData.description"
             type="textarea"
             placeholder="请输入描述"
             :rows="3"
           />
         </NFormItem>
       </NForm>
-    </FormModal>
+    </CrudModal>
   </div>
 </template>
 

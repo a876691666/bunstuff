@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 
 /** 用户 VIP 表 Seed（空，无需初始数据） */
 export const userVipSeed: SeedDefinition = {

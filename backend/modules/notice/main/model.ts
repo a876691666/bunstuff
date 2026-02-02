@@ -57,7 +57,5 @@ export const noticeIdParams = t.Object({
 export const noticeQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
   pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-  title: t.Optional(t.String({ description: '公告标题' })),
-  type: t.Optional(t.String({ description: '公告类型' })),
-  status: t.Optional(t.Numeric({ description: '状态' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })

@@ -40,8 +40,7 @@ export const sysConfigIdParams = t.Object({
 export const sysConfigQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
   pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-  name: t.Optional(t.String({ description: '参数名称' })),
-  key: t.Optional(t.String({ description: '参数键名' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })
 
 /** 参数键名路径参数 */

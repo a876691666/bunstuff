@@ -53,9 +53,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '获取 VIP 等级列表',
-        description: '分页获取 VIP 等级列表\n\n🔐 **所需权限**: `vip:tier:list`',
+        description: '分页获取 VIP 等级列表\n\n🔐 **所需权限**: `vip:admin:tier:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:tier:list'] } },
+        rbac: { scope: { permissions: ['vip:admin:tier:list'] } },
       },
     },
   )
@@ -76,9 +76,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '获取 VIP 等级详情',
-        description: '根据 ID 获取 VIP 等级详情\n\n🔐 **所需权限**: `vip:tier:read`',
+        description: '根据 ID 获取 VIP 等级详情\n\n🔐 **所需权限**: `vip:admin:tier:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:tier:read'] } },
+        rbac: { scope: { permissions: ['vip:admin:tier:read'] } },
       },
     },
   )
@@ -100,9 +100,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '创建 VIP 等级',
-        description: '创建新 VIP 等级\n\n🔐 **所需权限**: `vip:tier:create`',
+        description: '创建新 VIP 等级\n\n🔐 **所需权限**: `vip:admin:tier:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:tier:create'] } },
+        rbac: { scope: { permissions: ['vip:admin:tier:create'] } },
       },
     },
   )
@@ -130,9 +130,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '更新 VIP 等级',
-        description: '更新 VIP 等级信息\n\n🔐 **所需权限**: `vip:tier:update`',
+        description: '更新 VIP 等级信息\n\n🔐 **所需权限**: `vip:admin:tier:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:tier:update'] } },
+        rbac: { scope: { permissions: ['vip:admin:tier:update'] } },
       },
     },
   )
@@ -159,9 +159,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '删除 VIP 等级',
-        description: '删除 VIP 等级\n\n🔐 **所需权限**: `vip:tier:delete`',
+        description: '删除 VIP 等级\n\n🔐 **所需权限**: `vip:admin:tier:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:tier:delete'] } },
+        rbac: { scope: { permissions: ['vip:admin:tier:delete'] } },
       },
     },
   )
@@ -183,9 +183,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       detail: {
         summary: '获取 VIP 等级资源限制',
         description:
-          '获取指定 VIP 等级的所有资源限制\n\n🔐 **所需权限**: `vip:resource-limit:list`',
+          '获取指定 VIP 等级的所有资源限制\n\n🔐 **所需权限**: `vip:admin:resource-limit:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource-limit:list'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource-limit:list'] } },
       },
     },
   )
@@ -209,9 +209,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '创建资源限制',
-        description: '为 VIP 等级创建资源限制\n\n🔐 **所需权限**: `vip:resource-limit:create`',
+        description: '为 VIP 等级创建资源限制\n\n🔐 **所需权限**: `vip:admin:resource-limit:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource-limit:create'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource-limit:create'] } },
       },
     },
   )
@@ -234,9 +234,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '更新资源限制',
-        description: '更新资源限制\n\n🔐 **所需权限**: `vip:resource-limit:update`',
+        description: '更新资源限制\n\n🔐 **所需权限**: `vip:admin:resource-limit:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource-limit:update'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource-limit:update'] } },
       },
     },
   )
@@ -258,9 +258,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '删除资源限制',
-        description: '删除资源限制\n\n🔐 **所需权限**: `vip:resource-limit:delete`',
+        description: '删除资源限制\n\n🔐 **所需权限**: `vip:admin:resource-limit:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource-limit:delete'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource-limit:delete'] } },
       },
     },
   )
@@ -281,9 +281,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '获取用户 VIP 列表',
-        description: '分页获取用户 VIP 列表\n\n🔐 **所需权限**: `vip:user:list`',
+        description: '分页获取用户 VIP 列表\n\n🔐 **所需权限**: `vip:admin:user:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:user:list'] } },
+        rbac: { scope: { permissions: ['vip:admin:user:list'] } },
       },
     },
   )
@@ -304,9 +304,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '获取用户 VIP 信息',
-        description: '获取指定用户的 VIP 信息\n\n🔐 **所需权限**: `vip:user:read`',
+        description: '获取指定用户的 VIP 信息\n\n🔐 **所需权限**: `vip:admin:user:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:user:read'] } },
+        rbac: { scope: { permissions: ['vip:admin:user:read'] } },
       },
     },
   )
@@ -333,9 +333,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       detail: {
         summary: '升级用户 VIP（需确认）',
         description:
-          '升级用户 VIP 等级，创建待确认的绑定记录，需要调用确认接口完成绑定\n\n🔐 **所需权限**: `vip:user:upgrade`',
+          '升级用户 VIP 等级，创建待确认的绑定记录，需要调用确认接口完成绑定\n\n🔐 **所需权限**: `vip:admin:user:upgrade`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:user:upgrade'] } },
+        rbac: { scope: { permissions: ['vip:admin:user:upgrade'] } },
       },
     },
   )
@@ -362,9 +362,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       detail: {
         summary: '直接升级用户 VIP',
         description:
-          '直接升级用户 VIP 等级，立即生效，无需确认\n\n🔐 **所需权限**: `vip:user:upgrade`',
+          '直接升级用户 VIP 等级，立即生效，无需确认\n\n🔐 **所需权限**: `vip:admin:user:upgrade-direct`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:user:upgrade'] } },
+        rbac: { scope: { permissions: ['vip:admin:user:upgrade-direct'] } },
       },
     },
   )
@@ -389,9 +389,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       detail: {
         summary: '确认 VIP 绑定',
         description:
-          '确认或取消 VIP 绑定，确认后将更新用户角色\n\n🔐 **所需权限**: `vip:user:confirm`',
+          '确认或取消 VIP 绑定，确认后将更新用户角色\n\n🔐 **所需权限**: `vip:admin:user:confirm`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:user:confirm'] } },
+        rbac: { scope: { permissions: ['vip:admin:user:confirm'] } },
       },
     },
   )
@@ -415,9 +415,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '取消用户 VIP',
-        description: '取消用户的 VIP，恢复原角色\n\n🔐 **所需权限**: `vip:user:cancel`',
+        description: '取消用户的 VIP，恢复原角色\n\n🔐 **所需权限**: `vip:admin:user:cancel`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:user:cancel'] } },
+        rbac: { scope: { permissions: ['vip:admin:user:cancel'] } },
       },
     },
   )
@@ -438,9 +438,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '检查资源使用',
-        description: '检查用户是否可以使用某资源\n\n🔐 **所需权限**: `vip:resource:check`',
+        description: '检查用户是否可以使用某资源\n\n🔐 **所需权限**: `vip:admin:resource:check`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource:check'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource:check'] } },
       },
     },
   )
@@ -468,9 +468,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '增加资源使用',
-        description: '增加用户的资源使用量\n\n🔐 **所需权限**: `vip:resource:increment`',
+        description: '增加用户的资源使用量\n\n🔐 **所需权限**: `vip:admin:resource:increment`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource:increment'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource:increment'] } },
       },
     },
   )
@@ -489,9 +489,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       },
       detail: {
         summary: '获取用户资源使用情况',
-        description: '获取用户所有资源的使用情况\n\n🔐 **所需权限**: `vip:resource:usage`',
+        description: '获取用户所有资源的使用情况\n\n🔐 **所需权限**: `vip:admin:resource:usage`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['vip:resource:usage'] } },
+        rbac: { scope: { permissions: ['vip:admin:resource:usage'] } },
       },
     },
   )

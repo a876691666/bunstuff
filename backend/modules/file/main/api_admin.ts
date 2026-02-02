@@ -31,7 +31,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       detail: {
         summary: '获取文件列表',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['file:list'] } },
+        rbac: { scope: { permissions: ['file:admin:list'] } },
       },
     },
   )
@@ -49,7 +49,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       detail: {
         summary: '获取文件详情',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['file:read'] } },
+        rbac: { scope: { permissions: ['file:admin:read'] } },
       },
     },
   )
@@ -77,7 +77,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       detail: {
         summary: '上传文件',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['file:upload'] } },
+        rbac: { scope: { permissions: ['file:admin:upload'] } },
       },
     },
   )
@@ -96,7 +96,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       detail: {
         summary: '删除文件',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['file:delete'] } },
+        rbac: { scope: { permissions: ['file:admin:delete'] } },
       },
     },
   )

@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '../../modules/seed/service'
+import type { SeedDefinition } from '@/modules/seed'
 import VipResourceLimit from './index'
 import VipTier from '../vip-tier'
 import { where } from '@pkg/ssql'

@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import RolePermission from '@/models/role-permission'
 import type { RolePermissionInsert } from '@/models/role-permission'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -9,20 +9,22 @@ export class RolePermissionService {
   async findAll(query?: {
     page?: number
     pageSize?: number
-    roleId?: number
-    permissionId?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // TODO: 添加过滤条件
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await RolePermission.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
     })
 
-    const total = await RolePermission.count()
+    const total = await RolePermission.count(whereClause)
 
     return {
       data,

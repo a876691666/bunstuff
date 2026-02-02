@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, onMounted, h, reactive } from 'vue'
+import { shallowRef, onMounted, h } from 'vue'
 import {
   NButton,
   NSpace,
@@ -13,45 +13,54 @@ import {
   NSelect,
 } from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
-import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
-import type { SearchFieldConfig } from '@/components'
+import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
+import { useTable, useModal } from '@/composables'
 import { vipApi, roleApi } from '@/api'
 import type { VipTier, CreateVipTierRequest, UpdateVipTierRequest, Role } from '@/types'
+import { Op } from '@/utils/ssql'
+
+defineOptions({ name: 'VipTiers' })
 
 const message = useMessage()
-
-// 数据状态
-const loading = shallowRef(false)
-const data = shallowRef<VipTier[]>([])
-const total = shallowRef(0)
-const page = shallowRef(1)
-const pageSize = shallowRef(10)
 const roles = shallowRef<Role[]>([])
 const roleOptions = shallowRef<SelectOption[]>([])
 
-// 搜索条件
-const searchParams = shallowRef<Record<string, any>>({})
-
-// 弹窗状态
-const modalVisible = shallowRef(false)
-const modalLoading = shallowRef(false)
-const modalTitle = shallowRef('新增VIP等级')
-const editingId = shallowRef<number | null>(null)
-const formData = reactive<CreateVipTierRequest & { id?: number }>({
-  name: '',
-  code: '',
-  roleId: null,
-  price: 0,
-  durationDays: 30,
-  description: '',
-  status: 1,
-})
-
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [
+const searchFields: SearchField[] = [
   { key: 'name', label: '等级名称', type: 'input' },
   { key: 'code', label: '等级编码', type: 'input' },
 ]
+
+// 使用 useTable
+const table = useTable<VipTier, { name?: string; code?: string }>({
+  api: (params) => vipApi.listTiers(params),
+  opMap: { name: Op.Like, code: Op.Like },
+})
+
+// 使用 useModal
+const modal = useModal<CreateVipTierRequest & { id?: number }>({
+  defaultData: {
+    name: '',
+    code: '',
+    roleId: null,
+    price: 0,
+    durationDays: 30,
+    description: '',
+    status: 1,
+  },
+  validate: (data) => {
+    if (!data.name) return '请输入等级名称'
+    if (!data.code) return '请输入等级编码'
+    return null
+  },
+  createApi: (data) => vipApi.createTier(data),
+  updateApi: (id, data) => vipApi.updateTier(id, data as UpdateVipTierRequest),
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    table.reload()
+  },
+  onError: (err) => message.error(err.message || '操作失败'),
+})
 
 // 表格列定义
 const columns: DataTableColumns<VipTier> = [
@@ -108,15 +117,10 @@ const columns: DataTableColumns<VipTier> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            type: 'primary',
-            onClick: () => handleEdit(row),
-          },
+          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleEdit(row) },
           () => '编辑',
         ),
-        h(ConfirmButton, {
+        h(CrudConfirm, {
           title: '确定要删除该VIP等级吗？',
           onConfirm: () => handleDelete(row.id),
         }),
@@ -130,62 +134,13 @@ async function loadRoles() {
     const res = await roleApi.list({ pageSize: 1000 })
     roles.value = res.data
     roleOptions.value = res.data.map((r) => ({ label: r.name, value: r.id }))
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('加载角色失败', err)
   }
 }
 
-// 加载数据
-async function loadData() {
-  loading.value = true
-  try {
-    const res = await vipApi.listTiers({
-      page: page.value,
-      pageSize: pageSize.value,
-      ...searchParams.value,
-    })
-    data.value = res.data
-    total.value = res.total
-  } catch (err: any) {
-    message.error(err.message || '加载失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 搜索
-function handleSearch() {
-  page.value = 1
-  loadData()
-}
-
-// 重置
-function handleReset() {
-  page.value = 1
-  loadData()
-}
-
-// 新增
-function handleAdd() {
-  editingId.value = null
-  modalTitle.value = '新增VIP等级'
-  Object.assign(formData, {
-    name: '',
-    code: '',
-    roleId: null,
-    price: 0,
-    durationDays: 30,
-    description: '',
-    status: 1,
-  })
-  modalVisible.value = true
-}
-
-// 编辑
 function handleEdit(row: VipTier) {
-  editingId.value = row.id
-  modalTitle.value = '编辑VIP等级'
-  Object.assign(formData, {
+  modal.edit(row.id, {
     name: row.name,
     code: row.code,
     roleId: row.roleId,
@@ -194,112 +149,67 @@ function handleEdit(row: VipTier) {
     description: row.description || '',
     status: row.status,
   })
-  modalVisible.value = true
 }
 
-// 删除
 async function handleDelete(id: number) {
   try {
     await vipApi.deleteTier(id)
     message.success('删除成功')
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '删除失败')
+    table.reload()
+  } catch (err: unknown) {
+    message.error((err as Error).message || '删除失败')
   }
-}
-
-// 保存
-async function handleSave() {
-  if (!formData.name || !formData.code) {
-    message.warning('请填写必填项')
-    return
-  }
-
-  modalLoading.value = true
-  try {
-    if (editingId.value) {
-      await vipApi.updateTier(editingId.value, formData as UpdateVipTierRequest)
-      message.success('更新成功')
-    } else {
-      await vipApi.createTier(formData as CreateVipTierRequest)
-      message.success('创建成功')
-    }
-    modalVisible.value = false
-    loadData()
-  } catch (err: any) {
-    message.error(err.message || '保存失败')
-  } finally {
-    modalLoading.value = false
-  }
-}
-
-// 分页
-function handlePageChange(p: number) {
-  page.value = p
-  loadData()
-}
-
-function handlePageSizeChange(ps: number) {
-  pageSize.value = ps
-  page.value = 1
-  loadData()
 }
 
 onMounted(() => {
   loadRoles()
-  loadData()
 })
 </script>
 
 <template>
   <div class="page-vip-tiers">
-    <PageTable
+    <CrudTable
       title="VIP等级管理"
       :columns="columns"
-      :data="data"
-      :loading="loading"
-      :pagination="{
-        page: page,
-        pageSize: pageSize,
-        pageCount: Math.ceil(total / pageSize),
-        showSizePicker: true,
-        pageSizes: [10, 20, 50, 100],
-        itemCount: total,
-      }"
-      @update:page="handlePageChange"
-      @update:page-size="handlePageSizeChange"
+      :data="table.data.value"
+      :loading="table.loading.value"
+      v-model:page="table.page.value"
+      v-model:page-size="table.pageSize.value"
+      :total="table.total.value"
+      @update:page="table.setPage"
+      @update:page-size="table.setPageSize"
     >
       <template #toolbar>
-        <SearchForm
-          v-model="searchParams"
+        <CrudSearch
+          v-model="table.query.value"
           :fields="searchFields"
-          :loading="loading"
-          @search="handleSearch"
-          @reset="handleReset"
+          :loading="table.loading.value"
+          @search="table.search"
+          @reset="table.reset"
         />
       </template>
 
       <template #header-extra>
-        <NButton type="primary" @click="handleAdd">新增VIP等级</NButton>
+        <NButton type="primary" @click="modal.open('新增VIP等级')">新增VIP等级</NButton>
       </template>
-    </PageTable>
+    </CrudTable>
 
-    <FormModal
-      v-model:show="modalVisible"
-      :title="modalTitle"
-      :loading="modalLoading"
-      @confirm="handleSave"
+    <CrudModal
+      v-model:show="modal.visible.value"
+      :title="modal.title.value"
+      :loading="modal.loading.value"
+      @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
         <NFormItem label="等级名称" required>
-          <NInput v-model:value="formData.name" placeholder="请输入等级名称，如：白银会员" />
+          <NInput v-model:value="modal.formData.name" placeholder="请输入等级名称，如：白银会员" />
         </NFormItem>
         <NFormItem label="等级编码" required>
-          <NInput v-model:value="formData.code" placeholder="请输入等级编码，如：silver" />
+          <NInput v-model:value="modal.formData.code" placeholder="请输入等级编码，如：silver" />
         </NFormItem>
         <NFormItem label="绑定角色">
           <NSelect
-            v-model:value="formData.roleId"
+            v-model:value="modal.formData.roleId"
             :options="roleOptions"
             placeholder="请选择绑定角色（可选）"
             clearable
@@ -309,7 +219,7 @@ onMounted(() => {
         </NFormItem>
         <NFormItem label="价格">
           <NInputNumber
-            v-model:value="formData.price"
+            v-model:value="modal.formData.price"
             :min="0"
             :precision="2"
             placeholder="请输入价格"
@@ -320,7 +230,7 @@ onMounted(() => {
         </NFormItem>
         <NFormItem label="有效期">
           <NInputNumber
-            v-model:value="formData.durationDays"
+            v-model:value="modal.formData.durationDays"
             :min="0"
             placeholder="0表示永久，否则为天数"
             style="width: 100%"
@@ -330,17 +240,17 @@ onMounted(() => {
         </NFormItem>
         <NFormItem label="描述">
           <NInput
-            v-model:value="formData.description"
+            v-model:value="modal.formData.description"
             type="textarea"
             placeholder="请输入描述"
             :rows="3"
           />
         </NFormItem>
         <NFormItem label="是否启用">
-          <NSwitch v-model:value="formData.status" :checked-value="1" :unchecked-value="0" />
+          <NSwitch v-model:value="modal.formData.status" :checked-value="1" :unchecked-value="0" />
         </NFormItem>
       </NForm>
-    </FormModal>
+    </CrudModal>
   </div>
 </template>
 

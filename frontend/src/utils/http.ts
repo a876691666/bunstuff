@@ -1,6 +1,15 @@
 import type { ApiResponse, PagedResponse } from '@/types'
+import { createDiscreteApi } from 'naive-ui'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+// 创建独立的消息 API（可在非 setup 环境中使用）
+const { message } = createDiscreteApi(['message'])
+
+/** 显示错误消息 */
+const showError = (msg: string) => {
+  message.error(msg, { duration: 3000 })
+}
 
 /** 分页结果（已解包） */
 export interface PageResult<T> {
@@ -48,13 +57,17 @@ class HttpClient {
     const json = await response.json()
 
     if (!response.ok) {
-      throw new Error(json.message || `HTTP ${response.status}`)
+      const errorMsg = json.message || `HTTP ${response.status}`
+      showError(errorMsg)
+      throw new Error(errorMsg)
     }
 
     // 自动解包 ApiResponse
     if (json && typeof json === 'object' && 'code' in json) {
       if (json.code !== 0 && json.code !== 200) {
-        throw new Error(json.message || '请求失败')
+        const errorMsg = json.message || '请求失败'
+        showError(errorMsg)
+        throw new Error(errorMsg)
       }
       return json.data as T
     }
@@ -111,13 +124,17 @@ class HttpClient {
     const json = await response.json()
 
     if (!response.ok) {
-      throw new Error(json.message || `HTTP ${response.status}`)
+      const errorMsg = json.message || `HTTP ${response.status}`
+      showError(errorMsg)
+      throw new Error(errorMsg)
     }
 
     // 处理分页响应
     if (json && typeof json === 'object' && 'code' in json) {
       if (json.code !== 0 && json.code !== 200) {
-        throw new Error(json.message || '请求失败')
+        const errorMsg = json.message || '请求失败'
+        showError(errorMsg)
+        throw new Error(errorMsg)
       }
       return {
         data: json.data as T[],

@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import RoleMenu from '@/models/role-menu'
 import type { RoleMenuInsert } from '@/models/role-menu'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -6,18 +6,25 @@ import { rbacCache } from '@/modules/rbac/main/cache'
 /** 角色菜单关联服务 */
 export class RoleMenuService {
   /** 获取所有角色菜单关联 */
-  async findAll(query?: { page?: number; pageSize?: number; roleId?: number; menuId?: number }) {
+  async findAll(query?: {
+    page?: number
+    pageSize?: number
+    filter?: string
+  }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // TODO: 添加过滤条件
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
     const data = await RoleMenu.findMany({
+      where: whereClause,
       limit: pageSize,
       offset,
     })
 
-    const total = await RoleMenu.count()
+    const total = await RoleMenu.count(whereClause)
 
     return {
       data,

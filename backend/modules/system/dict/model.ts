@@ -38,9 +38,7 @@ export const dictTypeIdParams = t.Object({
 export const dictTypeQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
   pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-  name: t.Optional(t.String({ description: '字典名称' })),
-  type: t.Optional(t.String({ description: '字典类型' })),
-  status: t.Optional(t.Numeric({ description: '状态' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })
 
 // ============ 字典数据模型 ============
@@ -96,9 +94,7 @@ export const dictDataIdParams = t.Object({
 export const dictDataQueryParams = t.Object({
   page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
   pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-  dictType: t.Optional(t.String({ description: '字典类型' })),
-  label: t.Optional(t.String({ description: '字典标签' })),
-  status: t.Optional(t.Numeric({ description: '状态' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })
 
 /** 字典类型路径参数 */

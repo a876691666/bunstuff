@@ -25,9 +25,7 @@ export const vipTierIdParams = t.Object({
 export const vipTierQueryParams = t.Object({
   page: t.Optional(t.Number({ description: '页码', minimum: 1, default: 1 })),
   pageSize: t.Optional(t.Number({ description: '每页数量', minimum: 1, default: 10 })),
-  name: t.Optional(t.String({ description: '按名称筛选' })),
-  code: t.Optional(t.String({ description: '按代码筛选' })),
-  status: t.Optional(t.Number({ description: '按状态筛选' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })
 
 /** VIP 等级创建请求模型 */
@@ -135,10 +133,7 @@ export const userVipIdParams = t.Object({
 export const userVipQueryParams = t.Object({
   page: t.Optional(t.Number({ description: '页码', minimum: 1, default: 1 })),
   pageSize: t.Optional(t.Number({ description: '每页数量', minimum: 1, default: 10 })),
-  userId: t.Optional(t.Number({ description: '按用户 ID 筛选' })),
-  vipTierId: t.Optional(t.Number({ description: '按 VIP 等级 ID 筛选' })),
-  status: t.Optional(t.Number({ description: '按状态筛选：1启用 0禁用' })),
-  bindingStatus: t.Optional(t.Number({ description: '按绑定状态筛选：0待确认 1已确认' })),
+  filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
 })
 
 /** 用户 ID 参数 */

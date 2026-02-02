@@ -32,9 +32,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       detail: {
         summary: '获取用户列表',
         description:
-          '分页获取用户列表，支持按用户名、昵称、状态、角色筛选\n\n🔐 **所需权限**: `user:list`',
+          '分页获取用户列表，支持按用户名、昵称、状态、角色筛选\n\n🔐 **所需权限**: `user:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['user:list'] } },
+        rbac: { scope: { permissions: ['user:admin:list'] } },
       },
     },
   )
@@ -57,9 +57,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       },
       detail: {
         summary: '获取用户详情',
-        description: '根据用户ID获取用户详细信息（不含密码）\n\n🔐 **所需权限**: `user:read`',
+        description: '根据用户ID获取用户详细信息（不含密码）\n\n🔐 **所需权限**: `user:admin:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['user:read'] } },
+        rbac: { scope: { permissions: ['user:admin:read'] } },
       },
     },
   )
@@ -82,9 +82,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       },
       detail: {
         summary: '创建用户',
-        description: '创建新用户，用户名必须唯一\n\n🔐 **所需权限**: `user:create`',
+        description: '创建新用户，用户名必须唯一\n\n🔐 **所需权限**: `user:admin:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['user:create'] } },
+        rbac: { scope: { permissions: ['user:admin:create'] } },
       },
     },
   )
@@ -107,9 +107,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       },
       detail: {
         summary: '更新用户',
-        description: '更新指定用户的信息，支持部分更新\n\n🔐 **所需权限**: `user:update`',
+        description: '更新指定用户的信息，支持部分更新\n\n🔐 **所需权限**: `user:admin:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['user:update'] } },
+        rbac: { scope: { permissions: ['user:admin:update'] } },
       },
     },
   )
@@ -131,9 +131,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       },
       detail: {
         summary: '删除用户',
-        description: '删除指定用户，此操作不可恢复\n\n🔐 **所需权限**: `user:delete`',
+        description: '删除指定用户，此操作不可恢复\n\n🔐 **所需权限**: `user:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['user:delete'] } },
+        rbac: { scope: { permissions: ['user:admin:delete'] } },
       },
     },
   )

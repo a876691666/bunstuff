@@ -59,10 +59,7 @@ export const userQueryParams = t.Object(
   {
     page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
     pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-    username: t.Optional(t.String({ description: '用户名（模糊搜索）' })),
-    nickname: t.Optional(t.String({ description: '昵称（模糊搜索）' })),
-    status: t.Optional(t.Numeric({ description: '状态筛选：1启用 0禁用' })),
-    roleId: t.Optional(t.Numeric({ description: '角色ID筛选' })),
+    filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
   },
   { description: '用户列表查询参数' },
 )

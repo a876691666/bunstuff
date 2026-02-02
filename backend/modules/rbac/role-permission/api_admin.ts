@@ -42,9 +42,9 @@ export const rolePermissionAdminController = new Elysia({
       detail: {
         summary: '获取角色权限关联列表',
         description:
-          '分页获取角色权限关联列表，支持按角色ID、权限ID、权限范围ID筛选\n\n🔐 **所需权限**: `role-permission:list`',
+          '分页获取角色权限关联列表，支持按角色ID、权限ID、权限范围ID筛选\n\n🔐 **所需权限**: `role-permission:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role-permission:list'] } },
+        rbac: { scope: { permissions: ['role-permission:admin:list'] } },
       },
     },
   )
@@ -64,9 +64,9 @@ export const rolePermissionAdminController = new Elysia({
       detail: {
         summary: '获取角色的权限ID列表',
         description:
-          '获取指定角色关联的所有权限ID，用于权限分配\n\n🔐 **所需权限**: `role-permission:list`',
+          '获取指定角色关联的所有权限ID，用于权限分配\n\n🔐 **所需权限**: `role-permission:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role-permission:list'] } },
+        rbac: { scope: { permissions: ['role-permission:admin:list'] } },
       },
     },
   )
@@ -87,9 +87,9 @@ export const rolePermissionAdminController = new Elysia({
       },
       detail: {
         summary: '获取角色权限关联详情',
-        description: '根据ID获取角色权限关联详细信息\n\n🔐 **所需权限**: `role-permission:read`',
+        description: '根据ID获取角色权限关联详细信息\n\n🔐 **所需权限**: `role-permission:admin:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role-permission:read'] } },
+        rbac: { scope: { permissions: ['role-permission:admin:read'] } },
       },
     },
   )
@@ -108,9 +108,9 @@ export const rolePermissionAdminController = new Elysia({
       },
       detail: {
         summary: '创建角色权限关联',
-        description: '为角色添加单个权限关联\n\n🔐 **所需权限**: `role-permission:create`',
+        description: '为角色添加单个权限关联\n\n🔐 **所需权限**: `role-permission:admin:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role-permission:create'] } },
+        rbac: { scope: { permissions: ['role-permission:admin:create'] } },
       },
     },
   )
@@ -133,9 +133,9 @@ export const rolePermissionAdminController = new Elysia({
       detail: {
         summary: '批量设置角色权限',
         description:
-          '批量设置角色的权限关联，会先删除原有关联再创建新的（全量更新）\n\n🔐 **所需权限**: `role-permission:batch`',
+          '批量设置角色的权限关联，会先删除原有关联再创建新的（全量更新）\n\n🔐 **所需权限**: `role-permission:admin:batch`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role-permission:batch'] } },
+        rbac: { scope: { permissions: ['role-permission:admin:batch'] } },
       },
     },
   )
@@ -157,9 +157,9 @@ export const rolePermissionAdminController = new Elysia({
       },
       detail: {
         summary: '删除角色权限关联',
-        description: '删除指定的角色权限关联\n\n🔐 **所需权限**: `role-permission:delete`',
+        description: '删除指定的角色权限关联\n\n🔐 **所需权限**: `role-permission:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role-permission:delete'] } },
+        rbac: { scope: { permissions: ['role-permission:admin:delete'] } },
       },
     },
   )

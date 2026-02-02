@@ -70,9 +70,7 @@ export const roleQueryParams = t.Object(
   {
     page: t.Optional(t.Numeric({ description: '页码', default: 1, minimum: 1 })),
     pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10, minimum: 1 })),
-    name: t.Optional(t.String({ description: '角色名称（模糊搜索）' })),
-    code: t.Optional(t.String({ description: '角色编码（模糊搜索）' })),
-    status: t.Optional(t.Numeric({ description: '状态筛选：1启用 0禁用' })),
+    filter: t.Optional(t.String({ description: 'SSQL过滤条件' })),
   },
   { description: '角色列表查询参数' },
 )

@@ -42,9 +42,9 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       response: { 200: PagedResponse(DictTypeSchema, '字典类型列表') },
       detail: {
         summary: '获取字典类型列表',
-        description: '分页获取字典类型列表\n\n🔐 **所需权限**: `dict:type:list`',
+        description: '分页获取字典类型列表\n\n🔐 **所需权限**: `dict:admin:type:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:type:list'] } },
+        rbac: { scope: { permissions: ['dict:admin:type:list'] } },
       },
     },
   )
@@ -62,7 +62,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '获取字典类型详情',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:type:read'] } },
+        rbac: { scope: { permissions: ['dict:admin:type:read'] } },
       },
     },
   )
@@ -81,7 +81,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '创建字典类型',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:type:create'] } },
+        rbac: { scope: { permissions: ['dict:admin:type:create'] } },
       },
     },
   )
@@ -105,7 +105,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '更新字典类型',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:type:update'] } },
+        rbac: { scope: { permissions: ['dict:admin:type:update'] } },
       },
     },
   )
@@ -124,7 +124,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '删除字典类型',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:type:delete'] } },
+        rbac: { scope: { permissions: ['dict:admin:type:delete'] } },
       },
     },
   )
@@ -142,7 +142,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '获取字典数据列表',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:data:list'] } },
+        rbac: { scope: { permissions: ['dict:admin:data:list'] } },
       },
     },
   )
@@ -160,7 +160,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '获取字典数据详情',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:data:read'] } },
+        rbac: { scope: { permissions: ['dict:admin:data:read'] } },
       },
     },
   )
@@ -177,7 +177,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '创建字典数据',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:data:create'] } },
+        rbac: { scope: { permissions: ['dict:admin:data:create'] } },
       },
     },
   )
@@ -197,7 +197,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '更新字典数据',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:data:update'] } },
+        rbac: { scope: { permissions: ['dict:admin:data:update'] } },
       },
     },
   )
@@ -216,7 +216,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       detail: {
         summary: '删除字典数据',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['dict:data:delete'] } },
+        rbac: { scope: { permissions: ['dict:admin:data:delete'] } },
       },
     },
   )

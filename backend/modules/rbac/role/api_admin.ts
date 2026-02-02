@@ -38,9 +38,9 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '获取角色列表',
-        description: '分页获取角色列表，支持按名称、编码、状态筛选\n\n🔐 **所需权限**: `role:list`',
+        description: '分页获取角色列表，支持按名称、编码、状态筛选\n\n🔐 **所需权限**: `role:admin:list`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:list'] } },
+        rbac: { scope: { permissions: ['role:admin:list'] } },
       },
     },
   )
@@ -58,9 +58,9 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '获取角色树',
-        description: '获取角色的树形结构，包含父子层级关系\n\n🔐 **所需权限**: `role:tree`',
+        description: '获取角色的树形结构，包含父子层级关系\n\n🔐 **所需权限**: `role:admin:tree`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:tree'] } },
+        rbac: { scope: { permissions: ['role:admin:tree'] } },
       },
     },
   )
@@ -81,9 +81,9 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '获取角色详情',
-        description: '根据角色ID获取角色详细信息\n\n🔐 **所需权限**: `role:read`',
+        description: '根据角色ID获取角色详细信息\n\n🔐 **所需权限**: `role:admin:read`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:read'] } },
+        rbac: { scope: { permissions: ['role:admin:read'] } },
       },
     },
   )
@@ -106,9 +106,9 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '创建角色',
-        description: '创建新角色，角色编码必须唯一\n\n🔐 **所需权限**: `role:create`',
+        description: '创建新角色，角色编码必须唯一\n\n🔐 **所需权限**: `role:admin:create`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:create'] } },
+        rbac: { scope: { permissions: ['role:admin:create'] } },
       },
     },
   )
@@ -137,9 +137,9 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '更新角色',
-        description: '更新指定角色的信息，支持部分更新\n\n🔐 **所需权限**: `role:update`',
+        description: '更新指定角色的信息，支持部分更新\n\n🔐 **所需权限**: `role:admin:update`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:update'] } },
+        rbac: { scope: { permissions: ['role:admin:update'] } },
       },
     },
   )
@@ -161,9 +161,9 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '删除角色',
-        description: '删除指定角色，此操作不可恢复\n\n🔐 **所需权限**: `role:delete`',
+        description: '删除指定角色，此操作不可恢复\n\n🔐 **所需权限**: `role:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:delete'] } },
+        rbac: { scope: { permissions: ['role:admin:delete'] } },
       },
     },
   )

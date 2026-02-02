@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+import { where, parse } from '@pkg/ssql'
 import DictType from '@/models/dict-type'
 import DictData from '@/models/dict-data'
 import type { DictTypeInsert, DictTypeUpdate } from '@/models/dict-type'
@@ -55,16 +55,17 @@ export class DictService {
   async findAllTypes(query?: {
     page?: number
     pageSize?: number
-    name?: string
-    type?: string
-    status?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    const data = await DictType.findMany({ limit: pageSize, offset })
-    const total = await DictType.count()
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
+
+    const data = await DictType.findMany({ where: whereClause, limit: pageSize, offset })
+    const total = await DictType.count(whereClause)
 
     return { data, total, page, pageSize }
   }
@@ -110,23 +111,21 @@ export class DictService {
   async findAllData(query?: {
     page?: number
     pageSize?: number
-    dictType?: string
-    label?: string
-    status?: number
+    filter?: string
   }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    let w = where()
-    if (query?.dictType) w = w.eq('dictType', query.dictType)
+    // 解析 ssql 过滤条件
+    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
 
     const data = await DictData.findMany({
-      where: w.isEmpty() ? undefined : w,
+      where: whereClause,
       limit: pageSize,
       offset,
     })
-    const total = await DictData.count(w.isEmpty() ? undefined : w)
+    const total = await DictData.count(whereClause)
 
     return { data, total, page, pageSize }
   }
