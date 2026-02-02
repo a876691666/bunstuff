@@ -1,3 +1,3 @@
-import { DB } from "../packages/orm";
+import { DB } from '../packages/orm'
 
-export const db = new DB("sqlite://myapp.db");
+export const db = new DB('sqlite://myapp.db')

@@ -90,7 +90,8 @@ export const rbacAdminApi = {
   getRoleMenus: (roleId: number) => http.get<MenuTree[]>(`/admin/rbac/roles/${roleId}/menus`),
 
   /** 获取角色菜单树 */
-  getRoleMenuTree: (roleId: number) => http.get<MenuTree[]>(`/admin/rbac/roles/${roleId}/menus/tree`),
+  getRoleMenuTree: (roleId: number) =>
+    http.get<MenuTree[]>(`/admin/rbac/roles/${roleId}/menus/tree`),
 
   // ============ 角色数据权限相关 ============
 
@@ -125,7 +126,8 @@ export const rbacAdminApi = {
     }),
 
   /** 获取用户菜单树 */
-  getUserMenuTree: (userId: number) => http.get<MenuTree[]>(`/admin/rbac/users/${userId}/menus/tree`),
+  getUserMenuTree: (userId: number) =>
+    http.get<MenuTree[]>(`/admin/rbac/users/${userId}/menus/tree`),
 
   /** 获取用户对指定表的数据权限 */
   getUserScopesForTable: (userId: number, tableName: string) =>

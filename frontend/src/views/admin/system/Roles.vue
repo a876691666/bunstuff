@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { shallowRef, onMounted, h, reactive } from 'vue'
-import { NButton, NTag, NSpace, useMessage, NForm, NFormItem, NInput, NSelect, NTreeSelect } from 'naive-ui'
+import {
+  NButton,
+  NTag,
+  NSpace,
+  useMessage,
+  NForm,
+  NFormItem,
+  NInput,
+  NSelect,
+  NTreeSelect,
+} from 'naive-ui'
 import type { DataTableColumns, TreeSelectOption } from 'naive-ui'
 import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
 import type { SearchFieldConfig } from '@/components'
@@ -54,14 +64,19 @@ const columns: DataTableColumns<Role> = [
   { title: '角色名称', key: 'name', width: 150 },
   { title: '角色编码', key: 'code', width: 150 },
   { title: '父角色ID', key: 'parentId', width: 100, render: (row) => row.parentId ?? '-' },
-  { title: '描述', key: 'description', ellipsis: { tooltip: true }, render: (row) => row.description || '-' },
+  {
+    title: '描述',
+    key: 'description',
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || '-',
+  },
   {
     title: '状态',
     key: 'status',
     width: 80,
     render: (row) =>
       h(NTag, { type: row.status === 1 ? 'success' : 'error', size: 'small' }, () =>
-        row.status === 1 ? '正常' : '禁用'
+        row.status === 1 ? '正常' : '禁用',
       ),
   },
   {
@@ -79,7 +94,7 @@ const columns: DataTableColumns<Role> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该角色吗？',

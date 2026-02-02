@@ -1,5 +1,5 @@
-import { column } from "./column";
-import type { ColumnBuilder, NumberColumnBuilder, SchemaDefinition } from "./types";
+import { column } from './column'
+import type { ColumnBuilder, NumberColumnBuilder, SchemaDefinition } from './types'
 
 /**
  * 基础 Schema 类
@@ -8,71 +8,71 @@ import type { ColumnBuilder, NumberColumnBuilder, SchemaDefinition } from "./typ
 export abstract class Schema {
   /** 获取 schema 定义 */
   static getDefinition(): SchemaDefinition {
-    const definition: SchemaDefinition = {};
-    const instance = new (this as any)();
-    
+    const definition: SchemaDefinition = {}
+    const instance = new (this as any)()
+
     for (const key of Object.keys(instance)) {
-      const value = instance[key];
-      if (value && typeof value === "object" && "_type" in value && "_config" in value) {
-        definition[key] = value;
+      const value = instance[key]
+      if (value && typeof value === 'object' && '_type' in value && '_config' in value) {
+        definition[key] = value
       }
     }
-    
-    return definition;
+
+    return definition
   }
 
   /** 便捷方法：创建自增主键 ID */
   protected static id(): NumberColumnBuilder<false> {
-    return column.number().primaryKey().autoIncrement();
+    return column.number().primaryKey().autoIncrement()
   }
 
   /** 便捷方法：创建字符串列 */
-  protected static string(defaultValue?: string): ColumnBuilder<"string", false> {
-    const col = column.string();
-    return defaultValue !== undefined ? col.default(defaultValue) : col;
+  protected static string(defaultValue?: string): ColumnBuilder<'string', false> {
+    const col = column.string()
+    return defaultValue !== undefined ? col.default(defaultValue) : col
   }
 
   /** 便捷方法：创建数字列 */
   protected static number(defaultValue?: number): NumberColumnBuilder<false> {
-    const col = column.number();
-    return defaultValue !== undefined ? col.default(defaultValue) : col;
+    const col = column.number()
+    return defaultValue !== undefined ? col.default(defaultValue) : col
   }
 
   /** 便捷方法：创建布尔列 */
-  protected static boolean(defaultValue?: boolean): ColumnBuilder<"boolean", false> {
-    const col = column.boolean();
-    return defaultValue !== undefined ? col.default(defaultValue) : col;
+  protected static boolean(defaultValue?: boolean): ColumnBuilder<'boolean', false> {
+    const col = column.boolean()
+    return defaultValue !== undefined ? col.default(defaultValue) : col
   }
 
   /** 便捷方法：创建日期列（默认当前时间） */
-  protected static date(defaultValue?: Date | (() => Date)): ColumnBuilder<"date", false> {
-    const col = column.date();
-    return defaultValue !== undefined ? col.default(defaultValue) : col.default(() => new Date());
+  protected static date(defaultValue?: Date | (() => Date)): ColumnBuilder<'date', false> {
+    const col = column.date()
+    return defaultValue !== undefined ? col.default(defaultValue) : col.default(() => new Date())
   }
 
   /** 便捷方法：创建创建时间列 */
-  protected static createdAt(): ColumnBuilder<"date", false> {
-    return column.date().default(() => new Date());
+  protected static createdAt(): ColumnBuilder<'date', false> {
+    return column.date().default(() => new Date())
   }
 
   /** 便捷方法：创建更新时间列 */
-  protected static updatedAt(): ColumnBuilder<"date", false> {
-    return column.date().default(() => new Date());
+  protected static updatedAt(): ColumnBuilder<'date', false> {
+    return column.date().default(() => new Date())
   }
 
   /** 便捷方法：创建状态列 (0-禁用 1-启用) */
   protected static status(defaultValue: number = 1): NumberColumnBuilder<false> {
-    return column.number().default(defaultValue);
+    return column.number().default(defaultValue)
   }
 
   /** 便捷方法：创建排序列 */
   protected static sort(defaultValue: number = 0): NumberColumnBuilder<false> {
-    return column.number().default(defaultValue);
+    return column.number().default(defaultValue)
   }
 
   /** 便捷方法：创建备注列 */
-  protected static remark(): ColumnBuilder<"string", true> {
-    return column.string().nullable().default(null);
+  protected static remark(): ColumnBuilder<'string', true> {
+    return column.string().nullable().default(null)
   }
 }
 
@@ -82,9 +82,9 @@ export abstract class Schema {
  */
 export abstract class TimestampSchema extends Schema {
   /** 创建时间 */
-  createdAt = Schema.createdAt();
+  createdAt = Schema.createdAt()
   /** 更新时间 */
-  updatedAt = Schema.updatedAt();
+  updatedAt = Schema.updatedAt()
 }
 
 /**
@@ -93,5 +93,5 @@ export abstract class TimestampSchema extends Schema {
  */
 export abstract class BaseSchema extends TimestampSchema {
   /** 备注 */
-  remark = Schema.remark();
+  remark = Schema.remark()
 }

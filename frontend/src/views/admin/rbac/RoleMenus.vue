@@ -26,7 +26,8 @@ function convertToTreeOptions(tree: MenuTree[]): TreeOption[] {
   return tree.map((item) => ({
     key: item.id,
     label: item.name,
-    children: item.children && item.children.length > 0 ? convertToTreeOptions(item.children) : undefined,
+    children:
+      item.children && item.children.length > 0 ? convertToTreeOptions(item.children) : undefined,
   }))
 }
 

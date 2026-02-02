@@ -22,21 +22,21 @@ import {
   isOrmIsNullCondition,
   isOrmIsNotNullCondition,
   isOrmBetweenCondition,
-} from "./types";
+} from './types'
 
 // ============ 值格式化 ============
 
 /** 将值格式化为 SSQL 字符串 */
 function formatValue(v: Value): string {
-  if (v === null) return "null";
-  if (typeof v === "boolean") return String(v);
-  if (typeof v === "string") return `'${v}'`;
-  return String(v);
+  if (v === null) return 'null'
+  if (typeof v === 'boolean') return String(v)
+  if (typeof v === 'string') return `'${v}'`
+  return String(v)
 }
 
 /** 将值数组格式化为 SSQL 字符串 */
 function formatValues(vals: Values): string {
-  return `[${vals.map(formatValue).join(", ")}]`;
+  return `[${vals.map(formatValue).join(', ')}]`
 }
 
 // ============ 字段表达式字符串化 ============
@@ -47,12 +47,12 @@ export function stringifyField(field: string, op: Op, value?: Value | Values): s
     case Op.In:
     case Op.NotIn:
     case Op.Between:
-      return `${field} ${op} ${formatValues(value as Values)}`;
+      return `${field} ${op} ${formatValues(value as Values)}`
     case Op.IsNull:
     case Op.NotNull:
-      return `${field} ${op}`;
+      return `${field} ${op}`
     default:
-      return `${field} ${op} ${formatValue(value as Value)}`;
+      return `${field} ${op} ${formatValue(value as Value)}`
   }
 }
 
@@ -61,58 +61,61 @@ export function stringifyField(field: string, op: Op, value?: Value | Values): s
 /** 将 OrmFieldCondition 转为 SSQL 字符串 */
 export function stringifyFieldCondition(field: string, condition: OrmFieldCondition): string {
   if (condition === null) {
-    return `${field} ${Op.IsNull}`;
+    return `${field} ${Op.IsNull}`
   }
 
-  if (typeof condition !== "object") {
-    return `${field} ${Op.Eq} ${formatValue(condition)}`;
+  if (typeof condition !== 'object') {
+    return `${field} ${Op.Eq} ${formatValue(condition)}`
   }
 
-  if (isOrmEqCondition(condition)) return `${field} ${Op.Eq} ${formatValue(condition.$eq)}`;
-  if (isOrmNeCondition(condition)) return `${field} ${Op.Neq} ${formatValue(condition.$ne)}`;
-  if (isOrmGtCondition(condition)) return `${field} ${Op.Gt} ${formatValue(condition.$gt)}`;
-  if (isOrmGteCondition(condition)) return `${field} ${Op.Gte} ${formatValue(condition.$gte)}`;
-  if (isOrmLtCondition(condition)) return `${field} ${Op.Lt} ${formatValue(condition.$lt)}`;
-  if (isOrmLteCondition(condition)) return `${field} ${Op.Lte} ${formatValue(condition.$lte)}`;
-  if (isOrmLikeCondition(condition)) return `${field} ${Op.Like} ${formatValue(condition.$like)}`;
-  if (isOrmNotLikeCondition(condition)) return `${field} ${Op.NotLike} ${formatValue(condition.$notLike)}`;
-  if (isOrmInCondition(condition)) return `${field} ${Op.In} ${formatValues(condition.$in)}`;
-  if (isOrmNotInCondition(condition)) return `${field} ${Op.NotIn} ${formatValues(condition.$notIn)}`;
-  if (isOrmIsNullCondition(condition)) return `${field} ${Op.IsNull}`;
-  if (isOrmIsNotNullCondition(condition)) return `${field} ${Op.NotNull}`;
-  if (isOrmBetweenCondition(condition)) return `${field} ${Op.Between} ${formatValues(condition.$between)}`;
+  if (isOrmEqCondition(condition)) return `${field} ${Op.Eq} ${formatValue(condition.$eq)}`
+  if (isOrmNeCondition(condition)) return `${field} ${Op.Neq} ${formatValue(condition.$ne)}`
+  if (isOrmGtCondition(condition)) return `${field} ${Op.Gt} ${formatValue(condition.$gt)}`
+  if (isOrmGteCondition(condition)) return `${field} ${Op.Gte} ${formatValue(condition.$gte)}`
+  if (isOrmLtCondition(condition)) return `${field} ${Op.Lt} ${formatValue(condition.$lt)}`
+  if (isOrmLteCondition(condition)) return `${field} ${Op.Lte} ${formatValue(condition.$lte)}`
+  if (isOrmLikeCondition(condition)) return `${field} ${Op.Like} ${formatValue(condition.$like)}`
+  if (isOrmNotLikeCondition(condition))
+    return `${field} ${Op.NotLike} ${formatValue(condition.$notLike)}`
+  if (isOrmInCondition(condition)) return `${field} ${Op.In} ${formatValues(condition.$in)}`
+  if (isOrmNotInCondition(condition))
+    return `${field} ${Op.NotIn} ${formatValues(condition.$notIn)}`
+  if (isOrmIsNullCondition(condition)) return `${field} ${Op.IsNull}`
+  if (isOrmIsNotNullCondition(condition)) return `${field} ${Op.NotNull}`
+  if (isOrmBetweenCondition(condition))
+    return `${field} ${Op.Between} ${formatValues(condition.$between)}`
 
-  return `${field} ${Op.Eq} ${formatValue(condition as Value)}`;
+  return `${field} ${Op.Eq} ${formatValue(condition as Value)}`
 }
 
 /** 将 OrmWhereCondition 转为 SSQL 字符串 */
 export function stringifyWhere(where: OrmWhereCondition): string {
-  const parts: string[] = [];
+  const parts: string[] = []
 
   for (const [key, value] of Object.entries(where)) {
-    if (value === undefined) continue;
+    if (value === undefined) continue
 
-    if (key === "$or" && Array.isArray(value)) {
-      const orParts = value.map((c) => stringifyWhere(c as OrmWhereCondition)).filter(Boolean);
+    if (key === '$or' && Array.isArray(value)) {
+      const orParts = value.map((c) => stringifyWhere(c as OrmWhereCondition)).filter(Boolean)
       if (orParts.length > 0) {
-        parts.push(orParts.length === 1 ? orParts[0]! : `(${orParts.join(" || ")})`);
+        parts.push(orParts.length === 1 ? orParts[0]! : `(${orParts.join(' || ')})`)
       }
-      continue;
+      continue
     }
 
-    if (key === "$and" && Array.isArray(value)) {
-      const andParts = value.map((c) => stringifyWhere(c as OrmWhereCondition)).filter(Boolean);
+    if (key === '$and' && Array.isArray(value)) {
+      const andParts = value.map((c) => stringifyWhere(c as OrmWhereCondition)).filter(Boolean)
       if (andParts.length > 0) {
-        parts.push(andParts.length === 1 ? andParts[0]! : `(${andParts.join(" && ")})`);
+        parts.push(andParts.length === 1 ? andParts[0]! : `(${andParts.join(' && ')})`)
       }
-      continue;
+      continue
     }
 
-    parts.push(stringifyFieldCondition(key, value as OrmFieldCondition));
+    parts.push(stringifyFieldCondition(key, value as OrmFieldCondition))
   }
 
-  if (parts.length === 0) return "";
-  if (parts.length === 1) return parts[0]!;
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0]!
 
-  return parts.join(" && ");
+  return parts.join(' && ')
 }

@@ -1,6 +1,6 @@
 /**
  * RBAC 模块统一导出
- * 
+ *
  * 包含子模块:
  * - main: RBAC核心功能 (权限检查/缓存)
  * - menu: 菜单管理
@@ -13,24 +13,24 @@
 
 // ============ Main 模块导出 ============
 // 控制器
-export { rbacAdminController } from "./main/api_admin";
-export { rbacController } from "./main/api_client";
+export { rbacAdminController } from './main/api_admin'
+export { rbacController } from './main/api_client'
 
 // 服务
-export { rbacService, RbacService } from "./main/service";
-export type { UserPermissionInfo, MenuTreeNode } from "./main/service";
+export { rbacService, RbacService } from './main/service'
+export type { UserPermissionInfo, MenuTreeNode } from './main/service'
 
 // 插件
-export { rbacPlugin } from "./main/plugin";
-export type { RbacScope, DataScope } from "./main/plugin";
+export { rbacPlugin } from './main/plugin'
+export type { RbacScope, DataScope } from './main/plugin'
 
 // 缓存
-export { rbacCache } from "./main/cache";
-export type { CachedRole, CachedPermission } from "./main/cache";
+export { rbacCache } from './main/cache'
+export type { CachedRole, CachedPermission } from './main/cache'
 
 // ============ Menu 模块导出 ============
-export { menuAdminController } from "./menu/api_admin";
-export { menuService, MenuService } from "./menu/service";
+export { menuAdminController } from './menu/api_admin'
+export { menuService, MenuService } from './menu/service'
 export {
   MenuSchema,
   MenuTreeSchema,
@@ -38,33 +38,33 @@ export {
   updateMenuBody,
   menuIdParams,
   menuQueryParams,
-} from "./menu/model";
+} from './menu/model'
 
 // ============ Permission 模块导出 ============
-export { permissionAdminController } from "./permission/api_admin";
-export { permissionService, PermissionService } from "./permission/service";
+export { permissionAdminController } from './permission/api_admin'
+export { permissionService, PermissionService } from './permission/service'
 export {
   PermissionSchema,
   createPermissionBody,
   updatePermissionBody,
   permissionIdParams,
   permissionQueryParams,
-} from "./permission/model";
+} from './permission/model'
 
 // ============ Permission-Scope 模块导出 ============
-export { permissionScopeAdminController } from "./permission-scope/api_admin";
-export { permissionScopeService, PermissionScopeService } from "./permission-scope/service";
+export { permissionScopeAdminController } from './permission-scope/api_admin'
+export { permissionScopeService, PermissionScopeService } from './permission-scope/service'
 export {
   PermissionScopeSchema,
   createPermissionScopeBody,
   updatePermissionScopeBody,
   permissionScopeIdParams,
   permissionScopeQueryParams,
-} from "./permission-scope/model";
+} from './permission-scope/model'
 
 // ============ Role 模块导出 ============
-export { roleAdminController } from "./role/api_admin";
-export { roleService, RoleService } from "./role/service";
+export { roleAdminController } from './role/api_admin'
+export { roleService, RoleService } from './role/service'
 export {
   RoleSchema,
   RoleTreeSchema,
@@ -72,11 +72,11 @@ export {
   updateRoleBody,
   roleIdParams,
   roleQueryParams,
-} from "./role/model";
+} from './role/model'
 
 // ============ Role-Menu 模块导出 ============
-export { roleMenuAdminController } from "./role-menu/api_admin";
-export { roleMenuService, RoleMenuService } from "./role-menu/service";
+export { roleMenuAdminController } from './role-menu/api_admin'
+export { roleMenuService, RoleMenuService } from './role-menu/service'
 export {
   RoleMenuSchema,
   createRoleMenuBody,
@@ -84,11 +84,11 @@ export {
   roleMenuIdParams,
   roleMenuQueryParams,
   roleIdParams as roleMenuRoleIdParams,
-} from "./role-menu/model";
+} from './role-menu/model'
 
 // ============ Role-Permission 模块导出 ============
-export { rolePermissionAdminController } from "./role-permission/api_admin";
-export { rolePermissionService, RolePermissionService } from "./role-permission/service";
+export { rolePermissionAdminController } from './role-permission/api_admin'
+export { rolePermissionService, RolePermissionService } from './role-permission/service'
 export {
   RolePermissionSchema,
   createRolePermissionBody,
@@ -96,7 +96,7 @@ export {
   rolePermissionIdParams,
   rolePermissionQueryParams,
   roleIdParams as rolePermissionRoleIdParams,
-} from "./role-permission/model";
+} from './role-permission/model'
 
 // 默认导出
-export { rbacController as default } from "./main/api_client";
+export { rbacController as default } from './main/api_client'

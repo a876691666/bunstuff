@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { shallowRef, onMounted, h, reactive } from 'vue'
-import { NButton, NSpace, useMessage, NForm, NFormItem, NInput, NInputNumber, NTreeSelect, NSwitch, NTag } from 'naive-ui'
+import {
+  NButton,
+  NSpace,
+  useMessage,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NTreeSelect,
+  NSwitch,
+  NTag,
+} from 'naive-ui'
 import type { DataTableColumns, TreeSelectOption } from 'naive-ui'
 import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
 import type { SearchFieldConfig } from '@/components'
@@ -64,21 +75,39 @@ const columns: DataTableColumns<Menu> = [
   { title: '菜单名称', key: 'name', width: 150 },
   { title: '菜单编码', key: 'code', width: 150 },
   { title: '类型', key: 'type', width: 80, render: getMenuTypeTag },
-  { title: '路径', key: 'path', width: 150, ellipsis: { tooltip: true }, render: (row) => row.path || '-' },
-  { title: '组件', key: 'component', width: 200, ellipsis: { tooltip: true }, render: (row) => row.component || '-' },
+  {
+    title: '路径',
+    key: 'path',
+    width: 150,
+    ellipsis: { tooltip: true },
+    render: (row) => row.path || '-',
+  },
+  {
+    title: '组件',
+    key: 'component',
+    width: 200,
+    ellipsis: { tooltip: true },
+    render: (row) => row.component || '-',
+  },
   { title: '图标', key: 'icon', width: 100, render: (row) => row.icon || '-' },
   { title: '排序', key: 'sort', width: 80 },
   {
     title: '隐藏',
     key: 'isHidden',
     width: 80,
-    render: (row) => h(NTag, { type: row.isHidden ? 'warning' : 'default', size: 'small' }, () => (row.isHidden ? '是' : '否')),
+    render: (row) =>
+      h(NTag, { type: row.isHidden ? 'warning' : 'default', size: 'small' }, () =>
+        row.isHidden ? '是' : '否',
+      ),
   },
   {
     title: '缓存',
     key: 'isCache',
     width: 80,
-    render: (row) => h(NTag, { type: row.isCache ? 'success' : 'default', size: 'small' }, () => (row.isCache ? '是' : '否')),
+    render: (row) =>
+      h(NTag, { type: row.isCache ? 'success' : 'default', size: 'small' }, () =>
+        row.isCache ? '是' : '否',
+      ),
   },
   {
     title: '操作',
@@ -95,7 +124,7 @@ const columns: DataTableColumns<Menu> = [
             type: 'primary',
             onClick: () => handleAddChild(row),
           },
-          () => '添加子菜单'
+          () => '添加子菜单',
         ),
         h(
           NButton,
@@ -105,7 +134,7 @@ const columns: DataTableColumns<Menu> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该菜单吗？子菜单也会被删除！',
@@ -121,7 +150,8 @@ function convertToTreeOptions(tree: MenuTree[]): TreeSelectOption[] {
     key: item.id,
     label: item.name,
     value: item.id,
-    children: item.children && item.children.length > 0 ? convertToTreeOptions(item.children) : undefined,
+    children:
+      item.children && item.children.length > 0 ? convertToTreeOptions(item.children) : undefined,
   }))
 }
 
@@ -335,13 +365,21 @@ onMounted(() => {
           <NInput v-model:value="formData.path" placeholder="请输入路由路径，如 /system/user" />
         </NFormItem>
         <NFormItem label="组件路径">
-          <NInput v-model:value="formData.component" placeholder="请输入组件路径，如 system/Users" />
+          <NInput
+            v-model:value="formData.component"
+            placeholder="请输入组件路径，如 system/Users"
+          />
         </NFormItem>
         <NFormItem label="菜单图标">
           <NInput v-model:value="formData.icon" placeholder="请输入图标名称" />
         </NFormItem>
         <NFormItem label="排序">
-          <NInputNumber v-model:value="formData.sort" :min="0" placeholder="数字越小越靠前" style="width: 100%" />
+          <NInputNumber
+            v-model:value="formData.sort"
+            :min="0"
+            placeholder="数字越小越靠前"
+            style="width: 100%"
+          />
         </NFormItem>
         <NFormItem label="是否隐藏">
           <NSwitch v-model:value="formData.isHidden" />

@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue'
-import {
-  NCard,
-  NDescriptions,
-  NDescriptionsItem,
-  NTag,
-  NSpin,
-} from 'naive-ui'
+import { NCard, NDescriptions, NDescriptionsItem, NTag, NSpin } from 'naive-ui'
 import { useAuthStore } from '@/stores'
 
 const authStore = useAuthStore()

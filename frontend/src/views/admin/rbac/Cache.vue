@@ -1,6 +1,19 @@
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue'
-import { NButton, NSpace, useMessage, NCard, NGrid, NGi, NStatistic, NDescriptions, NDescriptionsItem, NSpin, NAlert, NEmpty } from 'naive-ui'
+import {
+  NButton,
+  NSpace,
+  useMessage,
+  NCard,
+  NGrid,
+  NGi,
+  NStatistic,
+  NDescriptions,
+  NDescriptionsItem,
+  NSpin,
+  NAlert,
+  NEmpty,
+} from 'naive-ui'
 import { rbacAdminApi } from '@/api'
 
 const message = useMessage()
@@ -92,17 +105,17 @@ onMounted(() => {
         <div v-if="cacheStatus">
           <NDescriptions label-placement="left" :column="2">
             <NDescriptionsItem label="最后更新时间">
-              {{ cacheStatus.lastUpdated ? new Date(cacheStatus.lastUpdated).toLocaleString() : '未知' }}
+              {{
+                cacheStatus.lastUpdated
+                  ? new Date(cacheStatus.lastUpdated).toLocaleString()
+                  : '未知'
+              }}
             </NDescriptionsItem>
-            <NDescriptionsItem label="角色缓存">
-              {{ cacheStatus.roleCount }} 条
-            </NDescriptionsItem>
+            <NDescriptionsItem label="角色缓存"> {{ cacheStatus.roleCount }} 条 </NDescriptionsItem>
             <NDescriptionsItem label="权限缓存">
               {{ cacheStatus.permissionCount }} 条
             </NDescriptionsItem>
-            <NDescriptionsItem label="菜单缓存">
-              {{ cacheStatus.menuCount }} 条
-            </NDescriptionsItem>
+            <NDescriptionsItem label="菜单缓存"> {{ cacheStatus.menuCount }} 条 </NDescriptionsItem>
             <NDescriptionsItem label="数据权限缓存">
               {{ cacheStatus.scopeCount }} 条
             </NDescriptionsItem>

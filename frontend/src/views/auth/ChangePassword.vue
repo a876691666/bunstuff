@@ -1,14 +1,7 @@
 <script setup lang="ts">
 import { shallowRef, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  NCard,
-  NForm,
-  NFormItem,
-  NInput,
-  NButton,
-  useMessage,
-} from 'naive-ui'
+import { NCard, NForm, NFormItem, NInput, NButton, useMessage } from 'naive-ui'
 import { authApi } from '@/api'
 import { useAuthStore } from '@/stores'
 
@@ -85,9 +78,7 @@ async function handleSubmit() {
         />
       </NFormItem>
       <NFormItem>
-        <NButton type="primary" :loading="loading" @click="handleSubmit">
-          确认修改
-        </NButton>
+        <NButton type="primary" :loading="loading" @click="handleSubmit"> 确认修改 </NButton>
       </NFormItem>
     </NForm>
   </NCard>

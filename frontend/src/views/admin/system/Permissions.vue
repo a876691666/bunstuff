@@ -44,7 +44,12 @@ const columns: DataTableColumns<Permission> = [
   { title: '权限名称', key: 'name', width: 150 },
   { title: '权限编码', key: 'code', width: 200 },
   { title: '资源标识', key: 'resource', width: 150, render: (row) => row.resource || '-' },
-  { title: '描述', key: 'description', ellipsis: { tooltip: true }, render: (row) => row.description || '-' },
+  {
+    title: '描述',
+    key: 'description',
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || '-',
+  },
   {
     title: '操作',
     key: 'actions',
@@ -60,7 +65,7 @@ const columns: DataTableColumns<Permission> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该权限吗？',

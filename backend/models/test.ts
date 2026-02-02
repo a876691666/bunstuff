@@ -1,5 +1,5 @@
-import { where } from "../packages/ssql";
-import Role from "./role";
+import { where } from '../packages/ssql'
+import Role from './role'
 
 // await Role.create({
 //   parentId: null,
@@ -12,7 +12,7 @@ import Role from "./role";
 
 // 或使用 SSQL 字符串
 Role.findMany({
-  where: where().eq("name", "tester"),
+  where: where().eq('name', 'tester'),
 }).then((ress) => {
-  console.log(ress);
-});
+  console.log(ress)
+})

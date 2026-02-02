@@ -5,7 +5,12 @@ import type { DataTableColumns } from 'naive-ui'
 import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
 import type { SearchFieldConfig } from '@/components'
 import { permissionScopeApi, permissionApi } from '@/api'
-import type { PermissionScope, Permission, CreatePermissionScopeRequest, UpdatePermissionScopeRequest } from '@/types'
+import type {
+  PermissionScope,
+  Permission,
+  CreatePermissionScopeRequest,
+  UpdatePermissionScopeRequest,
+} from '@/types'
 
 const message = useMessage()
 
@@ -54,7 +59,12 @@ const columns: DataTableColumns<PermissionScope> = [
   { title: '规则名称', key: 'name', width: 150 },
   { title: '表名', key: 'tableName', width: 150 },
   { title: 'SSQL规则', key: 'ssqlRule', width: 200, ellipsis: { tooltip: true } },
-  { title: '描述', key: 'description', ellipsis: { tooltip: true }, render: (row) => row.description || '-' },
+  {
+    title: '描述',
+    key: 'description',
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || '-',
+  },
   {
     title: '操作',
     key: 'actions',
@@ -70,7 +80,7 @@ const columns: DataTableColumns<PermissionScope> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该数据权限吗？',

@@ -20,7 +20,9 @@ async function loadStats() {
     // 并行加载多个统计数据
     const [onlineStats, cacheStatus] = await Promise.all([
       authAdminApi.getOnlineStats().catch(() => ({ onlineUsers: 0, totalSessions: 0 })),
-      rbacAdminApi.getCacheStatus().catch(() => ({ roleCount: 0, permissionCount: 0, menuCount: 0, scopeCount: 0 })),
+      rbacAdminApi
+        .getCacheStatus()
+        .catch(() => ({ roleCount: 0, permissionCount: 0, menuCount: 0, scopeCount: 0 })),
     ])
 
     stats.value = {

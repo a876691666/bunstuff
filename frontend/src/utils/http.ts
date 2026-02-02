@@ -29,10 +29,7 @@ class HttpClient {
     return this.token
   }
 
-  private async request<T>(
-    url: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -82,10 +79,7 @@ class HttpClient {
     return this.request<T>(`${url}${queryString}`, { method: 'GET' })
   }
 
-  async getPage<T>(
-    url: string,
-    params?: Record<string, unknown>
-  ): Promise<PageResult<T>> {
+  async getPage<T>(url: string, params?: Record<string, unknown>): Promise<PageResult<T>> {
     let queryString = ''
     if (params) {
       const searchParams = new URLSearchParams()

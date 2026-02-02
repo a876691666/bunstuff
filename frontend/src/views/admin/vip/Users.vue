@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { shallowRef, onMounted, h, reactive } from 'vue'
-import { NButton, NSpace, useMessage, NForm, NFormItem, NSelect, NTag, NDescriptions, NDescriptionsItem, NCard, NDrawer, NDrawerContent, NEmpty } from 'naive-ui'
+import {
+  NButton,
+  NSpace,
+  useMessage,
+  NForm,
+  NFormItem,
+  NSelect,
+  NTag,
+  NDescriptions,
+  NDescriptionsItem,
+  NCard,
+  NDrawer,
+  NDrawerContent,
+  NEmpty,
+} from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
 import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
 import type { SearchFieldConfig } from '@/components'
@@ -38,9 +52,7 @@ const currentUser = shallowRef<UserVip | null>(null)
 const resourceUsage = shallowRef<UserResourceUsageInfo[]>([])
 
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [
-  { key: 'userId', label: '用户ID', type: 'input' },
-]
+const searchFields: SearchFieldConfig[] = [{ key: 'userId', label: '用户ID', type: 'input' }]
 
 // 表格列定义
 const columns: DataTableColumns<UserVip> = [
@@ -63,10 +75,8 @@ const columns: DataTableColumns<UserVip> = [
         return h(NTag, { type: 'success' }, () => '永久')
       }
       const expired = new Date(row.expireTime) < new Date()
-      return h(
-        NTag,
-        { type: expired ? 'error' : 'default' },
-        () => new Date(row.expireTime!).toLocaleString()
+      return h(NTag, { type: expired ? 'error' : 'default' }, () =>
+        new Date(row.expireTime!).toLocaleString(),
       )
     },
   },
@@ -76,7 +86,7 @@ const columns: DataTableColumns<UserVip> = [
     width: 100,
     render: (row) =>
       h(NTag, { type: row.bindingStatus === 1 ? 'success' : 'warning' }, () =>
-        row.bindingStatus === 1 ? '已确认' : '待确认'
+        row.bindingStatus === 1 ? '已确认' : '待确认',
       ),
   },
   {
@@ -106,7 +116,7 @@ const columns: DataTableColumns<UserVip> = [
             type: 'primary',
             onClick: () => handleViewDetail(row),
           },
-          () => '资源详情'
+          () => '资源详情',
         ),
         row.bindingStatus === 0
           ? h(
@@ -117,7 +127,7 @@ const columns: DataTableColumns<UserVip> = [
                 type: 'success',
                 onClick: () => handleConfirmBinding(row.id, true),
               },
-              () => '确认绑定'
+              () => '确认绑定',
             )
           : null,
         h(
@@ -128,7 +138,7 @@ const columns: DataTableColumns<UserVip> = [
             type: 'info',
             onClick: () => handleUpgrade(row),
           },
-          () => '变更'
+          () => '变更',
         ),
         h(ConfirmButton, {
           title: '确定要取消该用户的VIP吗？',
@@ -378,7 +388,11 @@ onMounted(() => {
                 </NTag>
               </NDescriptionsItem>
               <NDescriptionsItem label="到期时间">
-                {{ currentUser.expireTime ? new Date(currentUser.expireTime).toLocaleString() : '永久' }}
+                {{
+                  currentUser.expireTime
+                    ? new Date(currentUser.expireTime).toLocaleString()
+                    : '永久'
+                }}
               </NDescriptionsItem>
               <NDescriptionsItem label="绑定状态">
                 <NTag :type="currentUser.bindingStatus === 1 ? 'success' : 'warning'">

@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue'
-import { NButton, NSpace, useMessage, NCard, NSpin, NEmpty, NTag, NAlert, NCheckbox } from 'naive-ui'
+import {
+  NButton,
+  NSpace,
+  useMessage,
+  NCard,
+  NSpin,
+  NEmpty,
+  NTag,
+  NAlert,
+  NCheckbox,
+} from 'naive-ui'
 import { roleApi, permissionApi, rolePermissionApi } from '@/api'
 import type { Role, Permission } from '@/types'
 
@@ -193,7 +203,11 @@ onMounted(() => {
             <NEmpty description="请先选择左侧角色" />
           </div>
           <div v-else class="permission-groups">
-            <div v-for="(perms, module) in getPermissionGroups()" :key="module" class="permission-group">
+            <div
+              v-for="(perms, module) in getPermissionGroups()"
+              :key="module"
+              class="permission-group"
+            >
               <div class="group-header">
                 <NCheckbox
                   :checked="isModuleAllChecked(perms)"
@@ -224,7 +238,10 @@ onMounted(() => {
                 </NCheckbox>
               </div>
             </div>
-            <NEmpty v-if="Object.keys(getPermissionGroups()).length === 0" description="暂无权限数据" />
+            <NEmpty
+              v-if="Object.keys(getPermissionGroups()).length === 0"
+              description="暂无权限数据"
+            />
           </div>
         </NSpin>
 

@@ -1,11 +1,26 @@
 <script setup lang="ts">
 import { shallowRef, onMounted, h, reactive } from 'vue'
-import { NButton, NSpace, useMessage, NForm, NFormItem, NInput, NInputNumber, NSelect, NTag } from 'naive-ui'
+import {
+  NButton,
+  NSpace,
+  useMessage,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NTag,
+} from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
 import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
 import type { SearchFieldConfig } from '@/components'
 import { vipApi } from '@/api'
-import type { VipResourceLimit, VipTier, CreateVipResourceLimitRequest, UpdateVipResourceLimitRequest } from '@/types'
+import type {
+  VipResourceLimit,
+  VipTier,
+  CreateVipResourceLimitRequest,
+  UpdateVipResourceLimitRequest,
+} from '@/types'
 
 const message = useMessage()
 
@@ -33,9 +48,7 @@ const formData = reactive<CreateVipResourceLimitRequest & { id?: number }>({
 })
 
 // 搜索字段配置
-const searchFields: SearchFieldConfig[] = [
-  { key: 'resourceKey', label: '资源键', type: 'input' },
-]
+const searchFields: SearchFieldConfig[] = [{ key: 'resourceKey', label: '资源键', type: 'input' }]
 
 // 表格列定义
 const columns: DataTableColumns<VipResourceLimit> = [
@@ -54,9 +67,15 @@ const columns: DataTableColumns<VipResourceLimit> = [
     title: '限制值',
     key: 'limitValue',
     width: 100,
-    render: (row) => (row.limitValue === -1 ? h(NTag, { type: 'success' }, () => '无限') : row.limitValue),
+    render: (row) =>
+      row.limitValue === -1 ? h(NTag, { type: 'success' }, () => '无限') : row.limitValue,
   },
-  { title: '描述', key: 'description', ellipsis: { tooltip: true }, render: (row) => row.description || '-' },
+  {
+    title: '描述',
+    key: 'description',
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || '-',
+  },
   {
     title: '操作',
     key: 'actions',
@@ -72,7 +91,7 @@ const columns: DataTableColumns<VipResourceLimit> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该资源限制吗？',
@@ -273,7 +292,10 @@ onMounted(async () => {
           />
         </NFormItem>
         <NFormItem label="资源键" required>
-          <NInput v-model:value="formData.resourceKey" placeholder="请输入资源键，如：scene:create" />
+          <NInput
+            v-model:value="formData.resourceKey"
+            placeholder="请输入资源键，如：scene:create"
+          />
         </NFormItem>
         <NFormItem label="限制值">
           <NInputNumber

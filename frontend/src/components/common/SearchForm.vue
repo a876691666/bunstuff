@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  NButton,
-  NSpace,
-  NForm,
-  NFormItem,
-  NInput,
-  NSelect,
-  NInputNumber,
-} from 'naive-ui'
+import { NButton, NSpace, NForm, NFormItem, NInput, NSelect, NInputNumber } from 'naive-ui'
 import type { SelectOption } from 'naive-ui'
 import { shallowRef, type PropType } from 'vue'
 
@@ -74,11 +66,7 @@ const visibleFields = () => {
 
 <template>
   <NForm inline label-placement="left" :show-feedback="false">
-    <NFormItem
-      v-for="field in visibleFields()"
-      :key="field.key"
-      :label="field.label"
-    >
+    <NFormItem v-for="field in visibleFields()" :key="field.key" :label="field.label">
       <NInput
         v-if="!field.type || field.type === 'input'"
         :value="modelValue[field.key]"
@@ -110,15 +98,9 @@ const visibleFields = () => {
 
     <NFormItem>
       <NSpace>
-        <NButton type="primary" :loading="loading" @click="handleSearch">
-          查询
-        </NButton>
+        <NButton type="primary" :loading="loading" @click="handleSearch"> 查询 </NButton>
         <NButton @click="handleReset">重置</NButton>
-        <NButton
-          v-if="fields.length > 3"
-          text
-          @click="toggleCollapse"
-        >
+        <NButton v-if="fields.length > 3" text @click="toggleCollapse">
           {{ collapsed ? '展开' : '收起' }}
         </NButton>
       </NSpace>

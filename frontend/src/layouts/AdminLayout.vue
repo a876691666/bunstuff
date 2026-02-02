@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { NLayout, NLayoutHeader, NLayoutSider, NLayoutContent, NMenu, NDropdown, NAvatar, NIcon, NBreadcrumb, NBreadcrumbItem, NSpace } from 'naive-ui'
+import {
+  NLayout,
+  NLayoutHeader,
+  NLayoutSider,
+  NLayoutContent,
+  NMenu,
+  NDropdown,
+  NAvatar,
+  NIcon,
+  NBreadcrumb,
+  NBreadcrumbItem,
+  NSpace,
+} from 'naive-ui'
 import { h, shallowRef, type Component } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores'
@@ -83,7 +95,7 @@ const sideMenuOptions = (): MenuOption[] => {
   if (authStore.menuTree.length > 0) {
     return convertMenuTree(authStore.menuTree)
   }
-  
+
   // 默认菜单
   return [
     {
@@ -226,7 +238,7 @@ async function handleUserDropdownSelect(key: string) {
 // 面包屑
 const breadcrumbs = () => {
   const items: { label: string; path?: string }[] = [{ label: '首页', path: '/dashboard' }]
-  
+
   const matched = route.matched
   for (const record of matched) {
     if (record.meta.title) {
@@ -236,7 +248,7 @@ const breadcrumbs = () => {
       })
     }
   }
-  
+
   return items
 }
 </script>
@@ -258,10 +270,7 @@ const breadcrumbs = () => {
         />
       </div>
       <div class="header-right">
-        <NDropdown
-          :options="userDropdownOptions"
-          @select="handleUserDropdownSelect"
-        >
+        <NDropdown :options="userDropdownOptions" @select="handleUserDropdownSelect">
           <NSpace align="center" class="user-info">
             <NAvatar round size="small">
               {{ authStore.user?.username?.charAt(0)?.toUpperCase() || 'U' }}
@@ -298,10 +307,7 @@ const breadcrumbs = () => {
       <NLayoutContent class="content" content-style="padding: 24px;">
         <!-- 面包屑 -->
         <NBreadcrumb class="breadcrumb">
-          <NBreadcrumbItem
-            v-for="(item, index) in breadcrumbs()"
-            :key="index"
-          >
+          <NBreadcrumbItem v-for="(item, index) in breadcrumbs()" :key="index">
             <router-link v-if="item.path && index < breadcrumbs().length - 1" :to="item.path">
               {{ item.label }}
             </router-link>

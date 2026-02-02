@@ -1,11 +1,5 @@
 import { http } from '@/utils'
-import type {
-  Role,
-  RoleTree,
-  CreateRoleRequest,
-  UpdateRoleRequest,
-  PageParams,
-} from '@/types'
+import type { Role, RoleTree, CreateRoleRequest, UpdateRoleRequest, PageParams } from '@/types'
 
 export interface RoleQueryParams extends PageParams {
   name?: string
@@ -17,7 +11,8 @@ export interface RoleQueryParams extends PageParams {
 /** 管理端角色 API（路径前缀: /api/admin/role） */
 export const roleApi = {
   /** 获取角色列表 */
-  list: (params?: RoleQueryParams) => http.getPage<Role>('/admin/role', params as Record<string, unknown>),
+  list: (params?: RoleQueryParams) =>
+    http.getPage<Role>('/admin/role', params as Record<string, unknown>),
 
   /** 获取角色树 */
   tree: () => http.get<RoleTree[]>('/admin/role/tree'),

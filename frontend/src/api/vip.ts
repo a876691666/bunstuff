@@ -33,7 +33,8 @@ export const vipApi = {
   // ============ VIP 等级管理 ============
 
   /** 获取 VIP 等级列表 */
-  listTiers: (params?: VipTierQueryParams) => http.getPage<VipTier>('/admin/vip/tier', params as Record<string, unknown>),
+  listTiers: (params?: VipTierQueryParams) =>
+    http.getPage<VipTier>('/admin/vip/tier', params as Record<string, unknown>),
 
   /** 获取 VIP 等级详情 */
   getTier: (id: number) => http.get<VipTier>(`/admin/vip/tier/${id}`),

@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.output/
+
+# Cache
+.cache/
+*.tsbuildinfo
+
+# Logs
+*.log
+
+# Temp files
+temp/
+
+# IDE
+.vscode/
+.idea/
+
+# Package manager
+pnpm-lock.yaml
+bun.lockb
+package-lock.json
+yarn.lock

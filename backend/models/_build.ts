@@ -1,6 +1,6 @@
 Bun.build({
-	entrypoints: ["./test.ts"],
-	outdir: "./dist",
-	minify: true,
-	compile	: true,	
+  entrypoints: ['./test.ts'],
+  outdir: './dist',
+  minify: true,
+  compile: true,
 })

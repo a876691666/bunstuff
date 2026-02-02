@@ -2,26 +2,26 @@
  * Seeds 注册入口
  * 在此处注册所有的 Seed 定义
  */
-import { seedService } from "./service";
+import { seedService } from './service'
 
 // 导入所有 Seed 定义
-import roleSeed from "@/models/role/seed";
-import permissionSeed from "@/models/permission/seed";
-import menuSeed from "@/models/menu/seed";
-import userSeed from "@/models/users/seed";
-import rolePermissionSeed from "@/models/role-permission/seed";
-import roleMenuSeed from "@/models/role-menu/seed";
-import permissionScopeSeed from "@/models/permission-scope/seed";
-import vipTierSeed from "@/models/vip-tier/seed";
-import vipResourceLimitSeed from "@/models/vip-resource-limit/seed";
+import roleSeed from '@/models/role/seed'
+import permissionSeed from '@/models/permission/seed'
+import menuSeed from '@/models/menu/seed'
+import userSeed from '@/models/users/seed'
+import rolePermissionSeed from '@/models/role-permission/seed'
+import roleMenuSeed from '@/models/role-menu/seed'
+import permissionScopeSeed from '@/models/permission-scope/seed'
+import vipTierSeed from '@/models/vip-tier/seed'
+import vipResourceLimitSeed from '@/models/vip-resource-limit/seed'
 
 // System 模块 Seeds
-import { dictTypeSeed } from "@/models/dict-type/seed";
-import { dictDataSeed } from "@/models/dict-data/seed";
-import { sysConfigSeed } from "@/models/sys-config/seed";
+import { dictTypeSeed } from '@/models/dict-type/seed'
+import { dictDataSeed } from '@/models/dict-data/seed'
+import { sysConfigSeed } from '@/models/sys-config/seed'
 
 // Notice 模块 Seeds
-import { noticeSeed } from "@/models/notice/seed";
+import { noticeSeed } from '@/models/notice/seed'
 
 /**
  * 注册所有 Seeds
@@ -57,9 +57,9 @@ export function registerSeeds() {
     sysConfigSeed,
     // Notice 模块
     noticeSeed,
-  ]);
+  ])
 
-  console.log("✅ Seeds registered");
+  console.log('✅ Seeds registered')
 }
 
-export { seedService };
+export { seedService }

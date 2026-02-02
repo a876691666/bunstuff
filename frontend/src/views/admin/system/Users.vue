@@ -76,7 +76,7 @@ const columns: DataTableColumns<User> = [
     width: 80,
     render: (row) =>
       h(NTag, { type: row.status === 1 ? 'success' : 'error', size: 'small' }, () =>
-        row.status === 1 ? '正常' : '禁用'
+        row.status === 1 ? '正常' : '禁用',
       ),
   },
   {
@@ -94,7 +94,7 @@ const columns: DataTableColumns<User> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该用户吗？',

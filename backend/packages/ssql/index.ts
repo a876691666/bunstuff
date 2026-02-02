@@ -1,15 +1,23 @@
 // ============ 类型导出 ============
-export type { Value, Values, SQLResult, Token, Dialect, OrmFieldCondition, OrmWhereCondition } from "./types";
-export { Op, Logic, TokenType } from "./types";
+export type {
+  Value,
+  Values,
+  SQLResult,
+  Token,
+  Dialect,
+  OrmFieldCondition,
+  OrmWhereCondition,
+} from './types'
+export { Op, Logic, TokenType } from './types'
 
 // ============ 表达式导出 ============
-export { FieldExpr, LogicExpr, GroupExpr, type Expression } from "./expression";
+export { FieldExpr, LogicExpr, GroupExpr, type Expression } from './expression'
 
 // ============ 方言导出 ============
-export { mysql, postgres, sqlite, getDialect, getDialectFromConnection } from "./dialect";
+export { mysql, postgres, sqlite, getDialect, getDialectFromConnection } from './dialect'
 
 // ============ 序列化导出 (对象 -> SSQL 字符串) ============
-export { stringifyField, stringifyFieldCondition, stringifyWhere } from "./stringify";
+export { stringifyField, stringifyFieldCondition, stringifyWhere } from './stringify'
 
 // ============ 编译导出 (对象 -> 数据库 SQL) ============
 export {
@@ -20,40 +28,40 @@ export {
   compileWhere,
   compileWhereRaw,
   compileWhereToSQL,
-} from "./compile";
+} from './compile'
 
 // ============ 解析导出 (SSQL 字符串 -> 对象) ============
-export { parse } from "./parser";
+export { parse } from './parser'
 
 // ============ 构建器导出 ============
-export { Builder, where, whereOr } from "./builder";
+export { Builder, where, whereOr } from './builder'
 
 // ============ 便捷函数 ============
-import { parse } from "./parser";
-import { mysql, postgres, sqlite } from "./dialect";
-import { compileWhereRaw as buildWhereInternal } from "./compile";
-import { stringifyWhere } from "./stringify";
-import type { Dialect, SQLResult, OrmWhereCondition } from "./types";
+import { parse } from './parser'
+import { mysql, postgres, sqlite } from './dialect'
+import { compileWhereRaw as buildWhereInternal } from './compile'
+import { stringifyWhere } from './stringify'
+import type { Dialect, SQLResult, OrmWhereCondition } from './types'
 
 /**
  * 将 SSQL 字符串解析并编译为数据库 SQL
  * @example toSQL("name = 'test' && age > 18", mysql)
  */
 export function toSQL(ssql: string, dialect: Dialect = mysql): SQLResult {
-  const expr = parse(ssql);
-  return expr ? expr.toSQL(dialect) : ["", "", []];
+  const expr = parse(ssql)
+  return expr ? expr.toSQL(dialect) : ['', '', []]
 }
 
 export function toMySQL(ssql: string): SQLResult {
-  return toSQL(ssql, mysql);
+  return toSQL(ssql, mysql)
 }
 
 export function toPostgres(ssql: string): SQLResult {
-  return toSQL(ssql, postgres);
+  return toSQL(ssql, postgres)
 }
 
 export function toSQLite(ssql: string): SQLResult {
-  return toSQL(ssql, sqlite);
+  return toSQL(ssql, sqlite)
 }
 
 /**
@@ -61,8 +69,8 @@ export function toSQLite(ssql: string): SQLResult {
  * @example toWhere("name = 'test'") // { name: 'test' }
  */
 export function toWhere(ssql: string): OrmWhereCondition {
-  const expr = parse(ssql);
-  return expr ? expr.toWhere() : {};
+  const expr = parse(ssql)
+  return expr ? expr.toWhere() : {}
 }
 
 /**
@@ -70,7 +78,7 @@ export function toWhere(ssql: string): OrmWhereCondition {
  * @example buildWhere(mysql, { name: 'test' }) // "`name` = 'test'"
  */
 export function buildWhere(dialect: Dialect, condition: OrmWhereCondition): string {
-  return buildWhereInternal(dialect, condition);
+  return buildWhereInternal(dialect, condition)
 }
 
 /**
@@ -78,5 +86,5 @@ export function buildWhere(dialect: Dialect, condition: OrmWhereCondition): stri
  * @example toSSQL({ name: 'test', age: { $gt: 18 } }) // "name = 'test' && age > 18"
  */
 export function toSSQL(condition: OrmWhereCondition): string {
-  return stringifyWhere(condition);
+  return stringifyWhere(condition)
 }

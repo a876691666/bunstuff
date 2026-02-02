@@ -10,7 +10,8 @@ export interface RoleMenuQueryParams extends PageParams {
 /** 管理端角色菜单 API（路径前缀: /api/admin/role-menu） */
 export const roleMenuApi = {
   /** 获取角色菜单关联列表 */
-  list: (params?: RoleMenuQueryParams) => http.getPage<RoleMenu>('/admin/role-menu', params as Record<string, unknown>),
+  list: (params?: RoleMenuQueryParams) =>
+    http.getPage<RoleMenu>('/admin/role-menu', params as Record<string, unknown>),
 
   /** 获取角色的菜单ID列表 */
   getMenuIds: (roleId: number) => http.get<number[]>(`/admin/role-menu/role/${roleId}/menus`),

@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import { shallowRef, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  NCard,
-  NForm,
-  NFormItem,
-  NInput,
-  NButton,
-  NTabs,
-  NTabPane,
-  useMessage,
-} from 'naive-ui'
+import { NCard, NForm, NFormItem, NInput, NButton, NTabs, NTabPane, useMessage } from 'naive-ui'
 import { useAuthStore } from '@/stores'
 
 defineOptions({
@@ -119,14 +110,7 @@ async function handleRegister() {
               />
             </NFormItem>
             <NFormItem>
-              <NButton
-                type="primary"
-                block
-                :loading="loading"
-                @click="handleLogin"
-              >
-                登录
-              </NButton>
+              <NButton type="primary" block :loading="loading" @click="handleLogin"> 登录 </NButton>
             </NFormItem>
           </NForm>
         </NTabPane>
@@ -134,10 +118,7 @@ async function handleRegister() {
         <NTabPane name="register" tab="注册">
           <NForm>
             <NFormItem label="用户名" path="username" required>
-              <NInput
-                v-model:value="registerForm.username"
-                placeholder="请输入用户名"
-              />
+              <NInput v-model:value="registerForm.username" placeholder="请输入用户名" />
             </NFormItem>
             <NFormItem label="密码" path="password" required>
               <NInput
@@ -156,24 +137,13 @@ async function handleRegister() {
               />
             </NFormItem>
             <NFormItem label="昵称" path="nickname">
-              <NInput
-                v-model:value="registerForm.nickname"
-                placeholder="请输入昵称（选填）"
-              />
+              <NInput v-model:value="registerForm.nickname" placeholder="请输入昵称（选填）" />
             </NFormItem>
             <NFormItem label="邮箱" path="email">
-              <NInput
-                v-model:value="registerForm.email"
-                placeholder="请输入邮箱（选填）"
-              />
+              <NInput v-model:value="registerForm.email" placeholder="请输入邮箱（选填）" />
             </NFormItem>
             <NFormItem>
-              <NButton
-                type="primary"
-                block
-                :loading="loading"
-                @click="handleRegister"
-              >
+              <NButton type="primary" block :loading="loading" @click="handleRegister">
                 注册
               </NButton>
             </NFormItem>

@@ -1,11 +1,5 @@
 import { http } from '@/utils'
-import type {
-  Menu,
-  MenuTree,
-  CreateMenuRequest,
-  UpdateMenuRequest,
-  PageParams,
-} from '@/types'
+import type { Menu, MenuTree, CreateMenuRequest, UpdateMenuRequest, PageParams } from '@/types'
 
 export interface MenuQueryParams extends PageParams {
   name?: string
@@ -17,7 +11,8 @@ export interface MenuQueryParams extends PageParams {
 /** 管理端菜单 API（路径前缀: /api/admin/menu） */
 export const menuApi = {
   /** 获取菜单列表 */
-  list: (params?: MenuQueryParams) => http.getPage<Menu>('/admin/menu', params as Record<string, unknown>),
+  list: (params?: MenuQueryParams) =>
+    http.getPage<Menu>('/admin/menu', params as Record<string, unknown>),
 
   /** 获取菜单树 */
   tree: () => http.get<MenuTree[]>('/admin/menu/tree'),

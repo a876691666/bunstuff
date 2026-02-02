@@ -36,13 +36,7 @@ function handleConfirm() {
 <template>
   <NPopconfirm @positive-click="handleConfirm">
     <template #trigger>
-      <NButton
-        :type="buttonType"
-        :loading="loading"
-        :disabled="disabled"
-        size="small"
-        quaternary
-      >
+      <NButton :type="buttonType" :loading="loading" :disabled="disabled" size="small" quaternary>
         {{ buttonText }}
       </NButton>
     </template>

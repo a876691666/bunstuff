@@ -2,26 +2,26 @@
  * 登录日志插件 - 提供登录日志记录能力
  */
 
-import { Elysia } from "elysia";
-import { loginLogService, type LoginAction } from "./service";
+import { Elysia } from 'elysia'
+import { loginLogService, type LoginAction } from './service'
 
 /** 登录日志上下文 */
 export interface LoginLogContext {
   /** 记录登录日志 */
   logLogin: (data: {
-    userId?: number | null;
-    username: string;
-    ip?: string | null;
-    userAgent?: string | null;
-    status: 0 | 1;
-    action: LoginAction;
-    msg?: string | null;
-  }) => Promise<any>;
+    userId?: number | null
+    username: string
+    ip?: string | null
+    userAgent?: string | null
+    status: 0 | 1
+    action: LoginAction
+    msg?: string | null
+  }) => Promise<any>
 }
 
 /**
  * 登录日志插件
- * 
+ *
  * @example
  * ```ts
  * app
@@ -42,11 +42,10 @@ export interface LoginLogContext {
  * ```
  */
 export function loginLogPlugin() {
-  return new Elysia({ name: "login-log-plugin" })
-    .derive({ as: "global" }, () => {
-      const loginLog: LoginLogContext = {
-        logLogin: (data) => loginLogService.log(data),
-      };
-      return { loginLog };
-    });
+  return new Elysia({ name: 'login-log-plugin' }).derive({ as: 'global' }, () => {
+    const loginLog: LoginLogContext = {
+      logLogin: (data) => loginLogService.log(data),
+    }
+    return { loginLog }
+  })
 }

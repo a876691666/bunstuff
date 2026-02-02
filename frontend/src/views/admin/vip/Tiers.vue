@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { shallowRef, onMounted, h, reactive } from 'vue'
-import { NButton, NSpace, useMessage, NForm, NFormItem, NInput, NInputNumber, NTag, NSwitch, NSelect } from 'naive-ui'
+import {
+  NButton,
+  NSpace,
+  useMessage,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NTag,
+  NSwitch,
+  NSelect,
+} from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
 import { PageTable, FormModal, SearchForm, ConfirmButton } from '@/components'
 import type { SearchFieldConfig } from '@/components'
@@ -49,8 +60,7 @@ const columns: DataTableColumns<VipTier> = [
     title: '等级名称',
     key: 'name',
     width: 120,
-    render: (row) =>
-      h(NTag, { type: 'info' }, () => row.name),
+    render: (row) => h(NTag, { type: 'info' }, () => row.name),
   },
   { title: '等级编码', key: 'code', width: 120 },
   {
@@ -58,7 +68,7 @@ const columns: DataTableColumns<VipTier> = [
     key: 'roleId',
     width: 120,
     render: (row) => {
-      const role = roles.value.find(r => r.id === row.roleId)
+      const role = roles.value.find((r) => r.id === row.roleId)
       return role ? role.name : '-'
     },
   },
@@ -72,15 +82,22 @@ const columns: DataTableColumns<VipTier> = [
     title: '有效期',
     key: 'durationDays',
     width: 100,
-    render: (row) => row.durationDays === 0 ? '永久' : `${row.durationDays}天`,
+    render: (row) => (row.durationDays === 0 ? '永久' : `${row.durationDays}天`),
   },
-  { title: '描述', key: 'description', ellipsis: { tooltip: true }, render: (row) => row.description || '-' },
+  {
+    title: '描述',
+    key: 'description',
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || '-',
+  },
   {
     title: '状态',
     key: 'status',
     width: 80,
     render: (row) =>
-      h(NTag, { type: row.status === 1 ? 'success' : 'error' }, () => (row.status === 1 ? '启用' : '禁用')),
+      h(NTag, { type: row.status === 1 ? 'success' : 'error' }, () =>
+        row.status === 1 ? '启用' : '禁用',
+      ),
   },
   {
     title: '操作',
@@ -97,7 +114,7 @@ const columns: DataTableColumns<VipTier> = [
             type: 'primary',
             onClick: () => handleEdit(row),
           },
-          () => '编辑'
+          () => '编辑',
         ),
         h(ConfirmButton, {
           title: '确定要删除该VIP等级吗？',
@@ -112,7 +129,7 @@ async function loadRoles() {
   try {
     const res = await roleApi.list({ pageSize: 1000 })
     roles.value = res.data
-    roleOptions.value = res.data.map(r => ({ label: r.name, value: r.id }))
+    roleOptions.value = res.data.map((r) => ({ label: r.name, value: r.id }))
   } catch (err: any) {
     console.error('加载角色失败', err)
   }
