@@ -9,9 +9,15 @@ import {
   RoleTreeSchema,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** 角色管理控制器（管理端） */
 export const roleAdminController = new Elysia({ prefix: "/role", tags: ["管理 - 角色"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   /** 获取角色列表 */
   .get("/", async ({ query }) => {
     const result = await roleService.findAll(query);

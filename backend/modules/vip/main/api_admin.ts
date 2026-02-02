@@ -22,9 +22,15 @@ import {
   checkResourceBody,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "./plugin";
 
 /** VIP 管理控制器（管理端） */
 export const vipAdminController = new Elysia({ prefix: "/vip", tags: ["管理 - VIP"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   // ============ VIP 等级管理 ============
 
   /** 获取 VIP 等级列表 */

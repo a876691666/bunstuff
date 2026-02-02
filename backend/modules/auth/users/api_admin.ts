@@ -8,9 +8,15 @@ import {
   UserSchema,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** 用户管理控制器（管理端） */
 export const userAdminController = new Elysia({ prefix: "/users", tags: ["管理 - 用户"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   /** 获取用户列表 */
   .get("/", async ({ query }) => {
     const result = await userService.findAll(query);

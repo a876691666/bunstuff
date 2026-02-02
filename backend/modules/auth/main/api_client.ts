@@ -5,12 +5,18 @@
 import { Elysia, t } from "elysia";
 import { authService } from "./service";
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "./plugin";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 // 导出管理端控制器
 export { authAdminController } from "./api_admin";
 
 /** Auth 模块控制器（客户端） */
 export const authController = new Elysia({ prefix: "/auth", tags: ["客户端 - 认证"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   /** 用户登录 */
   .post(
     "/login",

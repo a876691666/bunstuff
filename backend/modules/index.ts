@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 // Auth 模块
-import { authController, authAdminController, userAdminController, authPlugin } from "./auth";
+import { authController, authAdminController, userAdminController } from "./auth";
 // RBAC 模块
 import {
   rbacController,
@@ -11,12 +11,23 @@ import {
   permissionScopeAdminController,
   roleMenuAdminController,
   rolePermissionAdminController,
-  rbacPlugin,
 } from "./rbac";
 // VIP 模块
-import { vipAdminController, vipPlugin } from "./vip";
+import { vipAdminController } from "./vip";
 // Seed 模块
 import { createSeedController } from "./seed";
+// System 模块
+import {
+  dictController,
+  dictAdminController,
+  configController,
+  configAdminController,
+  loginLogAdminController,
+} from "./system";
+// Notice 模块
+import { noticeController, noticeAdminController } from "./notice";
+// File 模块
+import { fileController, fileAdminController } from "./file";
 
 /** API 模块配置 */
 export interface ApiOptions {
@@ -29,35 +40,45 @@ export interface ApiOptions {
 
 /** 创建 API 路由 */
 export const createApi = (options: ApiOptions = {}) => {
-  return new Elysia({ prefix: "/api" })
-    // 全局插件
-    .use(authPlugin()) // Auth 插件默认启用
-    .use(rbacPlugin()) // RBAC 插件默认不启用，通过 scope 配置启用
-    .use(vipPlugin()) // VIP 插件默认不启用，通过 scope.vip 配置启用
-    // 客户端路由（只有 auth 和 rbac 有客户端接口）
-    .use(authController)
-    .use(rbacController)
+  return (
+    new Elysia({ prefix: "/api" })
+      .use(authController)
+      .use(rbacController)
+      // System 子模块
+      .use(dictController)
+      .use(configController)
+      // Notice 模块
+      .use(noticeController)
+      // File 模块
+      .use(fileController)
+  );
 };
 
 /** 创建管理端 API 路由 */
 export const createAdminApi = (options: ApiOptions = {}) => {
-  return new Elysia({ prefix: "/api/admin" })
-    // 全局插件
-    .use(authPlugin()) // Auth 插件默认启用
-    .use(rbacPlugin()) // RBAC 插件默认不启用，通过 scope 配置启用
-    .use(vipPlugin()) // VIP 插件默认不启用，通过 scope.vip 配置启用
-    // 管理端路由
-    .use(authAdminController)
-    .use(menuAdminController)
-    .use(userAdminController)
-    .use(roleAdminController)
-    .use(permissionAdminController)
-    .use(permissionScopeAdminController)
-    .use(roleMenuAdminController)
-    .use(rolePermissionAdminController)
-    .use(rbacAdminController)
-    .use(vipAdminController)
-    .use(createSeedController(options.seed));
+  return (
+    new Elysia({ prefix: "/api/admin" })
+      .use(authAdminController)
+      .use(menuAdminController)
+      .use(userAdminController)
+      .use(roleAdminController)
+      .use(permissionAdminController)
+      .use(permissionScopeAdminController)
+      .use(roleMenuAdminController)
+      .use(rolePermissionAdminController)
+      .use(rbacAdminController)
+      .use(vipAdminController)
+      // System 子模块
+      .use(dictAdminController)
+      .use(configAdminController)
+      .use(loginLogAdminController)
+      // Notice 模块
+      .use(noticeAdminController)
+      // File 模块
+      .use(fileAdminController)
+      // Seed 模块
+      .use(createSeedController(options.seed))
+  );
 };
 
 /** 默认 API 实例 */

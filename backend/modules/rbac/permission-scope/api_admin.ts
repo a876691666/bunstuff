@@ -8,9 +8,15 @@ import {
   PermissionScopeSchema,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** 数据权限管理控制器（管理端） */
 export const permissionScopeAdminController = new Elysia({ prefix: "/permission-scope", tags: ["管理 - 数据权限"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   /** 获取数据过滤规则列表 */
   .get("/", async ({ query }) => {
     const result = await permissionScopeService.findAll(query);

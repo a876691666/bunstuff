@@ -5,9 +5,15 @@
 import { Elysia, t } from "elysia";
 import { authService } from "./service";
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "./plugin";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** Auth 管理控制器（管理端） */
 export const authAdminController = new Elysia({ prefix: "/auth", tags: ["管理 - 认证"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
 	/** 获取在线统计 */
 	.get("/admin/stats", () => {
 		const stats = authService.getOnlineStats();

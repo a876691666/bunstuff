@@ -1,12 +1,18 @@
 import { Elysia, t } from "elysia";
 import { rbacService } from "./service";
 import { R, SuccessResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "./plugin";
+import { vipPlugin } from "@/modules/vip";
 
 // 导出管理端控制器
 export { rbacAdminController } from "./api_admin";
 
 /** RBAC 模块控制器（客户端） */
 export const rbacController = new Elysia({ prefix: "/rbac", tags: ["客户端 - RBAC权限"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   // ============ 当前用户相关 ============
 
   /** 获取当前用户的权限编码列表 */

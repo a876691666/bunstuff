@@ -8,9 +8,15 @@ import {
 	PermissionSchema,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** 权限管理控制器（管理端） */
 export const permissionAdminController = new Elysia({ prefix: "/permission", tags: ["管理 - 权限"] })
+	.use(authPlugin())
+	.use(rbacPlugin())
+	.use(vipPlugin())
 	/** 获取权限列表 */
 	.get("/", async ({ query }) => {
 		const result = await permissionService.findAll(query);

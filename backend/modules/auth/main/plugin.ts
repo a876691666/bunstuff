@@ -70,11 +70,9 @@ function isPathExcluded(path: string, excludePaths: string[]): boolean {
 export function authPlugin(options: AuthPluginOptions = {}) {
   const extractToken = options.extractToken ?? defaultExtractToken;
   const excludePaths = [...DEFAULT_EXCLUDE_PATHS, ...(options.excludePaths ?? [])];
-  const app = new Elysia({ name: "auth-plugin" });
   const routerHooksMap = new Map<any, any>();
-
-  app
-    .on("start", () => {
+  const app = new Elysia({ name: "auth-plugin" })
+    .on("start", (app) => {
       // @ts-ignore
       app.getGlobalRoutes().forEach((route) => {
         routerHooksMap.set(`${route.method}:::${route.path}`, route.hooks || {});
@@ -120,6 +118,7 @@ export function authPlugin(options: AuthPluginOptions = {}) {
         };
       }
     });
+
   return app;
 }
 

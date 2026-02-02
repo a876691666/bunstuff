@@ -9,9 +9,15 @@ import {
 	MenuTreeSchema,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** 菜单管理控制器（管理端） */
 export const menuAdminController = new Elysia({ prefix: "/menu", tags: ["管理 - 菜单"] })
+	.use(authPlugin())
+	.use(rbacPlugin())
+	.use(vipPlugin())
 	/** 获取菜单列表 */
 	.get("/", async ({ query }) => {
 		const result = await menuService.findAll(query);

@@ -1,9 +1,15 @@
 import { Elysia, t } from "elysia";
 import { rbacService } from "./service";
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "./plugin";
+import { vipPlugin } from "@/modules/vip";
 
 /** RBAC 管理模块控制器（管理端） */
 export const rbacAdminController = new Elysia({ prefix: "/rbac", tags: ["管理 - RBAC权限"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   // ============ 角色相关 ============
 
   /** 获取角色树 */

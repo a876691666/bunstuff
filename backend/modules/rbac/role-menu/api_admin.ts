@@ -9,9 +9,15 @@ import {
   RoleMenuSchema,
 } from "./model";
 import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from "@/modules/response";
+import { authPlugin } from "@/modules/auth";
+import { rbacPlugin } from "@/modules/rbac";
+import { vipPlugin } from "@/modules/vip";
 
 /** 角色菜单关联管理控制器（管理端） */
 export const roleMenuAdminController = new Elysia({ prefix: "/role-menu", tags: ["管理 - 角色菜单"] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
   /** 获取角色菜单关联列表 */
   .get("/", async ({ query }) => {
     const result = await roleMenuService.findAll(query);
