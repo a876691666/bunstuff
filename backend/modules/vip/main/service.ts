@@ -1,10 +1,14 @@
 import { where, parse } from '@pkg/ssql'
 import VipTier from '@/models/vip-tier'
-import type { VipTierInsert, VipTierUpdate } from '@/models/vip-tier'
+import type { VipTierInsert, VipTierRow, VipTierUpdate } from '@/models/vip-tier'
 import VipResourceLimit from '@/models/vip-resource-limit'
-import type { VipResourceLimitInsert, VipResourceLimitUpdate } from '@/models/vip-resource-limit'
+import type {
+  VipResourceLimitInsert,
+  VipResourceLimitRow,
+  VipResourceLimitUpdate,
+} from '@/models/vip-resource-limit'
 import UserVip from '@/models/user-vip'
-import type { UserVipInsert, UserVipUpdate } from '@/models/user-vip'
+import type { UserVipRow, UserVipInsert, UserVipUpdate } from '@/models/user-vip'
 import UserResourceUsage from '@/models/user-resource-usage'
 import User from '@/models/users'
 
@@ -31,11 +35,7 @@ export class VipService {
   // ============ VIP 等级管理 ============
 
   /** 获取所有 VIP 等级 */
-  async findAllTiers(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAllTiers(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
@@ -124,11 +124,7 @@ export class VipService {
   // ============ 用户 VIP 管理 ============
 
   /** 获取所有用户 VIP 列表 */
-  async findAllUserVips(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAllUserVips(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
@@ -149,7 +145,13 @@ export class VipService {
   }
 
   /** 获取用户的 VIP 信息 */
-  async getUserVip(userId: number) {
+  async getUserVip(userId: number): Promise<
+    | (UserVipRow & {
+        vipTier: VipTierRow | null
+        resourceLimits: VipResourceLimitRow[]
+      })
+    | null
+  > {
     const userVip = await UserVip.findOne({
       where: where().eq('userId', userId).eq('status', 1),
     })

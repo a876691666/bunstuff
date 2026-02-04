@@ -11,6 +11,7 @@ import {
   NTreeSelect,
   NSwitch,
   NTag,
+  NSelect,
 } from 'naive-ui'
 import type { DataTableColumns, TreeSelectOption } from 'naive-ui'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
@@ -24,34 +25,43 @@ defineOptions({ name: 'SystemMenus' })
 const message = useMessage()
 const menuTree = shallowRef<MenuTree[]>([])
 
+// 菜单类型选项
+const menuTypeOptions = [
+  { label: '目录', value: 1 },
+  { label: '菜单', value: 2 },
+  { label: '按钮', value: 3 },
+]
+
 // 搜索字段配置
 const searchFields: SearchField[] = [
   { key: 'name', label: '菜单名称', type: 'input' },
-  { key: 'code', label: '菜单编码', type: 'input' },
+  { key: 'path', label: '路由路径', type: 'input' },
 ]
 
 // 使用 useTable
-const table = useTable<Menu, { name?: string; code?: string }>({
+const table = useTable<Menu, { name?: string; path?: string }>({
   api: (params) => menuApi.list(params),
-  opMap: { name: Op.Like, code: Op.Like },
+  opMap: { name: Op.Like, path: Op.Like },
 })
 
 // 使用 useModal
 const modal = useModal<CreateMenuRequest & { id?: number }>({
   defaultData: {
     name: '',
-    code: '',
     path: '',
-    component: '',
-    icon: '',
+    component: null,
+    icon: null,
+    type: 2,
+    visible: 1,
+    status: 1,
+    redirect: null,
     sort: 0,
     parentId: undefined,
-    isHidden: false,
-    isCache: true,
+    permCode: null,
   },
   validate: (data) => {
     if (!data.name) return '请输入菜单名称'
-    if (!data.code) return '请输入菜单编码'
+    if (!data.path) return '请输入路由路径'
     return null
   },
   createApi: (data) => menuApi.create(data),
@@ -66,20 +76,22 @@ const modal = useModal<CreateMenuRequest & { id?: number }>({
 
 // 菜单类型标签
 function getMenuTypeTag(row: Menu) {
-  if (!row.path && !row.component) {
-    return h(NTag, { type: 'default', size: 'small' }, () => '目录')
+  switch (row.type) {
+    case 1:
+      return h(NTag, { type: 'default', size: 'small' }, () => '目录')
+    case 2:
+      return h(NTag, { type: 'success', size: 'small' }, () => '菜单')
+    case 3:
+      return h(NTag, { type: 'info', size: 'small' }, () => '按钮')
+    default:
+      return h(NTag, { type: 'warning', size: 'small' }, () => '未知')
   }
-  if (row.component) {
-    return h(NTag, { type: 'success', size: 'small' }, () => '菜单')
-  }
-  return h(NTag, { type: 'info', size: 'small' }, () => '链接')
 }
 
 // 表格列定义
 const columns: DataTableColumns<Menu> = [
   { title: 'ID', key: 'id', width: 80 },
   { title: '菜单名称', key: 'name', width: 150 },
-  { title: '菜单编码', key: 'code', width: 150 },
   { title: '类型', key: 'type', width: 80, render: getMenuTypeTag },
   {
     title: '路径',
@@ -98,22 +110,29 @@ const columns: DataTableColumns<Menu> = [
   { title: '图标', key: 'icon', width: 100, render: (row) => row.icon || '-' },
   { title: '排序', key: 'sort', width: 80 },
   {
-    title: '隐藏',
-    key: 'isHidden',
+    title: '可见',
+    key: 'visible',
     width: 80,
     render: (row) =>
-      h(NTag, { type: row.isHidden ? 'warning' : 'default', size: 'small' }, () =>
-        row.isHidden ? '是' : '否',
+      h(NTag, { type: row.visible === 1 ? 'success' : 'warning', size: 'small' }, () =>
+        row.visible === 1 ? '显示' : '隐藏',
       ),
   },
   {
-    title: '缓存',
-    key: 'isCache',
+    title: '状态',
+    key: 'status',
     width: 80,
     render: (row) =>
-      h(NTag, { type: row.isCache ? 'success' : 'default', size: 'small' }, () =>
-        row.isCache ? '是' : '否',
+      h(NTag, { type: row.status === 1 ? 'success' : 'error', size: 'small' }, () =>
+        row.status === 1 ? '启用' : '禁用',
       ),
+  },
+  {
+    title: '权限标识',
+    key: 'permCode',
+    width: 150,
+    ellipsis: { tooltip: true },
+    render: (row) => row.permCode || '-',
   },
   {
     title: '操作',
@@ -170,14 +189,16 @@ function handleAddChild(row: Menu) {
 function handleEdit(row: Menu) {
   modal.edit(row.id, {
     name: row.name,
-    code: row.code,
-    path: row.path || '',
-    component: row.component || '',
-    icon: row.icon || '',
+    path: row.path,
+    component: row.component,
+    icon: row.icon,
+    type: row.type,
+    visible: row.visible,
+    status: row.status,
+    redirect: row.redirect,
     sort: row.sort,
     parentId: row.parentId || undefined,
-    isHidden: row.isHidden,
-    isCache: row.isCache,
+    permCode: row.permCode,
   })
 }
 
@@ -242,13 +263,17 @@ onMounted(() => {
             :disabled="modal.isEdit.value && modal.formData.parentId === null"
           />
         </NFormItem>
+        <NFormItem label="菜单类型">
+          <NSelect
+            v-model:value="modal.formData.type"
+            :options="menuTypeOptions"
+            placeholder="请选择菜单类型"
+          />
+        </NFormItem>
         <NFormItem label="菜单名称" required>
           <NInput v-model:value="modal.formData.name" placeholder="请输入菜单名称" />
         </NFormItem>
-        <NFormItem label="菜单编码" required>
-          <NInput v-model:value="modal.formData.code" placeholder="请输入菜单编码" />
-        </NFormItem>
-        <NFormItem label="路由路径">
+        <NFormItem label="路由路径" required>
           <NInput
             v-model:value="modal.formData.path"
             placeholder="请输入路由路径，如 /system/user"
@@ -260,8 +285,17 @@ onMounted(() => {
             placeholder="请输入组件路径，如 system/Users"
           />
         </NFormItem>
+        <NFormItem label="重定向地址">
+          <NInput
+            v-model:value="modal.formData.redirect"
+            placeholder="请输入重定向地址"
+          />
+        </NFormItem>
         <NFormItem label="菜单图标">
           <NInput v-model:value="modal.formData.icon" placeholder="请输入图标名称" />
+        </NFormItem>
+        <NFormItem label="权限标识">
+          <NInput v-model:value="modal.formData.permCode" placeholder="请输入权限标识，如 user:list" />
         </NFormItem>
         <NFormItem label="排序">
           <NInputNumber
@@ -271,11 +305,17 @@ onMounted(() => {
             style="width: 100%"
           />
         </NFormItem>
-        <NFormItem label="是否隐藏">
-          <NSwitch v-model:value="modal.formData.isHidden" />
+        <NFormItem label="是否可见">
+          <NSwitch
+            :value="modal.formData.visible === 1"
+            @update:value="(v: boolean) => (modal.formData.visible = v ? 1 : 0)"
+          />
         </NFormItem>
-        <NFormItem label="是否缓存">
-          <NSwitch v-model:value="modal.formData.isCache" />
+        <NFormItem label="状态">
+          <NSwitch
+            :value="modal.formData.status === 1"
+            @update:value="(v: boolean) => (modal.formData.status = v ? 1 : 0)"
+          />
         </NFormItem>
       </NForm>
     </CrudModal>

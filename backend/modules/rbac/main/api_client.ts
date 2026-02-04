@@ -70,7 +70,7 @@ export const rbacController = new Elysia({ prefix: '/rbac', tags: ['客户端 - 
                 parentId: t.Nullable(t.Number({ description: '父菜单ID' })),
                 type: t.Number({ description: '类型：1-目录, 2-菜单, 3-按钮' }),
                 visible: t.Number({ description: '是否可见：1-是, 0-否' }),
-                permission: t.Nullable(t.String({ description: '权限标识' })),
+                permCode: t.Nullable(t.String({ description: '权限标识' })),
                 children: t.Optional(t.Array(Self)),
               }),
             ),

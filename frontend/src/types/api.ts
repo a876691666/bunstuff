@@ -75,15 +75,17 @@ export interface PermissionScope {
 /** 菜单类型 */
 export interface Menu {
   id: number
+  parentId: number | null
   name: string
-  code: string
-  path: string | null
+  path: string
   component: string | null
   icon: string | null
+  type: number
+  visible: number
+  status: number
+  redirect: string | null
   sort: number
-  parentId: number | null
-  isHidden: boolean
-  isCache: boolean
+  permCode: string | null
   createdAt?: string
   updatedAt?: string
 }
@@ -309,27 +311,31 @@ export interface UpdatePermissionScopeRequest {
 /** 创建菜单请求 */
 export interface CreateMenuRequest {
   name: string
-  code: string
-  path?: string
-  component?: string
-  icon?: string
-  sort?: number
+  path: string
   parentId?: number | null
-  isHidden?: boolean
-  isCache?: boolean
+  component?: string | null
+  icon?: string | null
+  type?: number
+  visible?: number
+  status?: number
+  redirect?: string | null
+  sort?: number
+  permCode?: string | null
 }
 
 /** 更新菜单请求 */
 export interface UpdateMenuRequest {
   name?: string
-  code?: string
   path?: string
-  component?: string
-  icon?: string
-  sort?: number
   parentId?: number | null
-  isHidden?: boolean
-  isCache?: boolean
+  component?: string | null
+  icon?: string | null
+  type?: number
+  visible?: number
+  status?: number
+  redirect?: string | null
+  sort?: number
+  permCode?: string | null
 }
 
 /** 创建VIP等级请求 */
