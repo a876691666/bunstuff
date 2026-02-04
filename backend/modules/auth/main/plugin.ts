@@ -99,7 +99,9 @@ export function authPlugin(options: AuthPluginOptions = {}) {
     })
     .onBeforeHandle({ as: 'global' }, (arg) => {
       const { request, session, set, path, route } = arg
-      const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {}
+      const hooks = routerHooksMap.get(`${request.method}:::${route}`)
+      if (!hooks) return
+
       // 获取路由配置
       const routeConfig = hooks?.detail?.auth || {}
       const skipAuth = routeConfig?.skipAuth === true

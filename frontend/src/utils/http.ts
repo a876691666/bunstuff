@@ -11,6 +11,15 @@ const showError = (msg: string) => {
   message.error(msg, { duration: 3000 })
 }
 
+/** 处理401未授权，跳转到登录页 */
+const handleUnauthorized = () => {
+  localStorage.removeItem('token')
+  const currentPath = window.location.pathname
+  if (currentPath !== '/login') {
+    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+  }
+}
+
 /** 分页结果（已解包） */
 export interface PageResult<T> {
   data: T[]
@@ -57,6 +66,11 @@ class HttpClient {
     const json = await response.json()
 
     if (!response.ok) {
+      // 处理401未授权
+      if (response.status === 401 || json.code === 401) {
+        handleUnauthorized()
+        throw new Error('登录已过期，请重新登录')
+      }
       const errorMsg = json.message || `HTTP ${response.status}`
       showError(errorMsg)
       throw new Error(errorMsg)
@@ -124,6 +138,11 @@ class HttpClient {
     const json = await response.json()
 
     if (!response.ok) {
+      // 处理401未授权
+      if (response.status === 401 || json.code === 401) {
+        handleUnauthorized()
+        throw new Error('登录已过期，请重新登录')
+      }
       const errorMsg = json.message || `HTTP ${response.status}`
       showError(errorMsg)
       throw new Error(errorMsg)

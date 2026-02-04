@@ -30,9 +30,7 @@ export class SeedService {
 
   /** 检查 Seed 是否已执行 */
   async isExecuted(name: string): Promise<boolean> {
-    const log = await SeedLog.findOne({
-      where: where().eq('name', name).and().eq('status', 1),
-    })
+    const log = await SeedLog.findOne({ where: `name = "${name}" && status = 1` })
     return !!log
   }
 
@@ -50,12 +48,18 @@ export class SeedService {
       return { success: false, message: `Seed "${name}" 不存在` }
     }
 
-    // 检查是否已执行
+    // 检查是否已成功执行
     if (!force && (await this.isExecuted(name))) {
       return { success: false, message: `Seed "${name}" 已执行过` }
     }
 
     const now = new Date().toISOString()
+
+    // 删除之前的失败记录（避免唯一约束冲突）
+    const failedLog = await SeedLog.findOne({ where: `name = "${name}" && status = 0` })
+    if (failedLog) {
+      await SeedLog.delete(failedLog.id)
+    }
 
     try {
       await seed.run()

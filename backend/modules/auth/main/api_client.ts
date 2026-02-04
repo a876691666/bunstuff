@@ -8,6 +8,7 @@ import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/modules/re
 import { authPlugin } from './plugin'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { loginLogPlugin } from '@/modules/system'
 
 // 导出管理端控制器
 export { authAdminController } from './api_admin'
@@ -17,10 +18,11 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['客户端 - 
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(loginLogPlugin())
   /** 用户登录 */
   .post(
     '/login',
-    async ({ body, request }) => {
+    async ({ body, request, loginLog }) => {
       const ip =
         request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
       const userAgent = request.headers.get('user-agent') || undefined
@@ -28,6 +30,17 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['客户端 - 
       const result = await authService.login(body.username, body.password, {
         ip,
         userAgent,
+      })
+
+      // 记录登录日志
+      await loginLog.logLogin({
+        userId: result.user?.id,
+        username: body.username,
+        ip,
+        userAgent,
+        status: result.success ? 1 : 0,
+        action: 'login',
+        msg: result.message,
       })
 
       if (!result.success) {
@@ -108,10 +121,28 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['客户端 - 
   /** 用户登出 */
   .post(
     '/logout',
-    async ({ request }) => {
+    async ({ request, loginLog }) => {
       const authHeader = request.headers.get('Authorization')
+      const ip =
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
+      const userAgent = request.headers.get('user-agent') || undefined
+
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.slice(7)
+        // 先获取会话信息用于记录日志
+        const session = authService.verifyToken(token)
+        if (session) {
+          // 记录登出日志
+          await loginLog.logLogin({
+            userId: session.userId,
+            username: session.username,
+            ip,
+            userAgent,
+            status: 1,
+            action: 'logout',
+            msg: '用户登出',
+          })
+        }
         await authService.logout(token)
       }
       return R.success('登出成功')

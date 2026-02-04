@@ -43,7 +43,9 @@ async function handleLogin() {
       password: loginForm.password,
     })
     message.success('登录成功')
-    router.push('/admin')
+    // 跳转到重定向地址或默认首页
+    const redirect = router.currentRoute.value.query.redirect as string
+    router.push(redirect || '/dashboard')
   } catch (err: any) {
     message.error(err.message || '登录失败')
   } finally {

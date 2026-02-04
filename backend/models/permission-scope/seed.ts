@@ -9,9 +9,9 @@ export const permissionScopeSeed: SeedDefinition = {
   description: '初始化数据过滤规则示例数据',
   async run() {
     // 获取用户列表权限
-    const userListPermission = await Permission.findOne({ where: where().eq('code', 'user:list') })
+    const userListPermission = await Permission.findOne({ where: where().eq('code', 'user:admin:list') })
     if (!userListPermission) {
-      throw new Error('user:list 权限不存在，请先执行 permission-default seed')
+      throw new Error('user:admin:list 权限不存在，请先执行 permission-default seed')
     }
 
     // 创建示例数据过滤规则

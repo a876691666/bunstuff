@@ -8,12 +8,14 @@ import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/modules/re
 import { authPlugin } from './plugin'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { loginLogPlugin } from '@/modules/system'
 
 /** Auth 管理控制器（管理端） */
 export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 - 认证'] })
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(loginLogPlugin())
   /** 获取在线统计 */
   .get(
     '/admin/stats',
@@ -98,8 +100,28 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   /** 踢用户下线（管理员） */
   .post(
     '/admin/kick-user',
-    async ({ body }) => {
+    async ({ body, request, loginLog }) => {
+      const ip =
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
+      const userAgent = request.headers.get('user-agent') || undefined
+
+      // 获取用户所有会话用于记录日志
+      const sessions = authService.getUserSessions(body.userId)
       const count = await authService.kickUser(body.userId)
+
+      // 记录踢下线日志
+      for (const session of sessions) {
+        await loginLog.logLogin({
+          userId: session.userId,
+          username: session.username,
+          ip,
+          userAgent,
+          status: 1,
+          action: 'kick',
+          msg: '管理员踢下线',
+        })
+      }
+
       return R.success(`已踢下线 ${count} 个会话`)
     },
     {
@@ -121,7 +143,28 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   /** 踢指定会话下线（管理员） */
   .post(
     '/admin/kick-session',
-    async ({ body }) => {
+    async ({ body, request, loginLog }) => {
+      const ip =
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
+      const userAgent = request.headers.get('user-agent') || undefined
+
+      // 先获取会话信息用于记录日志
+      const session = authService.verifyToken(body.token)
+      if (!session) {
+        return R.notFound('会话')
+      }
+
+      // 记录踢下线日志
+      await loginLog.logLogin({
+        userId: session.userId,
+        username: session.username,
+        ip,
+        userAgent,
+        status: 1,
+        action: 'kick',
+        msg: '管理员踢下线',
+      })
+
       const success = await authService.kickSession(body.token)
       if (!success) {
         return R.notFound('会话')

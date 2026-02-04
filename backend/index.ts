@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
+import { staticPlugin } from '@elysiajs/static'
 import { createAdminApi, createApi } from './modules'
 import { openapi } from '@elysiajs/openapi'
 import { sessionStore } from '@/modules/auth'
@@ -85,6 +86,11 @@ const app = new Elysia()
       },
     }),
   )
+  // 配置静态文件服务，提供 uploads 目录的文件访问
+  .use(staticPlugin({
+    assets: './uploads',
+    prefix: '/uploads',
+  }))
   .get('/', () => 'Hello from Elysia!')
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(api)

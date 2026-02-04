@@ -79,15 +79,15 @@ export const fileClientApi = {
     return json.data
   },
 
-  /** 获取文件下载链接 */
-  getDownloadUrl: (id: number) =>
-    `${import.meta.env.VITE_API_BASE_URL || '/api'}/file/download/${id}`,
+  /** 获取文件访问链接（使用静态文件服务） */
+  getFileUrl: (storagePath: string) =>
+    `${import.meta.env.VITE_API_BASE_URL || ''}/uploads/${storagePath}`,
 
-  /** 获取文件流式下载链接（适合大文件） */
-  getStreamUrl: (id: number) =>
-    `${import.meta.env.VITE_API_BASE_URL || '/api'}/file/stream/${id}`,
+  /** 获取文件下载链接 */
+  getDownloadUrl: (storagePath: string) =>
+    `${import.meta.env.VITE_API_BASE_URL || ''}/uploads/${storagePath}`,
 
   /** 获取文件预览链接 */
-  getPreviewUrl: (id: number) =>
-    `${import.meta.env.VITE_API_BASE_URL || '/api'}/file/preview/${id}`,
+  getPreviewUrl: (storagePath: string) =>
+    `${import.meta.env.VITE_API_BASE_URL || ''}/uploads/${storagePath}`,
 }
