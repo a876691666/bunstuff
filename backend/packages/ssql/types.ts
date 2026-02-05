@@ -4,6 +4,42 @@ export type Value = string | number | boolean | null
 export type Values = Value[]
 export type SQLResult = [raw: string, sql: string, params: Values]
 
+// ============ 编译选项 ============
+
+/** 编译选项（用于安全验证） */
+export interface CompileOptions {
+  /** 允许的字段名列表（白名单）。如果提供，则只允许这些字段 */
+  allowedFields?: string[]
+  /** 是否在字段不在白名单时抛出错误（默认 true）。设为 false 则静默忽略非法字段 */
+  throwOnInvalidField?: boolean
+}
+
+/** 字段验证错误 */
+export class FieldValidationError extends Error {
+  constructor(
+    public readonly field: string,
+    public readonly allowedFields: string[],
+  ) {
+    super(`Field "${field}" is not allowed. Allowed fields: ${allowedFields.join(', ')}`)
+    this.name = 'FieldValidationError'
+  }
+}
+
+/** 验证字段名是否在白名单中 */
+export function validateField(field: string, options?: CompileOptions): boolean {
+  if (!options?.allowedFields) return true
+  
+  // 支持 table.field 格式，只验证字段部分
+  const fieldName = field.includes('.') ? field.split('.').pop()! : field
+  const isValid = options.allowedFields.includes(fieldName) || options.allowedFields.includes(field)
+  
+  if (!isValid && options.throwOnInvalidField !== false) {
+    throw new FieldValidationError(field, options.allowedFields)
+  }
+  
+  return isValid
+}
+
 // ============ ORM 兼容类型 ============
 
 /** 字段条件操作符类型 */

@@ -1,8 +1,11 @@
 import type { Dialect, Value, Values } from '../types'
 
-// 转义字符串中的特殊字符
+// 转义字符串中的特殊字符（增强版，防止 SQL 注入）
 function escapeString(str: string): string {
-  return str.replace(/'/g, "''")
+  // SQLite 使用双单引号转义，同时移除危险字符
+  return str
+    .replace(/\x00/g, '')        // 移除 NULL 字节
+    .replace(/'/g, "''")         // 转义单引号
 }
 
 // SQLite 方言

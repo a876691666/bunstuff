@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { where, whereOr, parse, toMySQL, toPostgres, Builder } from './index'
+import { where, whereOr, parse, toMySQL, toPostgres, Builder, FieldValidationError, toSQL, mysql } from './index'
 
 describe('Builder', () => {
   test('simple eq', () => {
@@ -220,5 +220,121 @@ describe('Dialect assemble', () => {
   test('PostgreSQL assemble', () => {
     const [raw] = where().eq('name', "O'Brien").eq('status', 1).toPostgres()
     expect(raw).toBe(`("name" = 'O''Brien' AND "status" = 1)`)
+  })
+})
+
+// ============ 字段白名单验证测试（SQL 注入防护） ============
+
+describe('Field Validation (SQL Injection Prevention)', () => {
+  const allowedFields = ['name', 'age', 'status']
+
+  test('允许的字段正常编译', () => {
+    const [raw] = toSQL("name = 'test' && age > 18", mysql, { allowedFields })
+    expect(raw).toBe("(`name` = 'test' AND `age` > 18)")
+  })
+
+  test('不允许的字段抛出 FieldValidationError', () => {
+    expect(() => {
+      toSQL("password = '123'", mysql, { allowedFields })
+    }).toThrow(FieldValidationError)
+  })
+
+  test('FieldValidationError 包含正确信息', () => {
+    try {
+      toSQL("secret_key = 'abc'", mysql, { allowedFields })
+    } catch (e) {
+      expect(e).toBeInstanceOf(FieldValidationError)
+      expect((e as FieldValidationError).field).toBe('secret_key')
+      expect((e as FieldValidationError).allowedFields).toEqual(allowedFields)
+    }
+  })
+
+  test('throwOnInvalidField = false 时静默忽略非法字段', () => {
+    const [raw] = toSQL("password = '123'", mysql, { allowedFields, throwOnInvalidField: false })
+    expect(raw).toBe('')
+  })
+
+  test('混合合法与非法字段时只保留合法字段', () => {
+    const [raw] = toSQL("name = 'test' && password = '123'", mysql, { 
+      allowedFields, 
+      throwOnInvalidField: false 
+    })
+    expect(raw).toBe("`name` = 'test'")
+  })
+
+  test('Builder 支持字段白名单', () => {
+    const [raw] = where().eq('name', 'test').eq('age', 18).toMySQL({ allowedFields })
+    expect(raw).toBe("(`name` = 'test' AND `age` = 18)")
+  })
+
+  test('Builder 非法字段抛出错误', () => {
+    expect(() => {
+      where().eq('invalid_field', 'value').toMySQL({ allowedFields })
+    }).toThrow(FieldValidationError)
+  })
+
+  test('不提供 allowedFields 时不进行验证', () => {
+    const [raw] = toSQL("any_field = 'value'", mysql)
+    expect(raw).toBe("`any_field` = 'value'")
+  })
+
+  test('table.field 格式字段验证（提取字段名部分）', () => {
+    // users.name 格式会被当作一个整体字段名，验证时会检查 'name' 或 'users.name'
+    const [raw] = toSQL("users.name = 'test'", mysql, { allowedFields: ['name', 'users.name'] })
+    expect(raw).toBe("`users.name` = 'test'")
+  })
+
+  // ============ 经典 SQL 注入攻击测试 ============
+
+  test("防止经典 DROP TABLE 注入攻击 - 值中的注入", () => {
+    // 攻击者尝试在值中注入 SQL: '; DROP TABLE users; --
+    // 如果没有转义，拼接后的 SQL 会变成: WHERE name = ''; DROP TABLE users; --'
+    const [raw] = where().eq('name', "'; DROP TABLE users; --").toMySQL()
+    // 单引号被正确转义为 \'，攻击无法截断字符串
+    expect(raw).toBe("`name` = '\\'; DROP TABLE users; --'")
+    // 验证单引号被转义（关键防护点）
+    expect(raw).toContain("\\'")
+  })
+
+  test("防止 SSQL 值中的 DROP TABLE 注入", () => {
+    const [raw] = toMySQL("name = \"'; DROP TABLE users; --\"")
+    // 单引号被转义，整个注入字符串被当作普通值
+    expect(raw).toBe("`name` = '\\'; DROP TABLE users; --'")
+  })
+
+  test("防止字段名注入攻击", () => {
+    // 攻击者尝试通过字段名注入（字段白名单阻止）
+    expect(() => {
+      toSQL("1=1; DROP TABLE users; --", mysql, { allowedFields: ['name', 'status'] })
+    }).toThrow()
+  })
+
+  test("防止 UNION SELECT 注入", () => {
+    const [raw] = where().eq('id', "1 UNION SELECT * FROM passwords --").toMySQL()
+    // 整个字符串被当作值，不会被执行为 SQL
+    expect(raw).toBe("`id` = '1 UNION SELECT * FROM passwords --'")
+  })
+
+  test("防止 OR 1=1 注入", () => {
+    const [raw] = where().eq('password', "' OR '1'='1").toMySQL()
+    // 单引号被转义
+    expect(raw).toBe("`password` = '\\' OR \\'1\\'=\\'1'")
+  })
+
+  test("防止注释截断攻击", () => {
+    const [raw] = where().eq('user', "admin'--").toMySQL()
+    expect(raw).toBe("`user` = 'admin\\'--'")
+  })
+
+  test("防止 NULL 字节注入", () => {
+    const [raw] = where().eq('name', "test\x00DROP TABLE").toMySQL()
+    // NULL 字节被转义或移除
+    expect(raw).toBe("`name` = 'test\\0DROP TABLE'")
+  })
+
+  test("PostgreSQL 防止 DROP TABLE 注入", () => {
+    const [raw] = where().eq('name', "'; DROP TABLE users; --").toPostgres()
+    // PostgreSQL 使用双单引号转义
+    expect(raw).toBe(`"name" = '''; DROP TABLE users; --'`)
   })
 })

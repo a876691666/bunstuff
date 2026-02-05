@@ -5,10 +5,11 @@ export type {
   SQLResult,
   Token,
   Dialect,
+  CompileOptions,
   OrmFieldCondition,
   OrmWhereCondition,
 } from './types'
-export { Op, Logic, TokenType } from './types'
+export { Op, Logic, TokenType, FieldValidationError, validateField } from './types'
 
 // ============ 表达式导出 ============
 export { FieldExpr, LogicExpr, GroupExpr, type Expression } from './expression'
@@ -41,27 +42,30 @@ import { parse } from './parser'
 import { mysql, postgres, sqlite } from './dialect'
 import { compileWhereRaw as buildWhereInternal } from './compile'
 import { stringifyWhere } from './stringify'
-import type { Dialect, SQLResult, OrmWhereCondition } from './types'
+import type { Dialect, SQLResult, OrmWhereCondition, CompileOptions } from './types'
 
 /**
- * 将 SSQL 字符串解析并编译为数据库 SQL
- * @example toSQL("name = 'test' && age > 18", mysql)
+ * 将 SSQL 字符串解析并编译为数据库 SQL（支持字段白名单验证）
+ * @param ssql SSQL 字符串
+ * @param dialect 数据库方言
+ * @param options 编译选项（可指定 allowedFields 白名单）
+ * @example toSQL("name = 'test' && age > 18", mysql, { allowedFields: ['name', 'age'] })
  */
-export function toSQL(ssql: string, dialect: Dialect = mysql): SQLResult {
+export function toSQL(ssql: string, dialect: Dialect = mysql, options?: CompileOptions): SQLResult {
   const expr = parse(ssql)
-  return expr ? expr.toSQL(dialect) : ['', '', []]
+  return expr ? expr.toSQL(dialect, 0, options) : ['', '', []]
 }
 
-export function toMySQL(ssql: string): SQLResult {
-  return toSQL(ssql, mysql)
+export function toMySQL(ssql: string, options?: CompileOptions): SQLResult {
+  return toSQL(ssql, mysql, options)
 }
 
-export function toPostgres(ssql: string): SQLResult {
-  return toSQL(ssql, postgres)
+export function toPostgres(ssql: string, options?: CompileOptions): SQLResult {
+  return toSQL(ssql, postgres, options)
 }
 
-export function toSQLite(ssql: string): SQLResult {
-  return toSQL(ssql, sqlite)
+export function toSQLite(ssql: string, options?: CompileOptions): SQLResult {
+  return toSQL(ssql, sqlite, options)
 }
 
 /**
@@ -74,11 +78,11 @@ export function toWhere(ssql: string): OrmWhereCondition {
 }
 
 /**
- * 将 OrmWhereCondition 编译为数据库 SQL WHERE 子句
- * @example buildWhere(mysql, { name: 'test' }) // "`name` = 'test'"
+ * 将 OrmWhereCondition 编译为数据库 SQL WHERE 子句（支持字段白名单验证）
+ * @example buildWhere(mysql, { name: 'test' }, { allowedFields: ['name'] }) // "`name` = 'test'"
  */
-export function buildWhere(dialect: Dialect, condition: OrmWhereCondition): string {
-  return buildWhereInternal(dialect, condition)
+export function buildWhere(dialect: Dialect, condition: OrmWhereCondition, options?: CompileOptions): string {
+  return buildWhereInternal(dialect, condition, options)
 }
 
 /**

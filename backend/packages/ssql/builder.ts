@@ -1,4 +1,4 @@
-import { Op, Logic, type Value, type Values, type SQLResult, type Dialect } from './types'
+import { Op, Logic, type Value, type Values, type SQLResult, type Dialect, type CompileOptions } from './types'
 import { FieldExpr, LogicExpr, GroupExpr, type Expression } from './expression'
 import { mysql, postgres, sqlite } from './dialect'
 
@@ -106,26 +106,26 @@ export class Builder {
     return this.build()?.toString() ?? ''
   }
 
-  // 通用 SQL
-  toSQL(dialect: Dialect = mysql): SQLResult {
-    return this.build()?.toSQL(dialect) ?? ['', '', []]
+  // 通用 SQL（支持字段白名单验证）
+  toSQL(dialect: Dialect = mysql, options?: CompileOptions): SQLResult {
+    return this.build()?.toSQL(dialect, 0, options) ?? ['', '', []]
   }
 
-  // 生成 WHERE 子句 SQL（已转义，无参数占位符）
-  toWhereSQL(dialect: Dialect = mysql): string {
-    const [raw] = this.toSQL(dialect)
+  // 生成 WHERE 子句 SQL（已转义，无参数占位符，支持字段白名单验证）
+  toWhereSQL(dialect: Dialect = mysql, options?: CompileOptions): string {
+    const [raw] = this.toSQL(dialect, options)
     return raw
   }
 
-  // 特定数据库
-  toMySQL(): SQLResult {
-    return this.toSQL(mysql)
+  // 特定数据库（支持字段白名单验证）
+  toMySQL(options?: CompileOptions): SQLResult {
+    return this.toSQL(mysql, options)
   }
-  toPostgres(): SQLResult {
-    return this.toSQL(postgres)
+  toPostgres(options?: CompileOptions): SQLResult {
+    return this.toSQL(postgres, options)
   }
-  toSQLite(): SQLResult {
-    return this.toSQL(sqlite)
+  toSQLite(options?: CompileOptions): SQLResult {
+    return this.toSQL(sqlite, options)
   }
 
   // 检查是否为空

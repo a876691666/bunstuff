@@ -10,6 +10,7 @@ import {
   type Values,
   type Dialect,
   type SQLResult,
+  type CompileOptions,
   type OrmFieldCondition,
   type OrmWhereCondition,
 } from './types'
@@ -40,14 +41,14 @@ export class FieldExpr {
     return stringifyField(this.field, this.op, this.value)
   }
 
-  /** @internal 内部编译方法 */
-  _compile(dialect: Dialect, offset = 0): InternalSQL {
-    return compileField(dialect, this.field, this.op, this.value, offset)
+  /** @internal 内部编译方法（支持字段白名单验证） */
+  _compile(dialect: Dialect, offset = 0, options?: CompileOptions): InternalSQL {
+    return compileField(dialect, this.field, this.op, this.value, offset, options)
   }
 
-  /** 转为数据库 SQL */
-  toSQL(dialect: Dialect, offset = 0): SQLResult {
-    const [sql, params] = this._compile(dialect, offset)
+  /** 转为数据库 SQL（支持字段白名单验证） */
+  toSQL(dialect: Dialect, offset = 0, options?: CompileOptions): SQLResult {
+    const [sql, params] = this._compile(dialect, offset, options)
     return toResult(dialect, sql, params)
   }
 
@@ -109,17 +110,17 @@ export class LogicExpr {
     return `(${this.exprs.map((e) => e.toString()).join(conn)})`
   }
 
-  /** @internal 内部编译方法 */
-  _compile(dialect: Dialect, offset = 0): InternalSQL {
+  /** @internal 内部编译方法（支持字段白名单验证） */
+  _compile(dialect: Dialect, offset = 0, options?: CompileOptions): InternalSQL {
     const len = this.exprs.length
     if (len === 0) return ['', []]
-    if (len === 1) return this.exprs[0]!._compile(dialect, offset)
+    if (len === 1) return this.exprs[0]!._compile(dialect, offset, options)
 
     const parts: string[] = []
     const params: Values = []
 
     for (const expr of this.exprs) {
-      const [sql, vals] = expr._compile(dialect, offset + params.length)
+      const [sql, vals] = expr._compile(dialect, offset + params.length, options)
       if (sql) {
         parts.push(sql)
         params.push(...vals)
@@ -133,9 +134,9 @@ export class LogicExpr {
     return [`(${parts.join(conn)})`, params]
   }
 
-  /** 转为数据库 SQL */
-  toSQL(dialect: Dialect, offset = 0): SQLResult {
-    const [sql, params] = this._compile(dialect, offset)
+  /** 转为数据库 SQL（支持字段白名单验证） */
+  toSQL(dialect: Dialect, offset = 0, options?: CompileOptions): SQLResult {
+    const [sql, params] = this._compile(dialect, offset, options)
     return toResult(dialect, sql, params)
   }
 
@@ -173,15 +174,15 @@ export class GroupExpr {
     return s ? `(${s})` : ''
   }
 
-  /** @internal 内部编译方法 */
-  _compile(dialect: Dialect, offset = 0): InternalSQL {
-    const [sql, params] = this.inner._compile(dialect, offset)
+  /** @internal 内部编译方法（支持字段白名单验证） */
+  _compile(dialect: Dialect, offset = 0, options?: CompileOptions): InternalSQL {
+    const [sql, params] = this.inner._compile(dialect, offset, options)
     return sql ? [`(${sql})`, params] : ['', []]
   }
 
-  /** 转为数据库 SQL */
-  toSQL(dialect: Dialect, offset = 0): SQLResult {
-    const [sql, params] = this._compile(dialect, offset)
+  /** 转为数据库 SQL（支持字段白名单验证） */
+  toSQL(dialect: Dialect, offset = 0, options?: CompileOptions): SQLResult {
+    const [sql, params] = this._compile(dialect, offset, options)
     return toResult(dialect, sql, params)
   }
 

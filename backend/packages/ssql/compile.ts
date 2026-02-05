@@ -9,8 +9,10 @@ import {
   type Values,
   type Dialect,
   type SQLResult,
+  type CompileOptions,
   type OrmFieldCondition,
   type OrmWhereCondition,
+  validateField,
   isOrmEqCondition,
   isOrmNeCondition,
   isOrmGtCondition,
@@ -40,14 +42,21 @@ function toResult(dialect: Dialect, sql: string, params: Values): SQLResult {
 
 // ============ 字段表达式编译 ============
 
-/** 将字段表达式编译为 SQL */
+/** 将字段表达式编译为 SQL（带字段验证） */
 export function compileField(
   dialect: Dialect,
   field: string,
   op: Op,
   value: Value | Values | undefined,
   offset = 0,
+  options?: CompileOptions,
 ): InternalSQL {
+  // 字段白名单验证
+  if (!validateField(field, options)) {
+    // 字段不在白名单中且 throwOnInvalidField = false，返回空
+    return ['', []]
+  }
+
   const f = dialect.quote(field)
 
   switch (op) {
@@ -98,8 +107,9 @@ export function compileFieldToSQL(
   op: Op,
   value: Value | Values | undefined,
   offset = 0,
+  options?: CompileOptions,
 ): SQLResult {
-  const [sql, params] = compileField(dialect, field, op, value, offset)
+  const [sql, params] = compileField(dialect, field, op, value, offset, options)
   return toResult(dialect, sql, params)
 }
 
@@ -110,7 +120,13 @@ export function compileFieldConditionRaw(
   dialect: Dialect,
   field: string,
   condition: OrmFieldCondition,
+  options?: CompileOptions,
 ): string {
+  // 字段白名单验证
+  if (!validateField(field, options)) {
+    return ''
+  }
+
   const f = dialect.quote(field)
 
   if (condition === null) {
@@ -149,7 +165,11 @@ export function compileFieldConditionRaw(
 }
 
 /** 将 OrmWhereCondition 编译为 SQL WHERE 子句（不含占位符） */
-export function compileWhereRaw(dialect: Dialect, where: OrmWhereCondition): string {
+export function compileWhereRaw(
+  dialect: Dialect,
+  where: OrmWhereCondition,
+  options?: CompileOptions,
+): string {
   const clauses: string[] = []
 
   for (const [key, value] of Object.entries(where)) {
@@ -157,7 +177,7 @@ export function compileWhereRaw(dialect: Dialect, where: OrmWhereCondition): str
 
     if (key === '$or' && Array.isArray(value)) {
       const orClauses = value
-        .map((c) => compileWhereRaw(dialect, c as OrmWhereCondition))
+        .map((c) => compileWhereRaw(dialect, c as OrmWhereCondition, options))
         .filter(Boolean)
       if (orClauses.length > 0) {
         clauses.push(`(${orClauses.map((c) => `(${c})`).join(' OR ')})`)
@@ -167,7 +187,7 @@ export function compileWhereRaw(dialect: Dialect, where: OrmWhereCondition): str
 
     if (key === '$and' && Array.isArray(value)) {
       const andClauses = value
-        .map((c) => compileWhereRaw(dialect, c as OrmWhereCondition))
+        .map((c) => compileWhereRaw(dialect, c as OrmWhereCondition, options))
         .filter(Boolean)
       if (andClauses.length > 0) {
         clauses.push(`(${andClauses.map((c) => `(${c})`).join(' AND ')})`)
@@ -175,7 +195,8 @@ export function compileWhereRaw(dialect: Dialect, where: OrmWhereCondition): str
       continue
     }
 
-    clauses.push(compileFieldConditionRaw(dialect, key, value as OrmFieldCondition))
+    const clause = compileFieldConditionRaw(dialect, key, value as OrmFieldCondition, options)
+    if (clause) clauses.push(clause)
   }
 
   return clauses.length > 0 ? clauses.join(' AND ') : '1=1'
@@ -187,43 +208,49 @@ export function compileFieldCondition(
   field: string,
   condition: OrmFieldCondition,
   offset = 0,
+  options?: CompileOptions,
 ): InternalSQL {
   if (condition === null) {
-    return compileField(dialect, field, Op.IsNull, undefined, offset)
+    return compileField(dialect, field, Op.IsNull, undefined, offset, options)
   }
 
   if (typeof condition !== 'object') {
-    return compileField(dialect, field, Op.Eq, condition, offset)
+    return compileField(dialect, field, Op.Eq, condition, offset, options)
   }
 
-  if (isOrmEqCondition(condition)) return compileField(dialect, field, Op.Eq, condition.$eq, offset)
+  if (isOrmEqCondition(condition)) return compileField(dialect, field, Op.Eq, condition.$eq, offset, options)
   if (isOrmNeCondition(condition))
-    return compileField(dialect, field, Op.Neq, condition.$ne, offset)
-  if (isOrmGtCondition(condition)) return compileField(dialect, field, Op.Gt, condition.$gt, offset)
+    return compileField(dialect, field, Op.Neq, condition.$ne, offset, options)
+  if (isOrmGtCondition(condition)) return compileField(dialect, field, Op.Gt, condition.$gt, offset, options)
   if (isOrmGteCondition(condition))
-    return compileField(dialect, field, Op.Gte, condition.$gte, offset)
-  if (isOrmLtCondition(condition)) return compileField(dialect, field, Op.Lt, condition.$lt, offset)
+    return compileField(dialect, field, Op.Gte, condition.$gte, offset, options)
+  if (isOrmLtCondition(condition)) return compileField(dialect, field, Op.Lt, condition.$lt, offset, options)
   if (isOrmLteCondition(condition))
-    return compileField(dialect, field, Op.Lte, condition.$lte, offset)
+    return compileField(dialect, field, Op.Lte, condition.$lte, offset, options)
   if (isOrmLikeCondition(condition))
-    return compileField(dialect, field, Op.Like, condition.$like, offset)
+    return compileField(dialect, field, Op.Like, condition.$like, offset, options)
   if (isOrmNotLikeCondition(condition))
-    return compileField(dialect, field, Op.NotLike, condition.$notLike, offset)
-  if (isOrmInCondition(condition)) return compileField(dialect, field, Op.In, condition.$in, offset)
+    return compileField(dialect, field, Op.NotLike, condition.$notLike, offset, options)
+  if (isOrmInCondition(condition)) return compileField(dialect, field, Op.In, condition.$in, offset, options)
   if (isOrmNotInCondition(condition))
-    return compileField(dialect, field, Op.NotIn, condition.$notIn, offset)
+    return compileField(dialect, field, Op.NotIn, condition.$notIn, offset, options)
   if (isOrmIsNullCondition(condition))
-    return compileField(dialect, field, Op.IsNull, undefined, offset)
+    return compileField(dialect, field, Op.IsNull, undefined, offset, options)
   if (isOrmIsNotNullCondition(condition))
-    return compileField(dialect, field, Op.NotNull, undefined, offset)
+    return compileField(dialect, field, Op.NotNull, undefined, offset, options)
   if (isOrmBetweenCondition(condition))
-    return compileField(dialect, field, Op.Between, condition.$between, offset)
+    return compileField(dialect, field, Op.Between, condition.$between, offset, options)
 
-  return compileField(dialect, field, Op.Eq, condition as Value, offset)
+  return compileField(dialect, field, Op.Eq, condition as Value, offset, options)
 }
 
 /** 将 OrmWhereCondition 编译为 SQL（带占位符） */
-export function compileWhere(dialect: Dialect, where: OrmWhereCondition, offset = 0): InternalSQL {
+export function compileWhere(
+  dialect: Dialect,
+  where: OrmWhereCondition,
+  offset = 0,
+  options?: CompileOptions,
+): InternalSQL {
   const parts: string[] = []
   const params: Values = []
 
@@ -233,8 +260,8 @@ export function compileWhere(dialect: Dialect, where: OrmWhereCondition, offset 
     if (key === '$or' && Array.isArray(value)) {
       const orParts: string[] = []
       for (const c of value) {
-        const [sql, vals] = compileWhere(dialect, c as OrmWhereCondition, offset + params.length)
-        if (sql) {
+        const [sql, vals] = compileWhere(dialect, c as OrmWhereCondition, offset + params.length, options)
+        if (sql && sql !== '1=1') {
           orParts.push(`(${sql})`)
           params.push(...vals)
         }
@@ -248,8 +275,8 @@ export function compileWhere(dialect: Dialect, where: OrmWhereCondition, offset 
     if (key === '$and' && Array.isArray(value)) {
       const andParts: string[] = []
       for (const c of value) {
-        const [sql, vals] = compileWhere(dialect, c as OrmWhereCondition, offset + params.length)
-        if (sql) {
+        const [sql, vals] = compileWhere(dialect, c as OrmWhereCondition, offset + params.length, options)
+        if (sql && sql !== '1=1') {
           andParts.push(`(${sql})`)
           params.push(...vals)
         }
@@ -265,9 +292,12 @@ export function compileWhere(dialect: Dialect, where: OrmWhereCondition, offset 
       key,
       value as OrmFieldCondition,
       offset + params.length,
+      options,
     )
-    parts.push(sql)
-    params.push(...vals)
+    if (sql) {
+      parts.push(sql)
+      params.push(...vals)
+    }
   }
 
   return [parts.length > 0 ? parts.join(' AND ') : '1=1', params]
@@ -278,7 +308,8 @@ export function compileWhereToSQL(
   dialect: Dialect,
   where: OrmWhereCondition,
   offset = 0,
+  options?: CompileOptions,
 ): SQLResult {
-  const [sql, params] = compileWhere(dialect, where, offset)
+  const [sql, params] = compileWhere(dialect, where, offset, options)
   return toResult(dialect, sql, params)
 }

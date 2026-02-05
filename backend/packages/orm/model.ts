@@ -15,7 +15,7 @@ import type {
   ColumnBuilder,
 } from './types'
 import { escape } from './utils'
-import { Builder, parse, type Dialect } from '@pkg/ssql'
+import { Builder, parse, type Dialect, type CompileOptions } from '@pkg/ssql'
 
 /** Model 内部配置（schema 已解析） */
 interface ModelInternalConfig<S extends SchemaDefinition> {
@@ -39,16 +39,20 @@ function extractFormatFromSchema<S extends SchemaDefinition>(schema: S): FormatC
   return format
 }
 
-/** 解析 where 条件为 SQL 字符串 */
-function resolveWhereSQL(dialect: Dialect, where: WhereInput | undefined): string {
+/** 解析 where 条件为 SQL 字符串（支持字段白名单验证） */
+function resolveWhereSQL(
+  dialect: Dialect,
+  where: WhereInput | undefined,
+  options?: CompileOptions,
+): string {
   if (!where) return ''
   if (where instanceof Builder) {
-    return where.toWhereSQL(dialect)
+    return where.toWhereSQL(dialect, options)
   }
   // 字符串：解析 SSQL 然后编译
   const expr = parse(where)
   if (!expr) return ''
-  const [raw] = expr.toSQL(dialect)
+  const [raw] = expr.toSQL(dialect, 0, options)
   return raw
 }
 
@@ -123,6 +127,8 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
   readonly schema: S
   readonly primaryKey: keyof S
   readonly format: FormatConfig<S>
+  /** 编译选项（包含字段白名单，用于防止 SQL 注入） */
+  private readonly compileOptions: CompileOptions
 
   constructor(
     private db: SQL,
@@ -134,6 +140,11 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
     this.primaryKey = config.primaryKey ?? this.detectPrimaryKey()
     // 从 schema 中提取 format 配置
     this.format = extractFormatFromSchema(config.schema)
+    // 设置编译选项，字段白名单为 schema 的所有字段名
+    this.compileOptions = {
+      allowedFields: Object.keys(config.schema),
+      throwOnInvalidField: true,
+    }
   }
 
   // ============ Schema 生成 ============
@@ -319,8 +330,8 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
 
     let sql = `SELECT ${selectCols} FROM ${this.quote(this.tableName)}`
 
-    // WHERE
-    const whereSQL = resolveWhereSQL(this.dialect, options.where)
+    // WHERE（使用字段白名单验证防止 SQL 注入）
+    const whereSQL = resolveWhereSQL(this.dialect, options.where, this.compileOptions)
     if (whereSQL) {
       sql += ` WHERE ${whereSQL}`
     }
@@ -386,7 +397,7 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
   async count(where?: WhereInput): Promise<number> {
     let sql = `SELECT COUNT(*) as count FROM ${this.quote(this.tableName)}`
 
-    const whereSQL = resolveWhereSQL(this.dialect, where)
+    const whereSQL = resolveWhereSQL(this.dialect, where, this.compileOptions)
     if (whereSQL) {
       sql += ` WHERE ${whereSQL}`
     }
@@ -526,7 +537,7 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
 
     if (setParts.length === 0) return 0
 
-    const whereClause = resolveWhereSQL(this.dialect, where)
+    const whereClause = resolveWhereSQL(this.dialect, where, this.compileOptions)
     if (!whereClause) return 0
     const sql = `UPDATE ${this.quote(this.tableName)} SET ${setParts.join(', ')} WHERE ${whereClause}`
 
@@ -588,7 +599,7 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
 
   /** 根据条件删除 */
   async deleteMany(where: WhereInput): Promise<number> {
-    const whereClause = resolveWhereSQL(this.dialect, where)
+    const whereClause = resolveWhereSQL(this.dialect, where, this.compileOptions)
     if (!whereClause) return 0
 
     // 先获取数量
