@@ -1,12 +1,6 @@
 import { Elysia } from 'elysia'
 import { permissionService } from './service'
-import {
-  createPermissionBody,
-  updatePermissionBody,
-  permissionIdParams,
-  permissionQueryParams,
-  PermissionSchema,
-} from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -17,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import Permission from '@/models/permission'
 
 /** 权限管理控制器（管理端） */
 export const permissionAdminController = new Elysia({
@@ -34,9 +29,9 @@ export const permissionAdminController = new Elysia({
       return R.page(result)
     },
     {
-      query: permissionQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(PermissionSchema, '权限列表分页数据'),
+        200: PagedResponse(Permission.getSchema(), '权限列表分页数据'),
       },
       detail: {
         summary: '获取权限列表',
@@ -57,9 +52,9 @@ export const permissionAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: permissionIdParams,
+      params: idParams({ label: '权限ID' }),
       response: {
-        200: SuccessResponse(PermissionSchema, '权限详情数据'),
+        200: SuccessResponse(Permission.getSchema(), '权限详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -82,9 +77,9 @@ export const permissionAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: createPermissionBody,
+      body: Permission.getSchema({ exclude: ['id'], required: ['name', 'code'] }),
       response: {
-        200: SuccessResponse(PermissionSchema, '新创建的权限信息'),
+        200: SuccessResponse(Permission.getSchema(), '新创建的权限信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -112,10 +107,10 @@ export const permissionAdminController = new Elysia({
       return R.ok(data, '更新成功')
     },
     {
-      params: permissionIdParams,
-      body: updatePermissionBody,
+      params: idParams({ label: '权限ID' }),
+      body: Permission.getSchema({ exclude: ['id'], partial: true }),
       response: {
-        200: SuccessResponse(PermissionSchema, '更新后的权限信息'),
+        200: SuccessResponse(Permission.getSchema(), '更新后的权限信息'),
         400: ErrorResponse,
         404: ErrorResponse,
       },
@@ -138,7 +133,7 @@ export const permissionAdminController = new Elysia({
       return R.success('删除成功')
     },
     {
-      params: permissionIdParams,
+      params: idParams({ label: '权限ID' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,

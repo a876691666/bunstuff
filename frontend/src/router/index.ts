@@ -232,7 +232,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // 设置页面标题
   document.title = (to.meta.title as string) || '后台管理系统'
 
@@ -247,6 +247,16 @@ router.beforeEach((to, from, next) => {
   if (to.name === 'Login' && token) {
     next({ name: 'Dashboard' })
     return
+  }
+
+  // 有 token 时，确保已初始化用户信息和菜单
+  if (token) {
+    const { useAuthStore } = await import('@/stores/auth')
+    const authStore = useAuthStore()
+    // 如果未登录状态，初始化用户信息（包括菜单）
+    if (!authStore.isLoggedIn) {
+      await authStore.init()
+    }
   }
 
   next()

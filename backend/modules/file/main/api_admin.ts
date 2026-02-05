@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { fileService } from './service'
-import { SysFileSchema, fileIdParams, fileQueryParams } from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { filePlugin } from './plugin'
+import SysFile from '@/models/sys-file'
 
 /** 文件管理控制器（管理端） */
 export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 - 文件管理'] })
@@ -26,8 +27,8 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       return R.page(result)
     },
     {
-      query: fileQueryParams,
-      response: { 200: PagedResponse(SysFileSchema, '文件列表') },
+      query: query(),
+      response: { 200: PagedResponse(SysFile.getSchema(), '文件列表') },
       detail: {
         summary: '获取文件列表',
         security: [{ bearerAuth: [] }],
@@ -44,8 +45,8 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       return R.ok(data)
     },
     {
-      params: fileIdParams,
-      response: { 200: SuccessResponse(SysFileSchema), 404: ErrorResponse },
+      params: idParams({ label: '文件ID' }),
+      response: { 200: SuccessResponse(SysFile.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取文件详情',
         security: [{ bearerAuth: [] }],
@@ -73,7 +74,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
         file: t.File({ description: '上传的文件' }),
         storageType: t.Optional(t.String({ description: '存储类型：local/s3', default: 'local' })),
       }),
-      response: { 200: SuccessResponse(SysFileSchema), 400: ErrorResponse },
+      response: { 200: SuccessResponse(SysFile.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '上传文件',
         security: [{ bearerAuth: [] }],
@@ -91,7 +92,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
       return R.success('删除成功')
     },
     {
-      params: fileIdParams,
+      params: idParams({ label: '文件ID' }),
       response: { 200: MessageResponse, 404: ErrorResponse },
       detail: {
         summary: '删除文件',

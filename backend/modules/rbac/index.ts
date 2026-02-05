@@ -31,72 +31,26 @@ export type { CachedRole, CachedPermission } from './main/cache'
 // ============ Menu 模块导出 ============
 export { menuAdminController } from './menu/api_admin'
 export { menuService, MenuService } from './menu/service'
-export {
-  MenuSchema,
-  MenuTreeSchema,
-  createMenuBody,
-  updateMenuBody,
-  menuIdParams,
-  menuQueryParams,
-} from './menu/model'
 
 // ============ Permission 模块导出 ============
 export { permissionAdminController } from './permission/api_admin'
 export { permissionService, PermissionService } from './permission/service'
-export {
-  PermissionSchema,
-  createPermissionBody,
-  updatePermissionBody,
-  permissionIdParams,
-  permissionQueryParams,
-} from './permission/model'
 
 // ============ Permission-Scope 模块导出 ============
 export { permissionScopeAdminController } from './permission-scope/api_admin'
 export { permissionScopeService, PermissionScopeService } from './permission-scope/service'
-export {
-  PermissionScopeSchema,
-  createPermissionScopeBody,
-  updatePermissionScopeBody,
-  permissionScopeIdParams,
-  permissionScopeQueryParams,
-} from './permission-scope/model'
 
 // ============ Role 模块导出 ============
 export { roleAdminController } from './role/api_admin'
 export { roleService, RoleService } from './role/service'
-export {
-  RoleSchema,
-  RoleTreeSchema,
-  createRoleBody,
-  updateRoleBody,
-  roleIdParams,
-  roleQueryParams,
-} from './role/model'
 
 // ============ Role-Menu 模块导出 ============
 export { roleMenuAdminController } from './role-menu/api_admin'
 export { roleMenuService, RoleMenuService } from './role-menu/service'
-export {
-  RoleMenuSchema,
-  createRoleMenuBody,
-  batchSetRoleMenuBody,
-  roleMenuIdParams,
-  roleMenuQueryParams,
-  roleIdParams as roleMenuRoleIdParams,
-} from './role-menu/model'
 
 // ============ Role-Permission 模块导出 ============
 export { rolePermissionAdminController } from './role-permission/api_admin'
 export { rolePermissionService, RolePermissionService } from './role-permission/service'
-export {
-  RolePermissionSchema,
-  createRolePermissionBody,
-  batchSetRolePermissionBody,
-  rolePermissionIdParams,
-  rolePermissionQueryParams,
-  roleIdParams as rolePermissionRoleIdParams,
-} from './role-permission/model'
 
 // 默认导出
 export { rbacController as default } from './main/api_client'

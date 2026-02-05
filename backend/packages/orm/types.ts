@@ -33,6 +33,8 @@ export interface ColumnConfig<T extends ColumnTypeName = ColumnTypeName> {
   autoIncrement?: boolean
   default?: ColumnTypeMap[T] | null | (() => ColumnTypeMap[T] | null)
   unique?: boolean
+  /** 字段描述（用于 API 文档） */
+  description?: string
   /** 序列化：从数据库读取后的转换（数据库 -> 应用） */
   serialize?: SerializeFn<ColumnTypeMap[T]>
   /** 反序列化：写入数据库前的转换（应用 -> 数据库） */
@@ -61,6 +63,9 @@ export interface ColumnBuilder<T extends ColumnTypeName, Nullable extends boolea
       : ColumnTypeMap[T] | (() => ColumnTypeMap[T]),
   ): ColumnBuilder<T, Nullable>
 
+  /** 设置字段描述 */
+  description(text: string): ColumnBuilder<T, Nullable>
+
   /** 设置序列化函数（数据库 -> 应用） */
   serialize(fn: SerializeFn<ColumnTypeMap[T]>): ColumnBuilder<T, Nullable>
 
@@ -86,6 +91,9 @@ export interface NumberColumnBuilder<Nullable extends boolean> extends ColumnBui
   default(
     value: Nullable extends true ? number | null | (() => number | null) : number | (() => number),
   ): NumberColumnBuilder<Nullable>
+
+  /** 设置字段描述 */
+  description(text: string): NumberColumnBuilder<Nullable>
 
   /** 设置序列化函数（数据库 -> 应用） */
   serialize(fn: SerializeFn<number>): NumberColumnBuilder<Nullable>
@@ -206,6 +214,9 @@ export type FormatConfig<S extends SchemaDefinition> = {
 }
 
 // ============ Model 配置 ============
+
+/** 从类实例推断键名 */
+export type InstanceKeys<C> = C extends new () => infer I ? keyof I & string : never
 
 /** Schema 类构造器类型 */
 export type SchemaClass<S extends SchemaDefinition = SchemaDefinition> = {

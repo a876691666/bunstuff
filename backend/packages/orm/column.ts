@@ -55,6 +55,13 @@ class BaseColumnBuilder<
     })
   }
 
+  description(text: string): ColumnBuilder<T, Nullable> {
+    return new BaseColumnBuilder(this._type, this._nullable, {
+      ...this._config,
+      description: text,
+    })
+  }
+
   serialize(fn: SerializeFn<ColumnTypeMap[T]>): ColumnBuilder<T, Nullable> {
     return new BaseColumnBuilder(this._type, this._nullable, {
       ...this._config,
@@ -106,6 +113,13 @@ class NumberColumnBuilderImpl<Nullable extends boolean>
     return new NumberColumnBuilderImpl(this._nullable, {
       ...this._config,
       default: value as any,
+    })
+  }
+
+  override description(text: string): NumberColumnBuilder<Nullable> {
+    return new NumberColumnBuilderImpl(this._nullable, {
+      ...this._config,
+      description: text,
     })
   }
 

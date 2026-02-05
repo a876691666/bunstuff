@@ -24,10 +24,11 @@ export type {
   Builder,
   ColumnFormat,
   FormatConfig,
+  InstanceKeys,
 } from './types'
 
 // Model
-export { Model } from './model'
+export { Model, type GetSchemaOptions } from './model'
 
 // DB and Table types
 export type { SyncTableOptions } from './db'

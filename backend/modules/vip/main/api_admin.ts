@@ -1,26 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { vipService } from './service'
-import {
-  VipTierSchema,
-  VipResourceLimitSchema,
-  UserVipSchema,
-  UserVipDetailSchema,
-  ResourceCheckResultSchema,
-  vipTierIdParams,
-  vipTierQueryParams,
-  createVipTierBody,
-  updateVipTierBody,
-  vipResourceLimitIdParams,
-  createVipResourceLimitBody,
-  updateVipResourceLimitBody,
-  userVipIdParams,
-  userVipQueryParams,
-  userIdParams,
-  upgradeUserVipBody,
-  confirmVipBindingBody,
-  incrementResourceBody,
-  checkResourceBody,
-} from './model'
+import { idParams, query, merge } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -31,6 +11,9 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from './plugin'
+import VipTier from '@/models/vip-tier'
+import VipResourceLimit from '@/models/vip-resource-limit'
+import UserVip from '@/models/user-vip'
 
 /** VIP 管理控制器（管理端） */
 export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - VIP'] })
@@ -47,9 +30,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.page(result)
     },
     {
-      query: vipTierQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(VipTierSchema, 'VIP 等级列表分页数据'),
+        200: PagedResponse(VipTier.getSchema(), 'VIP 等级列表分页数据'),
       },
       detail: {
         summary: '获取 VIP 等级列表',
@@ -69,9 +52,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data)
     },
     {
-      params: vipTierIdParams,
+      params: idParams({ label: 'VIP 等级' }),
       response: {
-        200: SuccessResponse(VipTierSchema, 'VIP 等级详情'),
+        200: SuccessResponse(VipTier.getSchema(), 'VIP 等级详情'),
         404: ErrorResponse,
       },
       detail: {
@@ -93,9 +76,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data, '创建成功')
     },
     {
-      body: createVipTierBody,
+      body: VipTier.getSchema({ exclude: ['id'], partial: true, required: ['name', 'code'] }),
       response: {
-        200: SuccessResponse(VipTierSchema, '新创建的 VIP 等级'),
+        200: SuccessResponse(VipTier.getSchema(), '新创建的 VIP 等级'),
         400: ErrorResponse,
       },
       detail: {
@@ -121,10 +104,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data, '更新成功')
     },
     {
-      params: vipTierIdParams,
-      body: updateVipTierBody,
+      params: idParams({ label: 'VIP 等级' }),
+      body: VipTier.getSchema({ exclude: ['id'], partial: true }),
       response: {
-        200: SuccessResponse(VipTierSchema, '更新后的 VIP 等级'),
+        200: SuccessResponse(VipTier.getSchema(), '更新后的 VIP 等级'),
         400: ErrorResponse,
         404: ErrorResponse,
       },
@@ -151,7 +134,7 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      params: vipTierIdParams,
+      params: idParams({ label: 'VIP 等级' }),
       response: {
         200: MessageResponse,
         400: ErrorResponse,
@@ -176,9 +159,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data)
     },
     {
-      params: vipTierIdParams,
+      params: idParams({ label: 'VIP 等级' }),
       response: {
-        200: SuccessResponse(t.Array(VipResourceLimitSchema), '资源限制列表'),
+        200: SuccessResponse(t.Array(VipResourceLimit.getSchema()), '资源限制列表'),
       },
       detail: {
         summary: '获取 VIP 等级资源限制',
@@ -202,14 +185,19 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      body: createVipResourceLimitBody,
+      body: VipResourceLimit.getSchema({
+        exclude: ['id'],
+        partial: true,
+        required: ['vipTierId', 'resourceKey', 'limitValue'],
+      }),
       response: {
-        200: SuccessResponse(VipResourceLimitSchema, '新创建的资源限制'),
+        200: SuccessResponse(VipResourceLimit.getSchema(), '新创建的资源限制'),
         400: ErrorResponse,
       },
       detail: {
         summary: '创建资源限制',
-        description: '为 VIP 等级创建资源限制\n\n🔐 **所需权限**: `vip:admin:resource-limit:create`',
+        description:
+          '为 VIP 等级创建资源限制\n\n🔐 **所需权限**: `vip:admin:resource-limit:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['vip:admin:resource-limit:create'] } },
       },
@@ -226,10 +214,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data, '更新成功')
     },
     {
-      params: vipResourceLimitIdParams,
-      body: updateVipResourceLimitBody,
+      params: idParams({ label: '资源限制' }),
+      body: VipResourceLimit.getSchema({ exclude: ['id', 'vipTierId'], partial: true }),
       response: {
-        200: SuccessResponse(VipResourceLimitSchema, '更新后的资源限制'),
+        200: SuccessResponse(VipResourceLimit.getSchema(), '更新后的资源限制'),
         404: ErrorResponse,
       },
       detail: {
@@ -251,7 +239,7 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(null, '删除成功')
     },
     {
-      params: vipResourceLimitIdParams,
+      params: idParams({ label: '资源限制' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,
@@ -275,9 +263,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.page(result)
     },
     {
-      query: userVipQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(UserVipSchema, '用户 VIP 列表分页数据'),
+        200: PagedResponse(UserVip.getSchema(), '用户 VIP 列表分页数据'),
       },
       detail: {
         summary: '获取用户 VIP 列表',
@@ -297,9 +285,17 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data)
     },
     {
-      params: userIdParams,
+      params: t.Object({ userId: t.Numeric({ description: '用户 ID' }) }),
       response: {
-        200: SuccessResponse(UserVipDetailSchema, '用户 VIP 详情'),
+        200: SuccessResponse(
+          UserVip.getSchema({
+            vipTier: t.Optional(VipTier.getSchema({ exclude: ['createdAt', 'updatedAt'] })),
+            resourceLimits: t.Optional(
+              t.Array(VipResourceLimit.getSchema({ exclude: ['createdAt', 'updatedAt'] })),
+            ),
+          }),
+          '用户 VIP 详情',
+        ),
         404: ErrorResponse,
       },
       detail: {
@@ -325,9 +321,15 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      body: upgradeUserVipBody,
+      body: t.Object({
+        userId: t.Number({ description: '用户 ID' }),
+        vipTierCode: t.String({ description: 'VIP 等级代码' }),
+        expireTime: t.Optional(
+          t.Nullable(t.String({ description: '过期时间，不传则根据 VIP 等级自动计算' })),
+        ),
+      }),
       response: {
-        200: SuccessResponse(UserVipSchema, '用户 VIP 信息'),
+        200: SuccessResponse(UserVip.getSchema(), '用户 VIP 信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -354,9 +356,15 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      body: upgradeUserVipBody,
+      body: t.Object({
+        userId: t.Number({ description: '用户 ID' }),
+        vipTierCode: t.String({ description: 'VIP 等级代码' }),
+        expireTime: t.Optional(
+          t.Nullable(t.String({ description: '过期时间，不传则根据 VIP 等级自动计算' })),
+        ),
+      }),
       response: {
-        200: SuccessResponse(UserVipSchema, '用户 VIP 信息'),
+        200: SuccessResponse(UserVip.getSchema(), '用户 VIP 信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -381,9 +389,12 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      body: confirmVipBindingBody,
+      body: t.Object({
+        userVipId: t.Number({ description: '用户 VIP ID' }),
+        confirm: t.Boolean({ description: '是否确认绑定' }),
+      }),
       response: {
-        200: SuccessResponse(UserVipSchema, '用户 VIP 信息'),
+        200: SuccessResponse(UserVip.getSchema(), '用户 VIP 信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -408,7 +419,7 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      params: userIdParams,
+      params: t.Object({ userId: t.Numeric({ description: '用户 ID' }) }),
       response: {
         200: MessageResponse,
         400: ErrorResponse,
@@ -432,9 +443,22 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data)
     },
     {
-      body: checkResourceBody,
+      body: t.Object({
+        userId: t.Number({ description: '用户 ID' }),
+        resourceKey: t.String({ description: '资源键' }),
+        amount: t.Optional(t.Number({ description: '需要使用的数量，默认1', default: 1 })),
+      }),
       response: {
-        200: SuccessResponse(ResourceCheckResultSchema, '资源检查结果'),
+        200: SuccessResponse(
+          t.Object({
+            resourceKey: t.String({ description: '资源键' }),
+            currentUsage: t.Number({ description: '当前使用量' }),
+            limitValue: t.Number({ description: '限制值' }),
+            available: t.Number({ description: '剩余可用量，-1表示无限' }),
+            canUse: t.Boolean({ description: '是否可以使用' }),
+          }),
+          '资源检查结果',
+        ),
       },
       detail: {
         summary: '检查资源使用',
@@ -461,9 +485,22 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       }
     },
     {
-      body: incrementResourceBody,
+      body: t.Object({
+        userId: t.Number({ description: '用户 ID' }),
+        resourceKey: t.String({ description: '资源键' }),
+        amount: t.Optional(t.Number({ description: '增加数量，默认1', default: 1 })),
+      }),
       response: {
-        200: SuccessResponse(ResourceCheckResultSchema, '资源使用结果'),
+        200: SuccessResponse(
+          t.Object({
+            resourceKey: t.String({ description: '资源键' }),
+            currentUsage: t.Number({ description: '当前使用量' }),
+            limitValue: t.Number({ description: '限制值' }),
+            available: t.Number({ description: '剩余可用量，-1表示无限' }),
+            canUse: t.Boolean({ description: '是否可以使用' }),
+          }),
+          '资源使用结果',
+        ),
         400: ErrorResponse,
       },
       detail: {
@@ -483,9 +520,20 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
       return R.ok(data)
     },
     {
-      params: userIdParams,
+      params: t.Object({ userId: t.Numeric({ description: '用户 ID' }) }),
       response: {
-        200: SuccessResponse(t.Array(ResourceCheckResultSchema), '用户资源使用列表'),
+        200: SuccessResponse(
+          t.Array(
+            t.Object({
+              resourceKey: t.String({ description: '资源键' }),
+              currentUsage: t.Number({ description: '当前使用量' }),
+              limitValue: t.Number({ description: '限制值' }),
+              available: t.Number({ description: '剩余可用量，-1表示无限' }),
+              canUse: t.Boolean({ description: '是否可以使用' }),
+            }),
+          ),
+          '用户资源使用列表',
+        ),
       },
       detail: {
         summary: '获取用户资源使用情况',

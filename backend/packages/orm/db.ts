@@ -1,5 +1,5 @@
 import { SQL } from 'bun'
-import type { SchemaDefinition, ModelConfig } from './types'
+import type { SchemaDefinition, ModelConfig, InstanceKeys } from './types'
 import {
   generateTempTableName,
   columnToSql,
@@ -153,13 +153,16 @@ export class DB {
    * 创建 Model 实例
    * @param config Model 配置（schema 参数为 Schema 类）
    */
-  async model<S extends SchemaDefinition>(config: ModelConfig<S>): Promise<Model<S>> {
+  async model<
+    C extends { new (): any; getDefinition(): SchemaDefinition },
+    Keys extends string = InstanceKeys<C>,
+  >(config: { tableName: string; schema: C; primaryKey?: string }): Promise<Model<SchemaDefinition, Keys>> {
     // 从 Schema 类获取定义
-    const schemaDefinition = config.schema.getDefinition() as S
+    const schemaDefinition = config.schema.getDefinition()
     await this.syncTable(config.tableName, schemaDefinition)
     return new Model(this.sql, this.dialect, {
       ...config,
       schema: schemaDefinition,
-    })
+    }) as unknown as Model<SchemaDefinition, Keys>
   }
 }

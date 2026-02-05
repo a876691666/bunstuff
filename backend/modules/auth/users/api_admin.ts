@@ -1,6 +1,6 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import { userService } from './service'
-import { createUserBody, updateUserBody, userIdParams, userQueryParams, UserSchema } from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import User from '@/models/users'
 
 /** 用户管理控制器（管理端） */
 export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理 - 用户'] })
@@ -25,9 +26,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       return R.page(result)
     },
     {
-      query: userQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(UserSchema, '用户列表分页数据'),
+        200: PagedResponse(User.getSchema(), '用户列表分页数据'),
       },
       detail: {
         summary: '获取用户列表',
@@ -50,9 +51,9 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       return R.ok(userWithoutPassword)
     },
     {
-      params: userIdParams,
+      params: idParams({ label: '用户ID' }),
       response: {
-        200: SuccessResponse(UserSchema, '用户详情数据'),
+        200: SuccessResponse(User.getSchema(), '用户详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -75,9 +76,14 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       return R.ok(data, '创建成功')
     },
     {
-      body: createUserBody,
+      body: User.getSchema(
+        { exclude: ['id'], required: ['username', 'password'] },
+        {
+          confirmPassword: t.String({ description: '确认密码', minLength: 6, maxLength: 100 }),
+        },
+      ),
       response: {
-        200: SuccessResponse(UserSchema, '新创建的用户信息'),
+        200: SuccessResponse(User.getSchema(), '新创建的用户信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -99,10 +105,10 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       return R.ok(data, '更新成功')
     },
     {
-      params: userIdParams,
-      body: updateUserBody,
+      params: idParams({ label: '用户ID' }),
+      body: User.getSchema({ exclude: ['id', 'password'], partial: true }),
       response: {
-        200: SuccessResponse(UserSchema, '更新后的用户信息'),
+        200: SuccessResponse(User.getSchema(), '更新后的用户信息'),
         404: ErrorResponse,
       },
       detail: {
@@ -124,7 +130,7 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
       return R.success('删除成功')
     },
     {
-      params: userIdParams,
+      params: idParams({ label: '用户ID' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,

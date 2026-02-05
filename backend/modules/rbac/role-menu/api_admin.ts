@@ -1,13 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { roleMenuService } from './service'
-import {
-  createRoleMenuBody,
-  batchSetRoleMenuBody,
-  roleMenuIdParams,
-  roleMenuQueryParams,
-  roleIdParams,
-  RoleMenuSchema,
-} from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -18,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import RoleMenu from '@/models/role-menu'
 
 /** 角色菜单关联管理控制器（管理端） */
 export const roleMenuAdminController = new Elysia({
@@ -35,9 +29,9 @@ export const roleMenuAdminController = new Elysia({
       return R.page(result)
     },
     {
-      query: roleMenuQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(RoleMenuSchema, '角色菜单关联列表分页数据'),
+        200: PagedResponse(RoleMenu.getSchema({ timestamps: false }), '角色菜单关联列表分页数据'),
       },
       detail: {
         summary: '获取角色菜单关联列表',
@@ -57,7 +51,7 @@ export const roleMenuAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: roleIdParams,
+      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
       response: {
         200: SuccessResponse(t.Array(t.Number({ description: '菜单ID' })), '角色关联的菜单ID列表'),
       },
@@ -80,9 +74,9 @@ export const roleMenuAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: roleMenuIdParams,
+      params: idParams({ label: '角色菜单关联ID' }),
       response: {
-        200: SuccessResponse(RoleMenuSchema, '角色菜单关联详情数据'),
+        200: SuccessResponse(RoleMenu.getSchema({ timestamps: false }), '角色菜单关联详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -102,9 +96,9 @@ export const roleMenuAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: createRoleMenuBody,
+      body: RoleMenu.getSchema({ exclude: ['id'], required: ['roleId', 'menuId'], timestamps: false }),
       response: {
-        200: SuccessResponse(RoleMenuSchema, '新创建的角色菜单关联信息'),
+        200: SuccessResponse(RoleMenu.getSchema({ timestamps: false }), '新创建的角色菜单关联信息'),
       },
       detail: {
         summary: '创建角色菜单关联',
@@ -123,9 +117,12 @@ export const roleMenuAdminController = new Elysia({
       return R.ok(data, '设置成功')
     },
     {
-      body: batchSetRoleMenuBody,
+      body: t.Object({
+        roleId: t.Number({ description: '角色ID' }),
+        menuIds: t.Array(t.Number({ description: '菜单ID' }), { description: '菜单ID列表' }),
+      }),
       response: {
-        200: SuccessResponse(t.Array(RoleMenuSchema), '批量创建的角色菜单关联列表'),
+        200: SuccessResponse(t.Array(RoleMenu.getSchema({ timestamps: false })), '批量创建的角色菜单关联列表'),
       },
       detail: {
         summary: '批量设置角色菜单',
@@ -147,7 +144,7 @@ export const roleMenuAdminController = new Elysia({
       return R.success('删除成功')
     },
     {
-      params: roleMenuIdParams,
+      params: idParams({ label: '角色菜单关联ID' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,

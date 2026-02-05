@@ -1,13 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { menuService } from './service'
-import {
-  createMenuBody,
-  updateMenuBody,
-  menuIdParams,
-  menuQueryParams,
-  MenuSchema,
-  MenuTreeSchema,
-} from './model'
+import { idParams, query, tree } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -18,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import Menu from '@/models/menu'
 
 /** 菜单管理控制器（管理端） */
 export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 - 菜单'] })
@@ -32,9 +26,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       return R.page(result)
     },
     {
-      query: menuQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(MenuSchema, '菜单列表分页数据'),
+        200: PagedResponse(Menu.getSchema(), '菜单列表分页数据'),
       },
       detail: {
         summary: '获取菜单列表',
@@ -54,7 +48,25 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
     },
     {
       response: {
-        200: SuccessResponse(t.Array(MenuTreeSchema), '菜单树形结构数据'),
+        200: SuccessResponse(
+          t.Array(
+            tree({
+              id: t.Number({ description: '菜单ID' }),
+              parentId: t.Nullable(t.Number({ description: '父菜单ID' })),
+              name: t.String({ description: '菜单名称' }),
+              path: t.String({ description: '路由路径' }),
+              component: t.Nullable(t.String({ description: '组件路径' })),
+              icon: t.Nullable(t.String({ description: '菜单图标' })),
+              type: t.Number({ description: '菜单类型：1目录 2菜单 3按钮' }),
+              visible: t.Number({ description: '是否可见：1可见 0隐藏' }),
+              status: t.Optional(t.Number({ description: '状态：1启用 0禁用' })),
+              redirect: t.Optional(t.Nullable(t.String({ description: '重定向地址' }))),
+              sort: t.Number({ description: '排序值' }),
+              permCode: t.Optional(t.Nullable(t.String({ description: '权限标识码' }))),
+            }),
+          ),
+          '菜单树形结构数据',
+        ),
       },
       detail: {
         summary: '获取菜单树',
@@ -74,9 +86,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       return R.ok(data)
     },
     {
-      params: menuIdParams,
+      params: idParams({ label: '菜单ID' }),
       response: {
-        200: SuccessResponse(MenuSchema, '菜单详情数据'),
+        200: SuccessResponse(Menu.getSchema(), '菜单详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -96,9 +108,9 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       return R.ok(data, '创建成功')
     },
     {
-      body: createMenuBody,
+      body: Menu.getSchema({ exclude: ['id'], required: ['name', 'path'] }),
       response: {
-        200: SuccessResponse(MenuSchema, '新创建的菜单信息'),
+        200: SuccessResponse(Menu.getSchema(), '新创建的菜单信息'),
       },
       detail: {
         summary: '创建菜单',
@@ -119,10 +131,10 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       return R.ok(data, '更新成功')
     },
     {
-      params: menuIdParams,
-      body: updateMenuBody,
+      params: idParams({ label: '菜单ID' }),
+      body: Menu.getSchema({ exclude: ['id'], partial: true }),
       response: {
-        200: SuccessResponse(MenuSchema, '更新后的菜单信息'),
+        200: SuccessResponse(Menu.getSchema(), '更新后的菜单信息'),
         404: ErrorResponse,
       },
       detail: {
@@ -144,7 +156,7 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       return R.success('删除成功')
     },
     {
-      params: menuIdParams,
+      params: idParams({ label: '菜单ID' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,

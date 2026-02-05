@@ -1,12 +1,6 @@
 import { Elysia } from 'elysia'
 import { configService } from './service'
-import {
-  SysConfigSchema,
-  createSysConfigBody,
-  updateSysConfigBody,
-  sysConfigIdParams,
-  sysConfigQueryParams,
-} from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -18,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { configPlugin } from './plugin'
+import SysConfig from '@/models/sys-config'
 
 /** 参数配置管理控制器（管理端） */
 export const configAdminController = new Elysia({ prefix: '/config', tags: ['管理 - 参数配置'] })
@@ -32,8 +27,8 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       return R.page(result)
     },
     {
-      query: sysConfigQueryParams,
-      response: { 200: PagedResponse(SysConfigSchema, '参数配置列表') },
+      query: query(),
+      response: { 200: PagedResponse(SysConfig.getSchema(), '参数配置列表') },
       detail: {
         summary: '获取参数配置列表',
         security: [{ bearerAuth: [] }],
@@ -50,8 +45,8 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       return R.ok(data)
     },
     {
-      params: sysConfigIdParams,
-      response: { 200: SuccessResponse(SysConfigSchema), 404: ErrorResponse },
+      params: idParams({ label: '参数配置ID' }),
+      response: { 200: SuccessResponse(SysConfig.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取参数配置详情',
         security: [{ bearerAuth: [] }],
@@ -69,8 +64,8 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       return R.ok(data, '创建成功')
     },
     {
-      body: createSysConfigBody,
-      response: { 200: SuccessResponse(SysConfigSchema), 400: ErrorResponse },
+      body: SysConfig.getSchema({ exclude: ['id'], required: ['name', 'key', 'value'] }),
+      response: { 200: SuccessResponse(SysConfig.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '创建参数配置',
         security: [{ bearerAuth: [] }],
@@ -92,9 +87,9 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       return R.ok(data, '更新成功')
     },
     {
-      params: sysConfigIdParams,
-      body: updateSysConfigBody,
-      response: { 200: SuccessResponse(SysConfigSchema), 400: ErrorResponse, 404: ErrorResponse },
+      params: idParams({ label: '参数配置ID' }),
+      body: SysConfig.getSchema({ exclude: ['id'], partial: true }),
+      response: { 200: SuccessResponse(SysConfig.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
       detail: {
         summary: '更新参数配置',
         security: [{ bearerAuth: [] }],
@@ -113,7 +108,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       return R.success('删除成功')
     },
     {
-      params: sysConfigIdParams,
+      params: idParams({ label: '参数配置ID' }),
       response: { 200: MessageResponse, 400: ErrorResponse, 404: ErrorResponse },
       detail: {
         summary: '删除参数配置',

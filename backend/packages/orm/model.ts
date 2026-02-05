@@ -1,4 +1,6 @@
 import { sql, type SQL } from 'bun'
+import { t, type TSchema } from 'elysia'
+import type { TObject, TProperties, TOptional } from '@sinclair/typebox'
 import type {
   SchemaDefinition,
   InferRow,
@@ -10,6 +12,7 @@ import type {
   SqlValue,
   WhereInput,
   FormatConfig,
+  ColumnBuilder,
 } from './types'
 import { escape } from './utils'
 import { Builder, parse, type Dialect } from '@pkg/ssql'
@@ -49,8 +52,73 @@ function resolveWhereSQL(dialect: Dialect, where: WhereInput | undefined): strin
   return raw
 }
 
-/** Model 类 */
-export class Model<S extends SchemaDefinition> {
+// ============ getSchema 类型定义 ============
+
+/** 时间戳字段 */
+const timestampProps = {
+  createdAt: t.String({ description: '创建时间' }),
+  updatedAt: t.String({ description: '更新时间' }),
+} as const
+
+/** ORM Column 转 TypeBox Schema */
+function columnToTypeBox(column: ColumnBuilder<any, any>): TSchema {
+  const { _type, _nullable, _config } = column
+  const { description } = _config
+  const options = description ? { description } : undefined
+
+  let baseType: TSchema
+  switch (_type) {
+    case 'string':
+      baseType = t.String(options)
+      break
+    case 'number':
+      baseType = t.Number(options)
+      break
+    case 'boolean':
+      baseType = t.Boolean(options)
+      break
+    case 'date':
+      baseType = t.String(options)
+      break
+    case 'blob':
+      baseType = t.Any(options)
+      break
+    default:
+      baseType = t.Any(options)
+  }
+
+  return _nullable ? t.Nullable(baseType) : baseType
+}
+
+/** getSchema 选项 - 基础版本 */
+export interface GetSchemaOptionsBase {
+  /** 所有字段可选 */
+  partial?: boolean
+  /** 是否包含时间戳，默认 true */
+  timestamps?: boolean
+  /** Schema 描述 */
+  description?: string
+}
+
+/** getSchema 选项 - 完整版本 */
+export interface GetSchemaOptions<K extends string> extends GetSchemaOptionsBase {
+  /** 包含的字段 */
+  include?: K[]
+  /** 排除的字段 */
+  exclude?: K[]
+  /** 必填字段（在 partial 模式下保持必填） */
+  required?: K[]
+}
+
+// ============ 精确类型推导 ============
+
+import type { TAny } from '@sinclair/typebox'
+
+/** getSchema 返回类型 - 带有具体键名的 TObject */
+type ModelSchema<Keys extends string> = TObject<{ [K in Keys]: TAny }>
+
+/** Model 类 - S 是 SchemaDefinition，K 是具体键名类型 */
+export class Model<S extends SchemaDefinition, K extends string = string> {
   readonly tableName: string
   readonly schema: S
   readonly primaryKey: keyof S
@@ -66,6 +134,101 @@ export class Model<S extends SchemaDefinition> {
     this.primaryKey = config.primaryKey ?? this.detectPrimaryKey()
     // 从 schema 中提取 format 配置
     this.format = extractFormatFromSchema(config.schema)
+  }
+
+  // ============ Schema 生成 ============
+
+  /**
+   * 从 Model 生成 TypeBox Schema
+   *
+   * @example
+   * ```ts
+   * const UserSchema = User.getSchema()
+   * const UserPartial = User.getSchema({ exclude: ['password'], partial: true })
+   * const UserCreate = User.getSchema(
+   *   { exclude: ['id'], required: ['username', 'password'] },
+   *   { confirmPassword: t.String({ description: '确认密码' }) }
+   * )
+   * ```
+   */
+  getSchema(): ModelSchema<K>
+  getSchema<E extends TProperties>(extra: E): ModelSchema<K | (keyof E & string)>
+  getSchema<Exc extends K>(
+    options: { exclude: Exc[]; include?: K[]; required?: K[] } & GetSchemaOptionsBase,
+  ): ModelSchema<Exclude<K, Exc>>
+  getSchema<Exc extends K, E extends TProperties>(
+    options: { exclude: Exc[]; include?: K[]; required?: K[] } & GetSchemaOptionsBase,
+    extra: E,
+  ): ModelSchema<Exclude<K, Exc> | (keyof E & string)>
+  getSchema<Key extends K, E extends TProperties>(
+    optionsOrExtra?: GetSchemaOptions<Key> | E,
+    extra?: E,
+  ): TObject<any> {
+    // 解析参数
+    let options: GetSchemaOptions<Key> = {}
+    let extraFields: TProperties = {}
+
+    if (optionsOrExtra) {
+      // 判断是 options 还是 extra
+      if ('include' in optionsOrExtra || 'exclude' in optionsOrExtra || 'partial' in optionsOrExtra || 'required' in optionsOrExtra || 'timestamps' in optionsOrExtra) {
+        options = optionsOrExtra as GetSchemaOptions<Key>
+        if (extra) extraFields = extra
+      } else {
+        // 第一个参数就是 extra
+        extraFields = optionsOrExtra as TProperties
+      }
+    }
+
+    const {
+      include,
+      exclude = [],
+      partial = false,
+      required = [],
+      timestamps = true,
+      description,
+    } = options
+
+    const properties: TProperties = {}
+
+    // 遍历所有字段
+    for (const [key, column] of Object.entries(this.schema)) {
+      // 跳过时间戳字段（如果设置不包含）
+      if (!timestamps && (key === 'createdAt' || key === 'updatedAt')) {
+        continue
+      }
+
+      // 如果指定了 include，只包含这些字段
+      if (include && !include.includes(key as Key)) {
+        continue
+      }
+
+      // 排除指定字段
+      if (exclude.includes(key as Key)) {
+        continue
+      }
+
+      let prop = columnToTypeBox(column as ColumnBuilder<any, any>)
+
+      // partial 模式下，非 required 字段变为可选
+      if (partial && !required.includes(key as Key)) {
+        prop = t.Optional(prop)
+      }
+
+      properties[key] = prop
+    }
+
+    // 添加时间戳（如果需要且不在原始 schema 中）
+    if (timestamps && !('createdAt' in properties) && !exclude.includes('createdAt' as Key)) {
+      properties.createdAt = timestampProps.createdAt
+    }
+    if (timestamps && !('updatedAt' in properties) && !exclude.includes('updatedAt' as Key)) {
+      properties.updatedAt = timestampProps.updatedAt
+    }
+
+    // 合并额外字段
+    Object.assign(properties, extraFields)
+
+    return t.Object(properties, description ? { description } : undefined)
   }
 
   /** 检测主键 */

@@ -11,11 +11,3 @@ export { noticeController } from './main/api_client'
 export { noticeService, NoticeService, noticeSSE } from './main/service'
 export { noticePlugin } from './main/plugin'
 export type { NoticeContext } from './main/plugin'
-export {
-  NoticeSchema,
-  NoticeWithReadSchema,
-  createNoticeBody,
-  updateNoticeBody,
-  noticeIdParams,
-  noticeQueryParams,
-} from './main/model'

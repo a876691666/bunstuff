@@ -1,17 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { dictService } from './service'
-import {
-  DictTypeSchema,
-  DictDataSchema,
-  createDictTypeBody,
-  updateDictTypeBody,
-  dictTypeIdParams,
-  dictTypeQueryParams,
-  createDictDataBody,
-  updateDictDataBody,
-  dictDataIdParams,
-  dictDataQueryParams,
-} from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -23,6 +12,8 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { dictPlugin } from './plugin'
+import DictType from '@/models/dict-type'
+import DictData from '@/models/dict-data'
 
 /** 字典管理控制器（管理端） */
 export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 - 字典'] })
@@ -38,8 +29,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.page(result)
     },
     {
-      query: dictTypeQueryParams,
-      response: { 200: PagedResponse(DictTypeSchema, '字典类型列表') },
+      query: query(),
+      response: { 200: PagedResponse(DictType.getSchema(), '字典类型列表') },
       detail: {
         summary: '获取字典类型列表',
         description: '分页获取字典类型列表\n\n🔐 **所需权限**: `dict:admin:type:list`',
@@ -57,8 +48,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.ok(data)
     },
     {
-      params: dictTypeIdParams,
-      response: { 200: SuccessResponse(DictTypeSchema), 404: ErrorResponse },
+      params: idParams({ label: '字典类型ID' }),
+      response: { 200: SuccessResponse(DictType.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取字典类型详情',
         security: [{ bearerAuth: [] }],
@@ -76,8 +67,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.ok(data, '创建成功')
     },
     {
-      body: createDictTypeBody,
-      response: { 200: SuccessResponse(DictTypeSchema), 400: ErrorResponse },
+      body: DictType.getSchema({ exclude: ['id'], required: ['name', 'type'] }),
+      response: { 200: SuccessResponse(DictType.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '创建字典类型',
         security: [{ bearerAuth: [] }],
@@ -99,9 +90,9 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.ok(data, '更新成功')
     },
     {
-      params: dictTypeIdParams,
-      body: updateDictTypeBody,
-      response: { 200: SuccessResponse(DictTypeSchema), 400: ErrorResponse, 404: ErrorResponse },
+      params: idParams({ label: '字典类型ID' }),
+      body: DictType.getSchema({ exclude: ['id'], partial: true }),
+      response: { 200: SuccessResponse(DictType.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
       detail: {
         summary: '更新字典类型',
         security: [{ bearerAuth: [] }],
@@ -119,7 +110,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.success('删除成功')
     },
     {
-      params: dictTypeIdParams,
+      params: idParams({ label: '字典类型ID' }),
       response: { 200: MessageResponse, 404: ErrorResponse },
       detail: {
         summary: '删除字典类型',
@@ -137,8 +128,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.page(result)
     },
     {
-      query: dictDataQueryParams,
-      response: { 200: PagedResponse(DictDataSchema, '字典数据列表') },
+      query: query(),
+      response: { 200: PagedResponse(DictData.getSchema(), '字典数据列表') },
       detail: {
         summary: '获取字典数据列表',
         security: [{ bearerAuth: [] }],
@@ -155,8 +146,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.ok(data)
     },
     {
-      params: dictDataIdParams,
-      response: { 200: SuccessResponse(DictDataSchema), 404: ErrorResponse },
+      params: idParams({ label: '字典数据ID' }),
+      response: { 200: SuccessResponse(DictData.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取字典数据详情',
         security: [{ bearerAuth: [] }],
@@ -172,8 +163,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.ok(data, '创建成功')
     },
     {
-      body: createDictDataBody,
-      response: { 200: SuccessResponse(DictDataSchema), 400: ErrorResponse },
+      body: DictData.getSchema({ exclude: ['id'], required: ['dictType', 'label', 'value'] }),
+      response: { 200: SuccessResponse(DictData.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '创建字典数据',
         security: [{ bearerAuth: [] }],
@@ -191,9 +182,9 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.ok(data, '更新成功')
     },
     {
-      params: dictDataIdParams,
-      body: updateDictDataBody,
-      response: { 200: SuccessResponse(DictDataSchema), 400: ErrorResponse, 404: ErrorResponse },
+      params: idParams({ label: '字典数据ID' }),
+      body: DictData.getSchema({ exclude: ['id'], partial: true }),
+      response: { 200: SuccessResponse(DictData.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
       detail: {
         summary: '更新字典数据',
         security: [{ bearerAuth: [] }],
@@ -211,7 +202,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
       return R.success('删除成功')
     },
     {
-      params: dictDataIdParams,
+      params: idParams({ label: '字典数据ID' }),
       response: { 200: MessageResponse, 404: ErrorResponse },
       detail: {
         summary: '删除字典数据',

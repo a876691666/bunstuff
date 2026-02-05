@@ -1,6 +1,9 @@
-import type { InferRow, InsertData, UpdateData } from '../../packages/orm'
+import type { InferRow, InsertData, UpdateData, InstanceKeys } from '../../packages/orm'
 import { db } from '../main'
 import Schema from './schema'
+
+/** UsersSchema 字段键名 */
+export type UserSchemaKeys = keyof InstanceType<typeof Schema>
 
 /** User Model */
 const User = await db.model({

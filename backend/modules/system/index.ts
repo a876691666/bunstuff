@@ -13,19 +13,6 @@ export { dictController } from './dict/api_client'
 export { dictService, DictService, dictCache } from './dict/service'
 export { dictPlugin } from './dict/plugin'
 export type { DictContext } from './dict/plugin'
-export {
-  DictTypeSchema,
-  DictDataSchema,
-  createDictTypeBody,
-  updateDictTypeBody,
-  dictTypeIdParams,
-  dictTypeQueryParams,
-  createDictDataBody,
-  updateDictDataBody,
-  dictDataIdParams,
-  dictDataQueryParams,
-  dictTypeParams,
-} from './dict/model'
 
 // ============ Config 模块导出 ============
 export { configAdminController } from './config/api_admin'
@@ -33,14 +20,6 @@ export { configController } from './config/api_client'
 export { configService, ConfigService, configCache } from './config/service'
 export { configPlugin } from './config/plugin'
 export type { ConfigContext } from './config/plugin'
-export {
-  SysConfigSchema,
-  createSysConfigBody,
-  updateSysConfigBody,
-  sysConfigIdParams,
-  sysConfigQueryParams,
-  sysConfigKeyParams,
-} from './config/model'
 
 // ============ LoginLog 模块导出 ============
 export { loginLogAdminController } from './login-log/api_admin'
@@ -48,4 +27,3 @@ export { loginLogService, LoginLogService } from './login-log/service'
 export type { LoginAction } from './login-log/service'
 export { loginLogPlugin } from './login-log/plugin'
 export type { LoginLogContext } from './login-log/plugin'
-export { LoginLogSchema, loginLogIdParams, loginLogQueryParams } from './login-log/model'

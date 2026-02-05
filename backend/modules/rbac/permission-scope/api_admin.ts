@@ -1,12 +1,6 @@
 import { Elysia } from 'elysia'
 import { permissionScopeService } from './service'
-import {
-  createPermissionScopeBody,
-  updatePermissionScopeBody,
-  permissionScopeIdParams,
-  permissionScopeQueryParams,
-  PermissionScopeSchema,
-} from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -17,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import PermissionScope from '@/models/permission-scope'
 
 /** 数据权限管理控制器（管理端） */
 export const permissionScopeAdminController = new Elysia({
@@ -34,9 +29,9 @@ export const permissionScopeAdminController = new Elysia({
       return R.page(result)
     },
     {
-      query: permissionScopeQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(PermissionScopeSchema, '数据过滤规则列表分页数据'),
+        200: PagedResponse(PermissionScope.getSchema(), '数据过滤规则列表分页数据'),
       },
       detail: {
         summary: '获取数据过滤规则列表',
@@ -57,9 +52,9 @@ export const permissionScopeAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: permissionScopeIdParams,
+      params: idParams({ label: '数据过滤规则ID' }),
       response: {
-        200: SuccessResponse(PermissionScopeSchema, '数据过滤规则详情数据'),
+        200: SuccessResponse(PermissionScope.getSchema(), '数据过滤规则详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -79,9 +74,9 @@ export const permissionScopeAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: createPermissionScopeBody,
+      body: PermissionScope.getSchema({ exclude: ['id'], required: ['permissionId', 'name', 'tableName', 'ssqlRule'] }),
       response: {
-        200: SuccessResponse(PermissionScopeSchema, '新创建的数据过滤规则信息'),
+        200: SuccessResponse(PermissionScope.getSchema(), '新创建的数据过滤规则信息'),
       },
       detail: {
         summary: '创建数据过滤规则',
@@ -103,10 +98,10 @@ export const permissionScopeAdminController = new Elysia({
       return R.ok(data, '更新成功')
     },
     {
-      params: permissionScopeIdParams,
-      body: updatePermissionScopeBody,
+      params: idParams({ label: '数据过滤规则ID' }),
+      body: PermissionScope.getSchema({ exclude: ['id'], partial: true }),
       response: {
-        200: SuccessResponse(PermissionScopeSchema, '更新后的数据过滤规则信息'),
+        200: SuccessResponse(PermissionScope.getSchema(), '更新后的数据过滤规则信息'),
         404: ErrorResponse,
       },
       detail: {
@@ -129,7 +124,7 @@ export const permissionScopeAdminController = new Elysia({
       return R.success('删除成功')
     },
     {
-      params: permissionScopeIdParams,
+      params: idParams({ label: '数据过滤规则ID' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,

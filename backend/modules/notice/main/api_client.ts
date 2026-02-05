@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { noticeService, noticeSSE } from './service'
-import { NoticeWithReadSchema, noticeIdParams } from './model'
+import { idParams } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { noticePlugin } from './plugin'
+import Notice from '@/models/notice'
 
 /** 通知公告客户端控制器 */
 export const noticeController = new Elysia({ prefix: '/notice', tags: ['客户端 - 通知公告'] })
@@ -32,7 +33,16 @@ export const noticeController = new Elysia({ prefix: '/notice', tags: ['客户�
         page: t.Optional(t.Numeric({ description: '页码', default: 1 })),
         pageSize: t.Optional(t.Numeric({ description: '每页条数', default: 10 })),
       }),
-      response: { 200: PagedResponse(NoticeWithReadSchema, '我的通知列表'), 401: ErrorResponse },
+      response: {
+        200: PagedResponse(
+          Notice.getSchema({
+            isRead: t.Boolean({ description: '是否已读' }),
+            readAt: t.Optional(t.Nullable(t.String({ description: '阅读时间' }))),
+          }),
+          '我的通知列表',
+        ),
+        401: ErrorResponse,
+      },
       detail: {
         summary: '获取我的通知列表',
         description: '获取当前用户的通知列表，包含已读状态',
@@ -67,7 +77,7 @@ export const noticeController = new Elysia({ prefix: '/notice', tags: ['客户�
       return R.success('标记成功')
     },
     {
-      params: noticeIdParams,
+      params: idParams({ label: '通知ID' }),
       response: { 200: MessageResponse, 401: ErrorResponse },
       detail: {
         summary: '标记通知已读',

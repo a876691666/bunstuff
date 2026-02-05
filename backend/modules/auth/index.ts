@@ -30,14 +30,5 @@ export { userAdminController } from './users/api_admin'
 // 服务
 export { userService, UserService } from './users/service'
 
-// 模型
-export {
-  UserSchema,
-  createUserBody,
-  updateUserBody,
-  userIdParams,
-  userQueryParams,
-} from './users/model'
-
 // 默认导出
 export { authController as default } from './main/api_client'

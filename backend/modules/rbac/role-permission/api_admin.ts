@@ -1,13 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { rolePermissionService } from './service'
-import {
-  createRolePermissionBody,
-  batchSetRolePermissionBody,
-  rolePermissionIdParams,
-  rolePermissionQueryParams,
-  roleIdParams,
-  RolePermissionSchema,
-} from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -18,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import RolePermission from '@/models/role-permission'
 
 /** 角色权限关联管理控制器（管理端） */
 export const rolePermissionAdminController = new Elysia({
@@ -35,9 +29,9 @@ export const rolePermissionAdminController = new Elysia({
       return R.page(result)
     },
     {
-      query: rolePermissionQueryParams,
+      query: query(),
       response: {
-        200: PagedResponse(RolePermissionSchema, '角色权限关联列表分页数据'),
+        200: PagedResponse(RolePermission.getSchema({ timestamps: false }), '角色权限关联列表分页数据'),
       },
       detail: {
         summary: '获取角色权限关联列表',
@@ -57,7 +51,7 @@ export const rolePermissionAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: roleIdParams,
+      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
       response: {
         200: SuccessResponse(t.Array(t.Number({ description: '权限ID' })), '角色关联的权限ID列表'),
       },
@@ -80,9 +74,9 @@ export const rolePermissionAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: rolePermissionIdParams,
+      params: idParams({ label: '角色权限关联ID' }),
       response: {
-        200: SuccessResponse(RolePermissionSchema, '角色权限关联详情数据'),
+        200: SuccessResponse(RolePermission.getSchema({ timestamps: false }), '角色权限关联详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -102,9 +96,9 @@ export const rolePermissionAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: createRolePermissionBody,
+      body: RolePermission.getSchema({ exclude: ['id'], required: ['roleId', 'permissionId'], timestamps: false }),
       response: {
-        200: SuccessResponse(RolePermissionSchema, '新创建的角色权限关联信息'),
+        200: SuccessResponse(RolePermission.getSchema({ timestamps: false }), '新创建的角色权限关联信息'),
       },
       detail: {
         summary: '创建角色权限关联',
@@ -126,9 +120,12 @@ export const rolePermissionAdminController = new Elysia({
       return R.ok(data, '设置成功')
     },
     {
-      body: batchSetRolePermissionBody,
+      body: t.Object({
+        roleId: t.Number({ description: '角色ID' }),
+        permissionIds: t.Array(t.Number({ description: '权限ID' }), { description: '权限ID列表' }),
+      }),
       response: {
-        200: SuccessResponse(t.Array(RolePermissionSchema), '批量创建的角色权限关联列表'),
+        200: SuccessResponse(t.Array(RolePermission.getSchema({ timestamps: false })), '批量创建的角色权限关联列表'),
       },
       detail: {
         summary: '批量设置角色权限',
@@ -150,7 +147,7 @@ export const rolePermissionAdminController = new Elysia({
       return R.success('删除成功')
     },
     {
-      params: rolePermissionIdParams,
+      params: idParams({ label: '角色权限关联ID' }),
       response: {
         200: MessageResponse,
         404: ErrorResponse,

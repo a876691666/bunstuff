@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia'
 import { configService } from './service'
-import { SysConfigSchema, sysConfigKeyParams } from './model'
 import { R, SuccessResponse } from '@/modules/response'
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
@@ -21,7 +20,7 @@ export const configController = new Elysia({ prefix: '/config', tags: ['客户�
       return R.ok({ key: params.key, value })
     },
     {
-      params: sysConfigKeyParams,
+      params: t.Object({ key: t.String({ description: '参数键名' }) }),
       response: {
         200: SuccessResponse(
           t.Object({

@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 import { loginLogService } from './service'
-import { LoginLogSchema, loginLogIdParams, loginLogQueryParams } from './model'
+import { idParams, query } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { loginLogPlugin } from './plugin'
+import LoginLog from '@/models/login-log'
 
 /** 登录日志管理控制器（管理端） */
 export const loginLogAdminController = new Elysia({
@@ -29,8 +30,8 @@ export const loginLogAdminController = new Elysia({
       return R.page(result)
     },
     {
-      query: loginLogQueryParams,
-      response: { 200: PagedResponse(LoginLogSchema, '登录日志列表') },
+      query: query(),
+      response: { 200: PagedResponse(LoginLog.getSchema({ timestamps: false }), '登录日志列表') },
       detail: {
         summary: '获取登录日志列表',
         security: [{ bearerAuth: [] }],
@@ -47,8 +48,8 @@ export const loginLogAdminController = new Elysia({
       return R.ok(data)
     },
     {
-      params: loginLogIdParams,
-      response: { 200: SuccessResponse(LoginLogSchema), 404: ErrorResponse },
+      params: idParams({ label: '登录日志ID' }),
+      response: { 200: SuccessResponse(LoginLog.getSchema({ timestamps: false })), 404: ErrorResponse },
       detail: {
         summary: '获取登录日志详情',
         security: [{ bearerAuth: [] }],
@@ -66,7 +67,7 @@ export const loginLogAdminController = new Elysia({
       return R.success('删除成功')
     },
     {
-      params: loginLogIdParams,
+      params: idParams({ label: '登录日志ID' }),
       response: { 200: MessageResponse, 404: ErrorResponse },
       detail: {
         summary: '删除登录日志',
