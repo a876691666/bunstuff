@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert, Update } from '@/packages/orm'
 import Menu from '@/models/menu'
 import RoleMenu from '@/models/role-menu'
@@ -16,16 +16,13 @@ export class MenuService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await Menu.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await Menu.count(whereClause)
+    const total = await Menu.count(query?.filter)
 
     return {
       data,
@@ -37,7 +34,7 @@ export class MenuService {
 
   /** 根据ID获取菜单 */
   async findById(id: number) {
-    return await Menu.findOne({ where: where().eq('id', id) })
+    return await Menu.findOne({ where: `id = ${id}` })
   }
 
   /** 创建菜单 */
@@ -57,13 +54,13 @@ export class MenuService {
   /** 删除菜单 */
   async delete(id: number) {
     // 检查是否有子菜单
-    const childMenus = await Menu.findMany({ where: where().eq('parentId', id) })
+    const childMenus = await Menu.findMany({ where: `parentId = ${id}` })
     if (childMenus.length > 0) {
       throw new Error(`无法删除菜单：存在 ${childMenus.length} 个子菜单`)
     }
 
     // 级联删除角色菜单关联
-    await RoleMenu.deleteMany(where().eq('menuId', id))
+    await RoleMenu.deleteMany(`menuId = ${id}`)
 
     // 删除菜单
     const result = await Menu.delete(id)

@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Row, Insert, Update } from '@/packages/orm'
 import VipTier from '@/models/vip-tier'
 import VipResourceLimit from '@/models/vip-resource-limit'
@@ -34,29 +34,26 @@ export class VipService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await VipTier.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'id', order: 'asc' }],
     })
 
-    const total = await VipTier.count(whereClause)
+    const total = await VipTier.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
 
   /** 根据 ID 获取 VIP 等级 */
   async findTierById(id: number) {
-    return await VipTier.findOne({ where: where().eq('id', id) })
+    return await VipTier.findOne({ where: `id = ${id}` })
   }
 
   /** 根据代码获取 VIP 等级 */
   async findTierByCode(code: string) {
-    return await VipTier.findOne({ where: where().eq('code', code) })
+    return await VipTier.findOne({ where: `code = '${code}'` })
   }
 
   /** 创建 VIP 等级 */
@@ -72,12 +69,12 @@ export class VipService {
   /** 删除 VIP 等级 */
   async deleteTier(id: number) {
     // 检查是否有用户使用该 VIP 等级
-    const usersWithTier = await UserVip.findMany({ where: where().eq('vipTierId', id) })
+    const usersWithTier = await UserVip.findMany({ where: `vipTierId = ${id}` })
     if (usersWithTier.length > 0) {
       throw new Error(`无法删除 VIP 等级：有 ${usersWithTier.length} 个用户正在使用`)
     }
     // 级联删除资源限制
-    await VipResourceLimit.deleteMany(where().eq('vipTierId', id))
+    await VipResourceLimit.deleteMany(`vipTierId = ${id}`)
     return await VipTier.delete(id)
   }
 
@@ -85,19 +82,19 @@ export class VipService {
 
   /** 获取 VIP 等级的资源限制 */
   async findResourceLimitsByTierId(vipTierId: number) {
-    return await VipResourceLimit.findMany({ where: where().eq('vipTierId', vipTierId) })
+    return await VipResourceLimit.findMany({ where: `vipTierId = ${vipTierId}` })
   }
 
   /** 根据 ID 获取资源限制 */
   async findResourceLimitById(id: number) {
-    return await VipResourceLimit.findOne({ where: where().eq('id', id) })
+    return await VipResourceLimit.findOne({ where: `id = ${id}` })
   }
 
   /** 创建资源限制 */
   async createResourceLimit(data: Insert<typeof VipResourceLimit>) {
     // 检查是否已存在相同的资源限制
     const existing = await VipResourceLimit.findOne({
-      where: where().eq('vipTierId', data.vipTierId).eq('resourceKey', data.resourceKey),
+      where: `vipTierId = ${data.vipTierId} && resourceKey = '${data.resourceKey}'`,
     })
     if (existing) {
       throw new Error('该 VIP 等级已存在相同资源键的限制')
@@ -123,17 +120,14 @@ export class VipService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await UserVip.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'id', order: 'desc' }],
     })
 
-    const total = await UserVip.count(whereClause)
+    const total = await UserVip.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
@@ -147,7 +141,7 @@ export class VipService {
     | null
   > {
     const userVip = await UserVip.findOne({
-      where: where().eq('userId', userId).eq('status', 1),
+      where: `userId = ${userId} && status = 1`,
     })
 
     if (!userVip) return null
@@ -166,7 +160,7 @@ export class VipService {
 
   /** 根据 ID 获取用户 VIP */
   async getUserVipById(id: number) {
-    return await UserVip.findOne({ where: where().eq('id', id) })
+    return await UserVip.findOne({ where: `id = ${id}` })
   }
 
   /**
@@ -194,14 +188,14 @@ export class VipService {
     }
 
     // 获取用户信息
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) {
       throw new Error('用户不存在')
     }
 
     // 检查用户是否已有 VIP
     const existingVip = await UserVip.findOne({
-      where: where().eq('userId', userId).eq('status', 1),
+      where: `userId = ${userId} && status = 1`,
     })
 
     // 计算过期时间
@@ -268,14 +262,14 @@ export class VipService {
     }
 
     // 获取用户信息
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) {
       throw new Error('用户不存在')
     }
 
     // 检查用户是否已有 VIP
     const existingVip = await UserVip.findOne({
-      where: where().eq('userId', userId).eq('status', 1),
+      where: `userId = ${userId} && status = 1`,
     })
 
     // 计算过期时间
@@ -388,7 +382,7 @@ export class VipService {
    */
   async cancelUserVip(userId: number) {
     const userVip = await UserVip.findOne({
-      where: where().eq('userId', userId).eq('status', 1),
+      where: `userId = ${userId} && status = 1`,
     })
 
     if (!userVip) {
@@ -459,7 +453,7 @@ export class VipService {
 
     // 获取当前使用量
     const usage = await UserResourceUsage.findOne({
-      where: where().eq('userId', userId).eq('resourceKey', resourceKey),
+      where: `userId = ${userId} && resourceKey = '${resourceKey}'`,
     })
     const currentUsage = usage?.usageCount ?? 0
     const available = limitValue - currentUsage
@@ -488,7 +482,7 @@ export class VipService {
 
     // 获取或创建使用记录
     let usage = await UserResourceUsage.findOne({
-      where: where().eq('userId', userId).eq('resourceKey', resourceKey),
+      where: `userId = ${userId} && resourceKey = '${resourceKey}'`,
     })
 
     if (usage) {
@@ -514,7 +508,7 @@ export class VipService {
    */
   async decrementResourceUsage(userId: number, resourceKey: string, amount: number = 1) {
     const usage = await UserResourceUsage.findOne({
-      where: where().eq('userId', userId).eq('resourceKey', resourceKey),
+      where: `userId = ${userId} && resourceKey = '${resourceKey}'`,
     })
 
     if (usage && usage.usageCount > 0) {
@@ -534,7 +528,7 @@ export class VipService {
     if (!userVip) return []
 
     const usages = await UserResourceUsage.findMany({
-      where: where().eq('userId', userId),
+      where: `userId = ${userId}`,
     })
 
     // 组合资源限制和使用情况

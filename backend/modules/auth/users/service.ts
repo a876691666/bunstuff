@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert, Update } from '@/packages/orm'
 import User from '@/models/users'
 
@@ -14,16 +14,13 @@ export class UserService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await User.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await User.count(whereClause)
+    const total = await User.count(query?.filter)
 
     return {
       data,
@@ -35,12 +32,12 @@ export class UserService {
 
   /** 根据ID获取用户 */
   async findById(id: number) {
-    return await User.findOne({ where: where().eq('id', id) })
+    return await User.findOne({ where: `id = ${id}` })
   }
 
   /** 根据用户名获取用户 */
   async findByUsername(username: string) {
-    return await User.findOne({ where: where().eq('username', username) })
+    return await User.findOne({ where: `username = '${username}'` })
   }
 
   /** 创建用户 */

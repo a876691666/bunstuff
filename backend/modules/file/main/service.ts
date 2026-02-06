@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Row, Insert } from '@/packages/orm'
 import SysFile from '@/models/sys-file'
 import * as path from 'path'
@@ -45,28 +45,25 @@ export class FileService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await SysFile.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'createdAt', order: 'DESC' }],
     })
-    const total = await SysFile.count(whereClause)
+    const total = await SysFile.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
 
   /** 根据ID获取文件 */
   async findById(id: number) {
-    return await SysFile.findOne({ where: where().eq('id', id) })
+    return await SysFile.findOne({ where: `id = ${id}` })
   }
 
   /** 根据MD5获取文件（用于秒传） */
   async findByMd5(md5: string) {
-    return await SysFile.findOne({ where: where().eq('md5', md5) })
+    return await SysFile.findOne({ where: `md5 = '${md5}'` })
   }
 
   /** 上传文件到本地 */

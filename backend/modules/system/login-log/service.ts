@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert } from '@/packages/orm'
 import LoginLog from '@/models/login-log'
 
@@ -17,23 +17,20 @@ export class LoginLogService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await LoginLog.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'loginTime', order: 'DESC' }],
     })
-    const total = await LoginLog.count(whereClause)
+    const total = await LoginLog.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
 
   /** 根据ID获取登录日志 */
   async findById(id: number) {
-    return await LoginLog.findOne({ where: where().eq('id', id) })
+    return await LoginLog.findOne({ where: `id = ${id}` })
   }
 
   /** 删除登录日志 */
@@ -43,7 +40,7 @@ export class LoginLogService {
 
   /** 清空登录日志 */
   async clear() {
-    return await LoginLog.deleteMany(where())
+    return await LoginLog.deleteMany()
   }
 
   /** 记录登录日志 */

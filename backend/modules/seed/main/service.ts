@@ -1,4 +1,4 @@
-import { where } from '@pkg/ssql'
+
 import type { Insert } from '@/packages/orm'
 import SeedLog from '@/models/seed-log'
 
@@ -30,7 +30,7 @@ export class SeedService {
 
   /** 检查 Seed 是否已执行 */
   async isExecuted(name: string): Promise<boolean> {
-    const log = await SeedLog.findOne({ where: `name = "${name}" && status = 1` })
+    const log = await SeedLog.findOne({ where: `name = '${name}' && status = 1` })
     return !!log
   }
 
@@ -56,7 +56,7 @@ export class SeedService {
     const now = new Date().toISOString()
 
     // 删除之前的失败记录（避免唯一约束冲突）
-    const failedLog = await SeedLog.findOne({ where: `name = "${name}" && status = 0` })
+    const failedLog = await SeedLog.findOne({ where: `name = '${name}' && status = 0` })
     if (failedLog) {
       await SeedLog.delete(failedLog.id)
     }
@@ -129,7 +129,7 @@ export class SeedService {
 
   /** 重置 Seed（删除执行记录） */
   async resetSeed(name: string): Promise<boolean> {
-    const log = await SeedLog.findOne({ where: where().eq('name', name) })
+    const log = await SeedLog.findOne({ where: `name = '${name}'` })
     if (log) {
       await SeedLog.delete(log.id)
       return true

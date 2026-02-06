@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Row, Insert, Update } from '@/packages/orm'
 import Notice from '@/models/notice'
 import NoticeRead from '@/models/notice-read'
@@ -66,23 +66,20 @@ export class NoticeService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await Notice.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'createdAt', order: 'DESC' }],
     })
-    const total = await Notice.count(whereClause)
+    const total = await Notice.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
 
   /** 根据ID获取通知公告 */
   async findById(id: number) {
-    return await Notice.findOne({ where: where().eq('id', id) })
+    return await Notice.findOne({ where: `id = ${id}` })
   }
 
   /** 创建通知公告 */
@@ -103,7 +100,7 @@ export class NoticeService {
   /** 删除通知公告 */
   async delete(id: number) {
     // 删除关联的已读记录
-    await NoticeRead.deleteMany(where().eq('noticeId', id))
+    await NoticeRead.deleteMany(`noticeId = ${id}`)
     return await Notice.delete(id)
   }
 
@@ -129,7 +126,7 @@ export class NoticeService {
 
     // 获取正常状态的公告
     const notices = await Notice.findMany({
-      where: where().eq('status', 1),
+      where: `status = 1`,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'createdAt', order: 'DESC' }],
@@ -137,7 +134,7 @@ export class NoticeService {
 
     // 获取用户的已读记录
     const readRecords = await NoticeRead.findMany({
-      where: where().eq('userId', userId),
+      where: `userId = ${userId}`,
     })
     const readMap = new Map(readRecords.map((r) => [r.noticeId, r.readAt]))
 
@@ -148,7 +145,7 @@ export class NoticeService {
       readAt: readMap.get(notice.id)?.toISOString() || null,
     }))
 
-    const total = await Notice.count(where().eq('status', 1))
+    const total = await Notice.count(`status = 1`)
 
     return { data, total, page, pageSize }
   }
@@ -157,7 +154,7 @@ export class NoticeService {
   async markAsRead(noticeId: number, userId: number) {
     // 检查是否已读
     const existing = await NoticeRead.findOne({
-      where: where().eq('noticeId', noticeId).and().eq('userId', userId),
+      where: `noticeId = ${noticeId} && userId = ${userId}`,
     })
     if (existing) return existing
 
@@ -170,7 +167,7 @@ export class NoticeService {
 
   /** 批量标记已读 */
   async markAllAsRead(userId: number) {
-    const notices = await Notice.findMany({ where: where().eq('status', 1) })
+    const notices = await Notice.findMany({ where: `status = 1` })
     for (const notice of notices) {
       await this.markAsRead(notice.id, userId)
     }
@@ -179,8 +176,8 @@ export class NoticeService {
 
   /** 获取未读数量 */
   async getUnreadCount(userId: number): Promise<number> {
-    const totalNotices = await Notice.count(where().eq('status', 1))
-    const readCount = await NoticeRead.count(where().eq('userId', userId))
+    const totalNotices = await Notice.count(`status = 1`)
+    const readCount = await NoticeRead.count(`userId = ${userId}`)
     return Math.max(0, totalNotices - readCount)
   }
 }

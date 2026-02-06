@@ -31,7 +31,9 @@ export const loginLogAdminController = new Elysia({
     },
     {
       query: query(),
-      response: { 200: PagedResponse(LoginLog.getSchema({ timestamps: false }), '登录日志列表') },
+      response: {
+        200: PagedResponse(LoginLog.getSchema({ exclude: [], timestamps: false }), '登录日志列表'),
+      },
       detail: {
         summary: '获取登录日志列表',
         security: [{ bearerAuth: [] }],
@@ -49,7 +51,10 @@ export const loginLogAdminController = new Elysia({
     },
     {
       params: idParams({ label: '登录日志ID' }),
-      response: { 200: SuccessResponse(LoginLog.getSchema({ timestamps: false })), 404: ErrorResponse },
+      response: {
+        200: SuccessResponse(LoginLog.getSchema({ exclude: [], timestamps: false })),
+        404: ErrorResponse,
+      },
       detail: {
         summary: '获取登录日志详情',
         security: [{ bearerAuth: [] }],

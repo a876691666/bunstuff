@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert, Update } from '@/packages/orm'
 import PermissionScope from '@/models/permission-scope'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -15,16 +15,13 @@ export class PermissionScopeService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await PermissionScope.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await PermissionScope.count(whereClause)
+    const total = await PermissionScope.count(query?.filter)
 
     return {
       data,
@@ -36,12 +33,12 @@ export class PermissionScopeService {
 
   /** 根据ID获取数据过滤规则 */
   async findById(id: number) {
-    return await PermissionScope.findOne({ where: where().eq('id', id) })
+    return await PermissionScope.findOne({ where: `id = ${id}` })
   }
 
   /** 根据权限ID获取数据过滤规则列表 */
   async findByPermissionId(permissionId: number) {
-    return await PermissionScope.findMany({ where: where().eq('permissionId', permissionId) })
+    return await PermissionScope.findMany({ where: `permissionId = ${permissionId}` })
   }
 
   /** 创建数据过滤规则 */

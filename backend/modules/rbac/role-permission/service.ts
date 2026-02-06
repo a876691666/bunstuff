@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert } from '@/packages/orm'
 import RolePermission from '@/models/role-permission'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -15,16 +15,13 @@ export class RolePermissionService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await RolePermission.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await RolePermission.count(whereClause)
+    const total = await RolePermission.count(query?.filter)
 
     return {
       data,
@@ -36,12 +33,12 @@ export class RolePermissionService {
 
   /** 根据ID获取角色权限关联 */
   async findById(id: number) {
-    return await RolePermission.findOne({ where: where().eq('id', id) })
+    return await RolePermission.findOne({ where: `id = ${id}` })
   }
 
   /** 根据角色ID获取权限ID列表 */
   async findPermissionIdsByRoleId(roleId: number) {
-    const records = await RolePermission.findMany({ where: where().eq('roleId', roleId) })
+    const records = await RolePermission.findMany({ where: `roleId = ${roleId}` })
     return records.map((r) => r.permissionId)
   }
 
@@ -61,7 +58,7 @@ export class RolePermissionService {
 
   /** 根据角色ID删除所有关联 */
   async deleteByRoleId(roleId: number) {
-    const result = await RolePermission.deleteMany(where().eq('roleId', roleId))
+    const result = await RolePermission.deleteMany(`roleId = ${roleId}`)
     await rbacCache.reload()
     return result
   }

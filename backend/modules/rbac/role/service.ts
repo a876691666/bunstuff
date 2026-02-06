@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert, Update } from '@/packages/orm'
 import Role from '@/models/role'
 import RolePermission from '@/models/role-permission'
@@ -18,16 +18,13 @@ export class RoleService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await Role.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await Role.count(whereClause)
+    const total = await Role.count(query?.filter)
 
     return {
       data,
@@ -39,12 +36,12 @@ export class RoleService {
 
   /** 根据ID获取角色 */
   async findById(id: number) {
-    return await Role.findOne({ where: where().eq('id', id) })
+    return await Role.findOne({ where: `id = ${id}` })
   }
 
   /** 根据编码获取角色 */
   async findByCode(code: string) {
-    return await Role.findOne({ where: where().eq('code', code) })
+    return await Role.findOne({ where: `code = '${code}'` })
   }
 
   /** 创建角色 */
@@ -64,22 +61,22 @@ export class RoleService {
   /** 删除角色 */
   async delete(id: number) {
     // 检查是否有用户使用该角色
-    const usersWithRole = await User.findMany({ where: where().eq('roleId', id) })
+    const usersWithRole = await User.findMany({ where: `roleId = ${id}` })
     if (usersWithRole.length > 0) {
       throw new Error(`无法删除角色：有 ${usersWithRole.length} 个用户正在使用该角色`)
     }
 
     // 检查是否有子角色
-    const childRoles = await Role.findMany({ where: where().eq('parentId', id) })
+    const childRoles = await Role.findMany({ where: `parentId = ${id}` })
     if (childRoles.length > 0) {
       throw new Error(`无法删除角色：存在 ${childRoles.length} 个子角色`)
     }
 
     // 级联删除角色权限关联
-    await RolePermission.deleteMany(where().eq('roleId', id))
+    await RolePermission.deleteMany(`roleId = ${id}`)
 
     // 级联删除角色菜单关联
-    await RoleMenu.deleteMany(where().eq('roleId', id))
+    await RoleMenu.deleteMany(`roleId = ${id}`)
 
     // 删除角色
     const result = await Role.delete(id)

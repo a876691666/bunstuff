@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert } from '@/packages/orm'
 import RoleMenu from '@/models/role-menu'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -15,16 +15,13 @@ export class RoleMenuService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await RoleMenu.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await RoleMenu.count(whereClause)
+    const total = await RoleMenu.count(query?.filter)
 
     return {
       data,
@@ -36,12 +33,12 @@ export class RoleMenuService {
 
   /** 根据ID获取角色菜单关联 */
   async findById(id: number) {
-    return await RoleMenu.findOne({ where: where().eq('id', id) })
+    return await RoleMenu.findOne({ where: `id = ${id}` })
   }
 
   /** 根据角色ID获取菜单ID列表 */
   async findMenuIdsByRoleId(roleId: number) {
-    const records = await RoleMenu.findMany({ where: where().eq('roleId', roleId) })
+    const records = await RoleMenu.findMany({ where: `roleId = ${roleId}` })
     return records.map((r) => r.menuId)
   }
 
@@ -61,7 +58,7 @@ export class RoleMenuService {
 
   /** 根据角色ID删除所有关联 */
   async deleteByRoleId(roleId: number) {
-    const result = await RoleMenu.deleteMany(where().eq('roleId', roleId))
+    const result = await RoleMenu.deleteMany(`roleId = ${roleId}`)
     await rbacCache.reload()
     return result
   }

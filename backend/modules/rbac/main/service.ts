@@ -4,7 +4,7 @@
  * 所有查询都通过缓存进行，提供高性能的权限查询
  */
 
-import { where } from '@pkg/ssql'
+
 import type { Row } from '@/packages/orm'
 import User from '@/models/users'
 import Menu from '@/models/menu'
@@ -151,7 +151,7 @@ export class RbacService {
 
   /** 获取用户的完整权限信息 */
   async getUserPermissionInfo(userId: number): Promise<UserPermissionInfo | null> {
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) return null
 
     const roleId = user.roleId
@@ -177,28 +177,28 @@ export class RbacService {
 
   /** 检查用户是否拥有指定权限 */
   async userHasPermission(userId: number, permissionCode: string): Promise<boolean> {
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) return false
     return this.hasPermission(user.roleId, permissionCode)
   }
 
   /** 检查用户是否拥有任一权限 */
   async userHasAnyPermission(userId: number, permissionCodes: string[]): Promise<boolean> {
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) return false
     return this.hasAnyPermission(user.roleId, permissionCodes)
   }
 
   /** 获取用户的菜单树 */
   async getUserMenuTree(userId: number): Promise<MenuTreeNode[]> {
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) return []
     return this.getRoleMenuTree(user.roleId)
   }
 
   /** 获取用户对指定表的数据过滤规则 */
   async getUserScopesForTable(userId: number, tableName: string): Promise<PermissionScopeRow[]> {
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) return []
     return this.getRoleScopesForTable(user.roleId, tableName)
   }

@@ -2,7 +2,7 @@
  * 认证服务
  */
 
-import { where } from '@pkg/ssql'
+
 import type { Insert } from '@/packages/orm'
 import User from '@/models/users'
 import { sessionStore, type Session } from './session'
@@ -49,7 +49,7 @@ export class AuthService {
     options?: { ip?: string; userAgent?: string },
   ): Promise<LoginResult> {
     // 查找用户
-    const user = await User.findOne({ where: where().eq('username', username) })
+    const user = await User.findOne({ where: `username = '${username}'` })
     if (!user) {
       return { success: false, message: '用户名或密码错误' }
     }
@@ -100,7 +100,7 @@ export class AuthService {
   }): Promise<RegisterResult> {
     // 检查用户名是否已存在
     const existing = await User.findOne({
-      where: where().eq('username', data.username),
+      where: `username = '${data.username}'`,
     })
     if (existing) {
       return { success: false, message: '用户名已存在' }
@@ -109,7 +109,7 @@ export class AuthService {
     // 检查邮箱是否已存在
     if (data.email) {
       const emailExists = await User.findOne({
-        where: where().eq('email', data.email),
+        where: `email = '${data.email}'`,
       })
       if (emailExists) {
         return { success: false, message: '邮箱已被使用' }
@@ -155,7 +155,7 @@ export class AuthService {
     const session = sessionStore.verify(token)
     if (!session) return null
 
-    const user = await User.findOne({ where: where().eq('id', session.userId) })
+    const user = await User.findOne({ where: `id = ${session.userId}` })
     if (!user) return null
 
     // 不返回密码
@@ -176,7 +176,7 @@ export class AuthService {
     oldPassword: string,
     newPassword: string,
   ): Promise<{ success: boolean; message: string }> {
-    const user = await User.findOne({ where: where().eq('id', userId) })
+    const user = await User.findOne({ where: `id = ${userId}` })
     if (!user) {
       return { success: false, message: '用户不存在' }
     }

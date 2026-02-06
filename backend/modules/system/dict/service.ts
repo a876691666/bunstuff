@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert, Update } from '@/packages/orm'
 import DictType from '@/models/dict-type'
 import DictData from '@/models/dict-data'
@@ -18,7 +18,7 @@ class DictCache {
   /** 重新加载缓存 */
   async reload() {
     this.cache.clear()
-    const allData = await DictData.findMany({ where: where().eq('status', 1) })
+    const allData = await DictData.findMany({ where: `status = 1` })
     for (const item of allData) {
       if (!this.cache.has(item.dictType)) {
         this.cache.set(item.dictType, new Map())
@@ -60,23 +60,20 @@ export class DictService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
-    const data = await DictType.findMany({ where: whereClause, limit: pageSize, offset })
-    const total = await DictType.count(whereClause)
+    const data = await DictType.findMany({ where: query?.filter, limit: pageSize, offset })
+    const total = await DictType.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
 
   /** 根据ID获取字典类型 */
   async findTypeById(id: number) {
-    return await DictType.findOne({ where: where().eq('id', id) })
+    return await DictType.findOne({ where: `id = ${id}` })
   }
 
   /** 根据类型获取字典类型 */
   async findTypeByType(type: string) {
-    return await DictType.findOne({ where: where().eq('type', type) })
+    return await DictType.findOne({ where: `type = '${type}'` })
   }
 
   /** 创建字典类型 */
@@ -97,7 +94,7 @@ export class DictService {
     const type = await this.findTypeById(id)
     if (type) {
       // 删除关联的字典数据
-      await DictData.deleteMany(where().eq('dictType', type.type))
+      await DictData.deleteMany(`dictType = '${type.type}'`)
     }
     const result = await DictType.delete(id)
     await dictCache.reload()
@@ -116,28 +113,25 @@ export class DictService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await DictData.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
-    const total = await DictData.count(whereClause)
+    const total = await DictData.count(query?.filter)
 
     return { data, total, page, pageSize }
   }
 
   /** 根据ID获取字典数据 */
   async findDataById(id: number) {
-    return await DictData.findOne({ where: where().eq('id', id) })
+    return await DictData.findOne({ where: `id = ${id}` })
   }
 
   /** 根据字典类型获取数据列表 */
   async findDataByType(dictType: string) {
     return await DictData.findMany({
-      where: where().eq('dictType', dictType).and().eq('status', 1),
+      where: `dictType = '${dictType}' && status = 1`,
       orderBy: [{ column: 'sort', order: 'ASC' }],
     })
   }

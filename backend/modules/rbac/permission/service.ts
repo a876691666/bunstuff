@@ -1,4 +1,4 @@
-import { where, parse } from '@pkg/ssql'
+
 import type { Insert, Update } from '@/packages/orm'
 import Permission from '@/models/permission'
 import RolePermission from '@/models/role-permission'
@@ -17,16 +17,13 @@ export class PermissionService {
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
 
-    // 解析 ssql 过滤条件
-    const whereClause = query?.filter ? where().expr(parse(query.filter)) : where()
-
     const data = await Permission.findMany({
-      where: whereClause,
+      where: query?.filter,
       limit: pageSize,
       offset,
     })
 
-    const total = await Permission.count(whereClause)
+    const total = await Permission.count(query?.filter)
 
     return {
       data,
@@ -38,12 +35,12 @@ export class PermissionService {
 
   /** 根据ID获取权限 */
   async findById(id: number) {
-    return await Permission.findOne({ where: where().eq('id', id) })
+    return await Permission.findOne({ where: `id = ${id}` })
   }
 
   /** 根据编码获取权限 */
   async findByCode(code: string) {
-    return await Permission.findOne({ where: where().eq('code', code) })
+    return await Permission.findOne({ where: `code = '${code}'` })
   }
 
   /** 创建权限 */
@@ -63,10 +60,10 @@ export class PermissionService {
   /** 删除权限 */
   async delete(id: number) {
     // 级联删除角色权限关联
-    await RolePermission.deleteMany(where().eq('permissionId', id))
+    await RolePermission.deleteMany(`permissionId = ${id}`)
 
     // 级联删除数据过滤规则
-    await PermissionScope.deleteMany(where().eq('permissionId', id))
+    await PermissionScope.deleteMany(`permissionId = ${id}`)
 
     // 删除权限
     const result = await Permission.delete(id)
