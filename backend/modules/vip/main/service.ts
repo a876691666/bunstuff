@@ -1,14 +1,8 @@
 import { where, parse } from '@pkg/ssql'
+import type { Row, Insert, Update } from '@/packages/orm'
 import VipTier from '@/models/vip-tier'
-import type { VipTierInsert, VipTierRow, VipTierUpdate } from '@/models/vip-tier'
 import VipResourceLimit from '@/models/vip-resource-limit'
-import type {
-  VipResourceLimitInsert,
-  VipResourceLimitRow,
-  VipResourceLimitUpdate,
-} from '@/models/vip-resource-limit'
 import UserVip from '@/models/user-vip'
-import type { UserVipRow, UserVipInsert, UserVipUpdate } from '@/models/user-vip'
 import UserResourceUsage from '@/models/user-resource-usage'
 import User from '@/models/users'
 
@@ -66,12 +60,12 @@ export class VipService {
   }
 
   /** 创建 VIP 等级 */
-  async createTier(data: VipTierInsert) {
+  async createTier(data: Insert<typeof VipTier>) {
     return await VipTier.create(data)
   }
 
   /** 更新 VIP 等级 */
-  async updateTier(id: number, data: VipTierUpdate) {
+  async updateTier(id: number, data: Update<typeof VipTier>) {
     return await VipTier.update(id, data)
   }
 
@@ -100,7 +94,7 @@ export class VipService {
   }
 
   /** 创建资源限制 */
-  async createResourceLimit(data: VipResourceLimitInsert) {
+  async createResourceLimit(data: Insert<typeof VipResourceLimit>) {
     // 检查是否已存在相同的资源限制
     const existing = await VipResourceLimit.findOne({
       where: where().eq('vipTierId', data.vipTierId).eq('resourceKey', data.resourceKey),
@@ -112,7 +106,7 @@ export class VipService {
   }
 
   /** 更新资源限制 */
-  async updateResourceLimit(id: number, data: VipResourceLimitUpdate) {
+  async updateResourceLimit(id: number, data: Update<typeof VipResourceLimit>) {
     return await VipResourceLimit.update(id, data)
   }
 
@@ -146,9 +140,9 @@ export class VipService {
 
   /** 获取用户的 VIP 信息 */
   async getUserVip(userId: number): Promise<
-    | (UserVipRow & {
-        vipTier: VipTierRow | null
-        resourceLimits: VipResourceLimitRow[]
+    | (Row<typeof UserVip> & {
+        vipTier: Row<typeof VipTier> | null
+        resourceLimits: Row<typeof VipResourceLimit>[]
       })
     | null
   > {

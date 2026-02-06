@@ -13,21 +13,18 @@
  */
 
 import { where } from '@pkg/ssql'
+import type { Row } from '@/packages/orm'
 import Role from '@/models/role'
 import Permission from '@/models/permission'
 import PermissionScope from '@/models/permission-scope'
 import RolePermission from '@/models/role-permission'
 import RoleMenu from '@/models/role-menu'
 import Menu from '@/models/menu'
-import type { RoleRow } from '@/models/role'
-import type { PermissionRow } from '@/models/permission'
-import type { PermissionScopeRow } from '@/models/permission-scope'
-import type { MenuRow } from '@/models/menu'
 
 // ============ 缓存数据结构 ============
 
 /** 角色缓存数据 */
-export interface CachedRole extends RoleRow {
+export interface CachedRole extends Row<typeof Role> {
   /** 直接子角色ID列表 */
   childIds: number[]
   /** 所有后代角色ID列表（递归） */
@@ -45,9 +42,9 @@ export interface CachedRole extends RoleRow {
 }
 
 /** 权限缓存数据 */
-export interface CachedPermission extends PermissionRow {
+export interface CachedPermission extends Row<typeof Permission> {
   /** 关联的数据过滤规则 */
-  scopes: PermissionScopeRow[]
+  scopes: Row<typeof PermissionScope>[]
 }
 
 /** 缓存状态 */
@@ -64,10 +61,10 @@ interface CacheState {
   permissions: Map<number, CachedPermission>
   /** 权限编码索引 (code -> permissionId) */
   permissionCodeIndex: Map<string, number>
-  /** 菜单缓存 (menuId -> MenuRow) */
-  menus: Map<number, MenuRow>
+  /** 菜单缓存 (menuId -> Row<typeof Menu>) */
+  menus: Map<number, Row<typeof Menu>>
   /** 数据过滤规则缓存 (tableName -> scopes[]) */
-  scopesByTable: Map<string, PermissionScopeRow[]>
+  scopesByTable: Map<string, Row<typeof PermissionScope>[]>
 }
 
 /** 缓存管理器 */
@@ -129,7 +126,7 @@ class RbacCache {
     }
 
     // 3. 构建角色树关系
-    const roleMap = new Map<number, RoleRow>()
+    const roleMap = new Map<number, Row<typeof Role>>()
     const childrenMap = new Map<number, number[]>() // parentId -> childIds
 
     for (const role of roles) {
@@ -315,19 +312,19 @@ class RbacCache {
   }
 
   /** 获取菜单 */
-  getMenu(menuId: number): MenuRow | undefined {
+  getMenu(menuId: number): Row<typeof Menu> | undefined {
     this.ensureInitialized()
     return this.state.menus.get(menuId)
   }
 
   /** 获取所有菜单 */
-  getAllMenus(): MenuRow[] {
+  getAllMenus(): Row<typeof Menu>[] {
     this.ensureInitialized()
     return Array.from(this.state.menus.values())
   }
 
   /** 获取表的数据过滤规则 */
-  getScopesByTable(tableName: string): PermissionScopeRow[] {
+  getScopesByTable(tableName: string): Row<typeof PermissionScope>[] {
     this.ensureInitialized()
     return this.state.scopesByTable.get(tableName) || []
   }
@@ -373,7 +370,7 @@ class RbacCache {
   }
 
   /** 获取角色的所有菜单 */
-  getRoleMenus(roleId: number): MenuRow[] {
+  getRoleMenus(roleId: number): Row<typeof Menu>[] {
     const role = this.getRole(roleId)
     if (!role) return []
     return role.allMenuIds
@@ -383,9 +380,9 @@ class RbacCache {
   }
 
   /** 获取角色的数据过滤规则（按表名分组） */
-  getRoleScopes(roleId: number): Map<string, PermissionScopeRow[]> {
+  getRoleScopes(roleId: number): Map<string, Row<typeof PermissionScope>[]> {
     const permissions = this.getRolePermissions(roleId)
-    const scopeMap = new Map<string, PermissionScopeRow[]>()
+    const scopeMap = new Map<string, Row<typeof PermissionScope>[]>()
 
     for (const perm of permissions) {
       for (const scope of perm.scopes) {

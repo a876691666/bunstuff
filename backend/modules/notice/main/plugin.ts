@@ -3,13 +3,14 @@
  */
 
 import { Elysia } from 'elysia'
+import type { Insert } from '@/packages/orm'
+import Notice from '@/models/notice'
 import { noticeService, noticeSSE } from './service'
-import type { NoticeInsert } from '@/models/notice'
 
 /** 通知公告上下文 */
 export interface NoticeContext {
   /** 发布通知 */
-  publishNotice: (data: Omit<NoticeInsert, 'createBy'>, createBy: number) => Promise<any>
+  publishNotice: (data: Omit<Insert<typeof Notice>, 'createBy'>, createBy: number) => Promise<any>
   /** 标记用户已阅 */
   markAsRead: (noticeId: number, userId: number) => Promise<any>
   /** 获取用户未读数量 */

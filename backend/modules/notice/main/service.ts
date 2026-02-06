@@ -1,7 +1,7 @@
 import { where, parse } from '@pkg/ssql'
+import type { Row, Insert, Update } from '@/packages/orm'
 import Notice from '@/models/notice'
 import NoticeRead from '@/models/notice-read'
-import type { NoticeInsert, NoticeUpdate, NoticeRow } from '@/models/notice'
 
 /** SSE 连接管理 */
 class NoticeSSE {
@@ -24,7 +24,7 @@ class NoticeSSE {
   }
 
   /** 广播新公告给所有用户 */
-  broadcast(notice: NoticeRow) {
+  broadcast(notice: Row<typeof Notice>) {
     const data = `data: ${JSON.stringify({ type: 'new', notice })}\n\n`
     for (const [, controllers] of this.connections) {
       for (const controller of controllers) {
@@ -86,7 +86,7 @@ export class NoticeService {
   }
 
   /** 创建通知公告 */
-  async create(data: NoticeInsert, createBy: number) {
+  async create(data: Insert<typeof Notice>, createBy: number) {
     const result = await Notice.create({ ...data, createBy })
     // 广播新公告
     if (result.status === 1) {
@@ -96,7 +96,7 @@ export class NoticeService {
   }
 
   /** 更新通知公告 */
-  async update(id: number, data: NoticeUpdate) {
+  async update(id: number, data: Update<typeof Notice>) {
     return await Notice.update(id, data)
   }
 

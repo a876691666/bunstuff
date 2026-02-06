@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import Role from '@/models/role'
-import type { RoleInsert, RoleUpdate } from '@/models/role'
 import RolePermission from '@/models/role-permission'
 import RoleMenu from '@/models/role-menu'
 import User from '@/models/users'
@@ -48,14 +48,14 @@ export class RoleService {
   }
 
   /** 创建角色 */
-  async create(data: RoleInsert) {
+  async create(data: Insert<typeof Role>) {
     const result = await Role.create(data)
     await rbacCache.reload()
     return result
   }
 
   /** 更新角色 */
-  async update(id: number, data: RoleUpdate) {
+  async update(id: number, data: Update<typeof Role>) {
     const result = await Role.update(id, data)
     await rbacCache.reload()
     return result

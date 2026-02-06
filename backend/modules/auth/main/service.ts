@@ -3,8 +3,8 @@
  */
 
 import { where } from '@pkg/ssql'
+import type { Insert } from '@/packages/orm'
 import User from '@/models/users'
-import type { UserInsert } from '@/models/users'
 import { sessionStore, type Session } from './session'
 
 /** 登录结果 */
@@ -120,7 +120,7 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(data.password)
 
     // 创建用户
-    const userData: UserInsert = {
+    const userData: Insert<typeof User> = {
       username: data.username,
       password: hashedPassword,
       nickname: data.nickname ?? null,

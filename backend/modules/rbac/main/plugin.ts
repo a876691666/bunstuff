@@ -5,8 +5,9 @@
  */
 
 import { Elysia } from 'elysia'
+import type { Row } from '@/packages/orm'
+import PermissionScope from '@/models/permission-scope'
 import { rbacService } from './service'
-import type { PermissionScopeRow } from '@/models/permission-scope'
 
 /** RBAC Scope 配置 */
 export interface RbacScope {
@@ -28,11 +29,11 @@ declare module 'elysia' {
 /** 数据权限上下文 */
 export interface DataScope {
   /** 按表名分组的数据过滤规则 */
-  scopes: Map<string, PermissionScopeRow[]>
+  scopes: Map<string, Row<typeof PermissionScope>[]>
   /** 获取指定表的 SSQL 过滤规则 */
   getSsqlRules(tableName: string): string[]
   /** 获取指定表的过滤规则 */
-  getScopes(tableName: string): PermissionScopeRow[]
+  getScopes(tableName: string): Row<typeof PermissionScope>[]
 }
 
 /**

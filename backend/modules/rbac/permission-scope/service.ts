@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import PermissionScope from '@/models/permission-scope'
-import type { PermissionScopeInsert, PermissionScopeUpdate } from '@/models/permission-scope'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 数据过滤规则服务 */
@@ -45,14 +45,14 @@ export class PermissionScopeService {
   }
 
   /** 创建数据过滤规则 */
-  async create(data: PermissionScopeInsert) {
+  async create(data: Insert<typeof PermissionScope>) {
     const result = await PermissionScope.create(data)
     await rbacCache.reload()
     return result
   }
 
   /** 更新数据过滤规则 */
-  async update(id: number, data: PermissionScopeUpdate) {
+  async update(id: number, data: Update<typeof PermissionScope>) {
     const result = await PermissionScope.update(id, data)
     await rbacCache.reload()
     return result

@@ -1,8 +1,7 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import DictType from '@/models/dict-type'
 import DictData from '@/models/dict-data'
-import type { DictTypeInsert, DictTypeUpdate } from '@/models/dict-type'
-import type { DictDataInsert, DictDataUpdate } from '@/models/dict-data'
 
 /** 字典缓存 */
 class DictCache {
@@ -81,13 +80,13 @@ export class DictService {
   }
 
   /** 创建字典类型 */
-  async createType(data: DictTypeInsert) {
+  async createType(data: Insert<typeof DictType>) {
     const result = await DictType.create(data)
     return result
   }
 
   /** 更新字典类型 */
-  async updateType(id: number, data: DictTypeUpdate) {
+  async updateType(id: number, data: Update<typeof DictType>) {
     const result = await DictType.update(id, data)
     await dictCache.reload()
     return result
@@ -144,14 +143,14 @@ export class DictService {
   }
 
   /** 创建字典数据 */
-  async createData(data: DictDataInsert) {
+  async createData(data: Insert<typeof DictData>) {
     const result = await DictData.create(data)
     await dictCache.reload()
     return result
   }
 
   /** 更新字典数据 */
-  async updateData(id: number, data: DictDataUpdate) {
+  async updateData(id: number, data: Update<typeof DictData>) {
     const result = await DictData.update(id, data)
     await dictCache.reload()
     return result

@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import Permission from '@/models/permission'
-import type { PermissionInsert, PermissionUpdate } from '@/models/permission'
 import RolePermission from '@/models/role-permission'
 import PermissionScope from '@/models/permission-scope'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -47,14 +47,14 @@ export class PermissionService {
   }
 
   /** 创建权限 */
-  async create(data: PermissionInsert) {
+  async create(data: Insert<typeof Permission>) {
     const result = await Permission.create(data)
     await rbacCache.reload()
     return result
   }
 
   /** 更新权限 */
-  async update(id: number, data: PermissionUpdate) {
+  async update(id: number, data: Update<typeof Permission>) {
     const result = await Permission.update(id, data)
     await rbacCache.reload()
     return result

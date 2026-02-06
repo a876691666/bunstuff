@@ -5,10 +5,11 @@
  */
 
 import { where } from '@pkg/ssql'
+import type { Row } from '@/packages/orm'
 import User from '@/models/users'
+import Menu from '@/models/menu'
+import PermissionScope from '@/models/permission-scope'
 import { rbacCache, type CachedRole, type CachedPermission } from './cache'
-import type { PermissionScopeRow } from '@/models/permission-scope'
-import type { MenuRow } from '@/models/menu'
 
 /** 用户权限信息 */
 export interface UserPermissionInfo {
@@ -23,15 +24,15 @@ export interface UserPermissionInfo {
   /** 权限编码集合 */
   permissionCodes: Set<string>
   /** 菜单列表 */
-  menus: MenuRow[]
+  menus: Row<typeof Menu>[]
   /** 菜单树 */
   menuTree: MenuTreeNode[]
   /** 数据过滤规则（按表名分组） */
-  scopes: Map<string, PermissionScopeRow[]>
+  scopes: Map<string, Row<typeof PermissionScope>[]>
 }
 
 /** 菜单树节点 */
-export interface MenuTreeNode extends MenuRow {
+export interface MenuTreeNode extends Row<typeof Menu> {
   children: MenuTreeNode[]
 }
 

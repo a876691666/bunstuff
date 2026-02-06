@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert } from '@/packages/orm'
 import LoginLog from '@/models/login-log'
-import type { LoginLogInsert } from '@/models/login-log'
 
 /** 登录日志操作类型 */
 export type LoginAction = 'login' | 'logout' | 'kick'

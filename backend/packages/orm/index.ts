@@ -10,9 +10,15 @@ export type {
   InferColumnType,
   SchemaDefinition,
   SchemaClass,
+  // 传统类型（从 Schema 定义推断）
   InferRow,
   InsertData,
   UpdateData,
+  // 新的简洁类型工具（从 Model 实例推断）
+  ModelLike,
+  Row,
+  Insert,
+  Update,
   OrderDirection,
   OrderBy,
   Pagination,

@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert } from '@/packages/orm'
 import RolePermission from '@/models/role-permission'
-import type { RolePermissionInsert } from '@/models/role-permission'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 角色权限关联服务 */
@@ -46,7 +46,7 @@ export class RolePermissionService {
   }
 
   /** 创建角色权限关联 */
-  async create(data: RolePermissionInsert) {
+  async create(data: Insert<typeof RolePermission>) {
     const result = await RolePermission.create(data)
     await rbacCache.reload()
     return result

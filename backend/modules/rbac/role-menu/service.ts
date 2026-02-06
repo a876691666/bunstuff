@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert } from '@/packages/orm'
 import RoleMenu from '@/models/role-menu'
-import type { RoleMenuInsert } from '@/models/role-menu'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 角色菜单关联服务 */
@@ -46,7 +46,7 @@ export class RoleMenuService {
   }
 
   /** 创建角色菜单关联 */
-  async create(data: RoleMenuInsert) {
+  async create(data: Insert<typeof RoleMenu>) {
     const result = await RoleMenu.create(data)
     await rbacCache.reload()
     return result

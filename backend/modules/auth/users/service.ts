@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import User from '@/models/users'
-import type { UserInsert, UserUpdate } from '@/models/users'
 
 /** 用户服务 */
 export class UserService {
@@ -44,13 +44,13 @@ export class UserService {
   }
 
   /** 创建用户 */
-  async create(data: UserInsert) {
+  async create(data: Insert<typeof User>) {
     // TODO: 密码加密
     return await User.create(data)
   }
 
   /** 更新用户 */
-  async update(id: number, data: UserUpdate) {
+  async update(id: number, data: Update<typeof User>) {
     // TODO: 如果更新密码，需要加密
     return await User.update(id, data)
   }

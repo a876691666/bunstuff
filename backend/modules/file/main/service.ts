@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Row, Insert } from '@/packages/orm'
 import SysFile from '@/models/sys-file'
-import type { SysFileInsert, SysFileRow } from '@/models/sys-file'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -70,7 +70,7 @@ export class FileService {
   }
 
   /** 上传文件到本地 */
-  async uploadLocal(file: File, uploadBy: number): Promise<SysFileRow> {
+  async uploadLocal(file: File, uploadBy: number): Promise<Row<typeof SysFile>> {
     const buffer = await file.arrayBuffer()
     const md5 = Bun.hash(buffer).toString(16)
 
@@ -110,7 +110,7 @@ export class FileService {
   }
 
   /** 上传文件到S3 */
-  async uploadS3(file: File, uploadBy: number): Promise<SysFileRow> {
+  async uploadS3(file: File, uploadBy: number): Promise<Row<typeof SysFile>> {
     if (!this.config.s3Config) {
       throw new Error('S3 configuration not set')
     }
@@ -187,7 +187,7 @@ export class FileService {
   }
 
   /** 获取文件内容 (用于下载) */
-  async getFileContent(id: number): Promise<{ buffer: ArrayBuffer; file: SysFileRow } | null> {
+  async getFileContent(id: number): Promise<{ buffer: ArrayBuffer; file: Row<typeof SysFile> } | null> {
     const file = await this.findById(id)
     if (!file) return null
 
@@ -209,7 +209,7 @@ export class FileService {
   }
 
   /** 获取文件流 (用于大文件下载) */
-  async getFileStream(id: number): Promise<{ stream: ReadableStream; file: SysFileRow } | null> {
+  async getFileStream(id: number): Promise<{ stream: ReadableStream; file: Row<typeof SysFile> } | null> {
     const file = await this.findById(id)
     if (!file) return null
 
@@ -230,7 +230,7 @@ export class FileService {
   }
 
   /** 获取文件URL */
-  getFileUrl(file: SysFileRow, baseUrl: string = ''): string {
+  getFileUrl(file: Row<typeof SysFile>, baseUrl: string = ''): string {
     if (file.storageType === 'local') {
       return `${baseUrl}/api/file/download/${file.id}`
     } else if (file.storageType === 's3' && this.config.s3Config) {

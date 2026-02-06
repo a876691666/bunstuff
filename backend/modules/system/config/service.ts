@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import SysConfig from '@/models/sys-config'
-import type { SysConfigInsert, SysConfigUpdate } from '@/models/sys-config'
 
 /** 参数配置缓存 */
 class ConfigCache {
@@ -69,14 +69,14 @@ export class ConfigService {
   }
 
   /** 创建参数配置 */
-  async create(data: SysConfigInsert) {
+  async create(data: Insert<typeof SysConfig>) {
     const result = await SysConfig.create(data)
     await configCache.reload()
     return result
   }
 
   /** 更新参数配置 */
-  async update(id: number, data: SysConfigUpdate) {
+  async update(id: number, data: Update<typeof SysConfig>) {
     const result = await SysConfig.update(id, data)
     await configCache.reload()
     return result

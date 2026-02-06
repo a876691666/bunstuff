@@ -147,6 +147,22 @@ export type InsertData<S extends SchemaDefinition> = Omit<InferRow<S>, OptionalF
 /** 更新数据类型 */
 export type UpdateData<S extends SchemaDefinition> = Partial<InferRow<S>>
 
+// ============ Model 类型工具（从 Model 实例推断） ============
+
+/** Model 结构接口（用于类型推断） */
+export interface ModelLike<S extends SchemaDefinition = SchemaDefinition> {
+  readonly schema: S
+}
+
+/** 从 Model 推断行类型 */
+export type Row<M extends ModelLike> = M extends ModelLike<infer S> ? InferRow<S> : never
+
+/** 从 Model 推断插入类型 */
+export type Insert<M extends ModelLike> = M extends ModelLike<infer S> ? InsertData<S> : never
+
+/** 从 Model 推断更新类型 */
+export type Update<M extends ModelLike> = M extends ModelLike<infer S> ? UpdateData<S> : never
+
 // ============ 排序和分页 ============
 
 /** 排序方向 */

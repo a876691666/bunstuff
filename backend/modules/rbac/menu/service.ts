@@ -1,6 +1,6 @@
 import { where, parse } from '@pkg/ssql'
+import type { Insert, Update } from '@/packages/orm'
 import Menu from '@/models/menu'
-import type { MenuInsert, MenuUpdate } from '@/models/menu'
 import RoleMenu from '@/models/role-menu'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
@@ -41,14 +41,14 @@ export class MenuService {
   }
 
   /** 创建菜单 */
-  async create(data: MenuInsert) {
+  async create(data: Insert<typeof Menu>) {
     const result = await Menu.create(data)
     await rbacCache.reload()
     return result
   }
 
   /** 更新菜单 */
-  async update(id: number, data: MenuUpdate) {
+  async update(id: number, data: Update<typeof Menu>) {
     const result = await Menu.update(id, data)
     await rbacCache.reload()
     return result

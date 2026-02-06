@@ -1,6 +1,6 @@
 import { where } from '@pkg/ssql'
+import type { Insert } from '@/packages/orm'
 import SeedLog from '@/models/seed-log'
-import type { SeedLogInsert } from '@/models/seed-log'
 
 /** Seed 定义 */
 export interface SeedDefinition {
