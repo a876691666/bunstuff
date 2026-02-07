@@ -4,6 +4,7 @@ import type {
   DictData,
   SysConfig,
   LoginLog,
+  OperLog,
   CreateDictTypeRequest,
   UpdateDictTypeRequest,
   CreateDictDataRequest,
@@ -134,4 +135,20 @@ export const loginLogApi = {
 
   /** 清空登录日志 */
   clear: () => http.delete('/admin/login-log/clear'),
+}
+
+/** 管理端操作日志 API（路径前缀: /api/admin/oper-log） */
+export const operLogApi = {
+  /** 获取操作日志列表 */
+  list: (params?: PageParams) =>
+    http.getPage<OperLog>('/admin/oper-log', params as Record<string, unknown>),
+
+  /** 获取操作日志详情 */
+  get: (id: number) => http.get<OperLog>(`/admin/oper-log/${id}`),
+
+  /** 删除操作日志 */
+  delete: (id: number) => http.delete(`/admin/oper-log/${id}`),
+
+  /** 清空操作日志 */
+  clear: () => http.delete('/admin/oper-log/clear'),
 }

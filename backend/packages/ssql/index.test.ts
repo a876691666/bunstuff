@@ -1,5 +1,15 @@
 import { describe, expect, test } from 'bun:test'
-import { where, whereOr, parse, toMySQL, toPostgres, Builder, FieldValidationError, toSQL, mysql } from './index'
+import {
+  where,
+  whereOr,
+  parse,
+  toMySQL,
+  toPostgres,
+  Builder,
+  FieldValidationError,
+  toSQL,
+  mysql,
+} from './index'
 
 describe('Builder', () => {
   test('simple eq', () => {
@@ -255,9 +265,9 @@ describe('Field Validation (SQL Injection Prevention)', () => {
   })
 
   test('混合合法与非法字段时只保留合法字段', () => {
-    const [raw] = toSQL("name = 'test' && password = '123'", mysql, { 
-      allowedFields, 
-      throwOnInvalidField: false 
+    const [raw] = toSQL("name = 'test' && password = '123'", mysql, {
+      allowedFields,
+      throwOnInvalidField: false,
     })
     expect(raw).toBe("`name` = 'test'")
   })
@@ -286,7 +296,7 @@ describe('Field Validation (SQL Injection Prevention)', () => {
 
   // ============ 经典 SQL 注入攻击测试 ============
 
-  test("防止经典 DROP TABLE 注入攻击 - 值中的注入", () => {
+  test('防止经典 DROP TABLE 注入攻击 - 值中的注入', () => {
     // 攻击者尝试在值中注入 SQL: '; DROP TABLE users; --
     // 如果没有转义，拼接后的 SQL 会变成: WHERE name = ''; DROP TABLE users; --'
     const [raw] = where().eq('name', "'; DROP TABLE users; --").toMySQL()
@@ -296,43 +306,43 @@ describe('Field Validation (SQL Injection Prevention)', () => {
     expect(raw).toContain("\\'")
   })
 
-  test("防止 SSQL 值中的 DROP TABLE 注入", () => {
-    const [raw] = toMySQL("name = \"'; DROP TABLE users; --\"")
+  test('防止 SSQL 值中的 DROP TABLE 注入', () => {
+    const [raw] = toMySQL('name = "\'; DROP TABLE users; --"')
     // 单引号被转义，整个注入字符串被当作普通值
     expect(raw).toBe("`name` = '\\'; DROP TABLE users; --'")
   })
 
-  test("防止字段名注入攻击", () => {
+  test('防止字段名注入攻击', () => {
     // 攻击者尝试通过字段名注入（字段白名单阻止）
     expect(() => {
-      toSQL("1=1; DROP TABLE users; --", mysql, { allowedFields: ['name', 'status'] })
+      toSQL('1=1; DROP TABLE users; --', mysql, { allowedFields: ['name', 'status'] })
     }).toThrow()
   })
 
-  test("防止 UNION SELECT 注入", () => {
-    const [raw] = where().eq('id', "1 UNION SELECT * FROM passwords --").toMySQL()
+  test('防止 UNION SELECT 注入', () => {
+    const [raw] = where().eq('id', '1 UNION SELECT * FROM passwords --').toMySQL()
     // 整个字符串被当作值，不会被执行为 SQL
     expect(raw).toBe("`id` = '1 UNION SELECT * FROM passwords --'")
   })
 
-  test("防止 OR 1=1 注入", () => {
+  test('防止 OR 1=1 注入', () => {
     const [raw] = where().eq('password', "' OR '1'='1").toMySQL()
     // 单引号被转义
     expect(raw).toBe("`password` = '\\' OR \\'1\\'=\\'1'")
   })
 
-  test("防止注释截断攻击", () => {
+  test('防止注释截断攻击', () => {
     const [raw] = where().eq('user', "admin'--").toMySQL()
     expect(raw).toBe("`user` = 'admin\\'--'")
   })
 
-  test("防止 NULL 字节注入", () => {
-    const [raw] = where().eq('name', "test\x00DROP TABLE").toMySQL()
+  test('防止 NULL 字节注入', () => {
+    const [raw] = where().eq('name', 'test\x00DROP TABLE').toMySQL()
     // NULL 字节被转义或移除
     expect(raw).toBe("`name` = 'test\\0DROP TABLE'")
   })
 
-  test("PostgreSQL 防止 DROP TABLE 注入", () => {
+  test('PostgreSQL 防止 DROP TABLE 注入', () => {
     const [raw] = where().eq('name', "'; DROP TABLE users; --").toPostgres()
     // PostgreSQL 使用双单引号转义
     expect(raw).toBe(`"name" = '''; DROP TABLE users; --'`)

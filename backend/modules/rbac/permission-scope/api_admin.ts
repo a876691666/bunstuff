@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import PermissionScope from '@/models/permission-scope'
 
 /** 数据权限管理控制器（管理端） */
@@ -21,6 +22,7 @@ export const permissionScopeAdminController = new Elysia({
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取数据过滤规则列表 */
   .get(
     '/',
@@ -59,7 +61,8 @@ export const permissionScopeAdminController = new Elysia({
       },
       detail: {
         summary: '获取数据过滤规则详情',
-        description: '根据ID获取数据过滤规则详细信息\n\n🔐 **所需权限**: `permission-scope:admin:read`',
+        description:
+          '根据ID获取数据过滤规则详细信息\n\n🔐 **所需权限**: `permission-scope:admin:read`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission-scope:admin:read'] } },
       },
@@ -74,7 +77,10 @@ export const permissionScopeAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: PermissionScope.getSchema({ exclude: ['id'], required: ['permissionId', 'name', 'tableName', 'ssqlRule'] }),
+      body: PermissionScope.getSchema({
+        exclude: ['id'],
+        required: ['permissionId', 'name', 'tableName', 'ssqlRule'],
+      }),
       response: {
         200: SuccessResponse(PermissionScope.getSchema(), '新创建的数据过滤规则信息'),
       },
@@ -84,6 +90,7 @@ export const permissionScopeAdminController = new Elysia({
           '创建新的数据过滤规则，用于行级数据权限控制。ssqlRule 为 SSQL 格式的过滤表达式\n\n🔐 **所需权限**: `permission-scope:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission-scope:admin:create'] } },
+        operLog: { title: '数据权限', type: 'create' },
       },
     },
   )
@@ -110,6 +117,7 @@ export const permissionScopeAdminController = new Elysia({
           '更新指定数据过滤规则的信息，支持部分更新\n\n🔐 **所需权限**: `permission-scope:admin:update`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission-scope:admin:update'] } },
+        operLog: { title: '数据权限', type: 'update' },
       },
     },
   )
@@ -135,6 +143,7 @@ export const permissionScopeAdminController = new Elysia({
           '删除指定数据过滤规则，此操作不可恢复\n\n🔐 **所需权限**: `permission-scope:admin:delete`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission-scope:admin:delete'] } },
+        operLog: { title: '数据权限', type: 'delete' },
       },
     },
   )

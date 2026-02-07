@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import User from '@/models/users'
 
 /** 用户管理控制器（管理端） */
@@ -18,6 +19,7 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取用户列表 */
   .get(
     '/',
@@ -91,6 +93,7 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
         description: '创建新用户，用户名必须唯一\n\n🔐 **所需权限**: `user:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['user:admin:create'] } },
+        operLog: { title: '用户管理', type: 'create' },
       },
     },
   )
@@ -116,6 +119,7 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
         description: '更新指定用户的信息，支持部分更新\n\n🔐 **所需权限**: `user:admin:update`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['user:admin:update'] } },
+        operLog: { title: '用户管理', type: 'update' },
       },
     },
   )
@@ -140,6 +144,7 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
         description: '删除指定用户，此操作不可恢复\n\n🔐 **所需权限**: `user:admin:delete`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['user:admin:delete'] } },
+        operLog: { title: '用户管理', type: 'delete' },
       },
     },
   )

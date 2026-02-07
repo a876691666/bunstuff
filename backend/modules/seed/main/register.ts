@@ -23,6 +23,9 @@ import { sysConfigSeed } from '@/models/sys-config/seed'
 // Notice 模块 Seeds
 import { noticeSeed } from '@/models/notice/seed'
 
+// Job 模块 Seeds
+import { jobSeed } from '@/models/job/seed'
+
 /**
  * 注册所有 Seeds
  * 注意：Seeds 按顺序执行，需要注意依赖关系
@@ -39,6 +42,7 @@ import { noticeSeed } from '@/models/notice/seed'
  * 11. dict-data-init: 创建字典数据（依赖字典类型）
  * 12. sys-config-init: 创建系统参数配置
  * 13. notice-init: 创建示例通知公告
+ * 14. job-init: 创建默认定时任务
  */
 export function registerSeeds() {
   seedService.registerMany([
@@ -57,6 +61,8 @@ export function registerSeeds() {
     sysConfigSeed,
     // Notice 模块
     noticeSeed,
+    // Job 模块
+    jobSeed,
   ])
 
   console.log('✅ Seeds registered')

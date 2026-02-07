@@ -286,16 +286,16 @@ onMounted(() => {
           />
         </NFormItem>
         <NFormItem label="重定向地址">
-          <NInput
-            v-model:value="modal.formData.redirect"
-            placeholder="请输入重定向地址"
-          />
+          <NInput v-model:value="modal.formData.redirect" placeholder="请输入重定向地址" />
         </NFormItem>
         <NFormItem label="菜单图标">
           <NInput v-model:value="modal.formData.icon" placeholder="请输入图标名称" />
         </NFormItem>
         <NFormItem label="权限标识">
-          <NInput v-model:value="modal.formData.permCode" placeholder="请输入权限标识，如 user:list" />
+          <NInput
+            v-model:value="modal.formData.permCode"
+            placeholder="请输入权限标识，如 user:list"
+          />
         </NFormItem>
         <NFormItem label="排序">
           <NInputNumber

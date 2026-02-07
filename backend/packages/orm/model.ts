@@ -165,10 +165,10 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
   getSchema(): ModelSchema<K>
   getSchema<E extends TProperties>(extra: E): ModelSchema<K | (keyof E & string)>
   getSchema<Exc extends K>(
-    options: { exclude: Exc[]; include?: K[]; required?: K[] } & GetSchemaOptionsBase,
+    options: { exclude?: Exc[]; include?: K[]; required?: K[] } & GetSchemaOptionsBase,
   ): ModelSchema<Exclude<K, Exc>>
   getSchema<Exc extends K, E extends TProperties>(
-    options: { exclude: Exc[]; include?: K[]; required?: K[] } & GetSchemaOptionsBase,
+    options: { exclude?: Exc[]; include?: K[]; required?: K[] } & GetSchemaOptionsBase,
     extra: E,
   ): ModelSchema<Exclude<K, Exc> | (keyof E & string)>
   getSchema<Key extends K, E extends TProperties>(
@@ -181,7 +181,13 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
 
     if (optionsOrExtra) {
       // 判断是 options 还是 extra
-      if ('include' in optionsOrExtra || 'exclude' in optionsOrExtra || 'partial' in optionsOrExtra || 'required' in optionsOrExtra || 'timestamps' in optionsOrExtra) {
+      if (
+        'include' in optionsOrExtra ||
+        'exclude' in optionsOrExtra ||
+        'partial' in optionsOrExtra ||
+        'required' in optionsOrExtra ||
+        'timestamps' in optionsOrExtra
+      ) {
         options = optionsOrExtra as GetSchemaOptions<Key>
         if (extra) extraFields = extra
       } else {
@@ -609,5 +615,11 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
     await this.raw(sql)
 
     return count
+  }
+
+  /** 清空表（TRUNCATE），用于清空日志等场景，比 deleteMany 更高效 */
+  async truncate(): Promise<void> {
+    const sql = this.dialect.truncateSql(this.tableName)
+    await this.raw(sql)
   }
 }

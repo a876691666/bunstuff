@@ -6,6 +6,7 @@ import { openapi } from '@elysiajs/openapi'
 import { sessionStore } from '@/modules/auth'
 import { rbacService } from '@/modules/rbac'
 import { dictService, configService } from '@/modules/system'
+import { jobService } from '@/modules/job'
 
 // 从环境变量或命令行参数读取配置
 const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === 'true' || Bun.argv.includes('--seed')
@@ -24,6 +25,9 @@ console.log('✅ Dict cache initialized')
 // 初始化配置缓存
 await configService.initCache()
 console.log('✅ Config cache initialized')
+
+// 启动定时任务调度器
+await jobService.start()
 
 // 创建 API 实例，传入 seed 配置
 const api = createApi({
@@ -79,8 +83,10 @@ const app = new Elysia()
           { name: '管理 - 字典', description: '【管理】字典类型和字典数据管理' },
           { name: '管理 - 参数配置', description: '【管理】系统参数配置管理' },
           { name: '管理 - 登录日志', description: '【管理】登录日志查询管理' },
+          { name: '管理 - 操作日志', description: '【管理】操作日志查询管理' },
           { name: '管理 - 通知公告', description: '【管理】通知公告发布管理' },
           { name: '管理 - 文件管理', description: '【管理】文件上传删除管理' },
+          { name: '管理 - 定时任务', description: '【管理】定时任务调度管理' },
           { name: '管理 - Seed', description: '【管理】数据初始化管理' },
         ],
       },

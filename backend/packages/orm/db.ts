@@ -156,7 +156,11 @@ export class DB {
   async model<
     C extends { new (): any; getDefinition(): SchemaDefinition },
     Keys extends string = InstanceKeys<C>,
-  >(config: { tableName: string; schema: C; primaryKey?: string }): Promise<Model<SchemaDefinition, Keys>> {
+  >(config: {
+    tableName: string
+    schema: C
+    primaryKey?: string
+  }): Promise<Model<SchemaDefinition, Keys>> {
     // 从 Schema 类获取定义
     const schemaDefinition = config.schema.getDefinition()
     await this.syncTable(config.tableName, schemaDefinition)

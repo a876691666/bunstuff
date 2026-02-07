@@ -23,7 +23,10 @@ import {
   configController,
   configAdminController,
   loginLogAdminController,
+  operLogAdminController,
 } from './system'
+// Job 模块
+import { jobAdminController, jobLogAdminController } from './job'
 // Notice 模块
 import { noticeController, noticeAdminController } from './notice'
 // File 模块
@@ -72,19 +75,15 @@ export const createAdminApi = (options: ApiOptions = {}) => {
       .use(dictAdminController)
       .use(configAdminController)
       .use(loginLogAdminController)
+      .use(operLogAdminController)
       // Notice 模块
       .use(noticeAdminController)
+      // Job 模块
+      .use(jobAdminController)
+      .use(jobLogAdminController)
       // File 模块
       .use(fileAdminController)
       // Seed 模块
       .use(createSeedController(options.seed))
   )
 }
-
-/** 默认 API 实例 */
-export const api = createApi()
-
-/** 默认管理端 API 实例 */
-export const adminApi = createAdminApi()
-
-export default api

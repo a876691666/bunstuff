@@ -1,4 +1,3 @@
-
 import type { Insert, Update } from '@/packages/orm'
 import Menu from '@/models/menu'
 import RoleMenu from '@/models/role-menu'
@@ -7,11 +6,7 @@ import { rbacCache } from '@/modules/rbac/main/cache'
 /** 菜单服务 */
 export class MenuService {
   /** 获取所有菜单 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize

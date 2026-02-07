@@ -81,7 +81,11 @@ export function toWhere(ssql: string): OrmWhereCondition {
  * 将 OrmWhereCondition 编译为数据库 SQL WHERE 子句（支持字段白名单验证）
  * @example buildWhere(mysql, { name: 'test' }, { allowedFields: ['name'] }) // "`name` = 'test'"
  */
-export function buildWhere(dialect: Dialect, condition: OrmWhereCondition, options?: CompileOptions): string {
+export function buildWhere(
+  dialect: Dialect,
+  condition: OrmWhereCondition,
+  options?: CompileOptions,
+): string {
   return buildWhereInternal(dialect, condition, options)
 }
 

@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { h, onMounted, shallowRef } from 'vue'
-import { NButton, NTag, NSpace, useMessage, NForm, NFormItem, NInput, NSelect, NTreeSelect } from 'naive-ui'
+import {
+  NButton,
+  NTag,
+  NSpace,
+  useMessage,
+  NForm,
+  NFormItem,
+  NInput,
+  NSelect,
+  NTreeSelect,
+} from 'naive-ui'
 import type { DataTableColumns, TreeSelectOption } from 'naive-ui'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
 import { useTable, useModal } from '@/composables'

@@ -23,5 +23,8 @@ export default class LoginLogSchema extends Schema {
   /** 提示消息 */
   msg = column.string().nullable().default(null).description('提示消息')
   /** 登录时间 */
-  loginTime = column.date().default(() => new Date()).description('登录时间')
+  loginTime = column
+    .date()
+    .default(() => new Date())
+    .description('登录时间')
 }

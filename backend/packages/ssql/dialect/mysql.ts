@@ -99,6 +99,10 @@ export const mysql: Dialect = {
     return `DELETE FROM ${this.quote(tableName)} WHERE ${whereClause}`
   },
 
+  truncateSql(tableName: string): string {
+    return `TRUNCATE TABLE ${this.quote(tableName)}`
+  },
+
   selectSql(
     tableName: string,
     columns: string,

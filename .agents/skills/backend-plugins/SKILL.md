@@ -9,85 +9,102 @@ description: 后端 Elysia 插件系统开发指南。包含认证(auth)、权�
 
 ## 插件概览
 
-| 插件 | 位置 | 功能 | 依赖 |
-|------|------|------|------|
-| authPlugin | auth/main/plugin.ts | JWT认证,注入session/userId/roleId/rbac | - |
-| rbacPlugin | rbac/main/plugin.ts | 权限检查,数据权限过滤,注入dataScope | auth |
-| vipPlugin | vip/main/plugin.ts | VIP等级检查,资源限制 | auth |
-| filePlugin | file/main/plugin.ts | 文件上传下载 | - |
-| noticePlugin | notice/main/plugin.ts | 通知发布,SSE推送 | - |
-| dictPlugin | system/dict/plugin.ts | 字典缓存访问 | - |
-| configPlugin | system/config/plugin.ts | 配置缓存访问 | - |
-| loginLogPlugin | system/login-log/plugin.ts | 登录日志记录 | - |
+| 插件           | 位置                       | 功能                                   | 依赖 |
+| -------------- | -------------------------- | -------------------------------------- | ---- |
+| authPlugin     | auth/main/plugin.ts        | JWT认证,注入session/userId/roleId/rbac | -    |
+| rbacPlugin     | rbac/main/plugin.ts        | 权限检查,数据权限过滤,注入dataScope    | auth |
+| vipPlugin      | vip/main/plugin.ts         | VIP等级检查,资源限制                   | auth |
+| filePlugin     | file/main/plugin.ts        | 文件上传下载                           | -    |
+| noticePlugin   | notice/main/plugin.ts      | 通知发布,SSE推送                       | -    |
+| dictPlugin     | system/dict/plugin.ts      | 字典缓存访问                           | -    |
+| configPlugin   | system/config/plugin.ts    | 配置缓存访问                           | -    |
+| loginLogPlugin | system/login-log/plugin.ts | 登录日志记录                           | -    |
 
 ## 插件详情
 
 ### authPlugin
+
 ```typescript
 // 注入: session, userId, roleId, rbac
-app.use(authPlugin())
-  .get("/public", () => "ok", { detail: { auth: { skipAuth: true } } })  // 跳过认证
-  .get("/private", ({ userId }) => `User: ${userId}`)  // 需要认证
+app
+  .use(authPlugin())
+  .get('/public', () => 'ok', { detail: { auth: { skipAuth: true } } }) // 跳过认证
+  .get('/private', ({ userId }) => `User: ${userId}`) // 需要认证
 ```
 
 ### rbacPlugin
+
 ```typescript
 // 注入: dataScope (getSsqlRules/getScopes)
-app.use(authPlugin()).use(rbacPlugin())
-  .get("/users", ({ dataScope }) => {
-    const rules = dataScope?.getSsqlRules("users")
-  }, { detail: { rbac: { scope: { permissions: ["user:read"] } } } })
-  .delete("/users/:id", () => {}, { detail: { rbac: { scope: { roles: ["admin"] } } } })
+app
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .get(
+    '/users',
+    ({ dataScope }) => {
+      const rules = dataScope?.getSsqlRules('users')
+    },
+    { detail: { rbac: { scope: { permissions: ['user:read'] } } } },
+  )
+  .delete('/users/:id', () => {}, { detail: { rbac: { scope: { roles: ['admin'] } } } })
 ```
 
 ### vipPlugin
+
 ```typescript
 // 注入: vipTierId, vipTierCode, isValidVip, canUseResource, incrementResource, decrementResource, getResourceUsage
-app.use(authPlugin()).use(vipPlugin())
-  .get("/pro", () => {}, { detail: { vip: { scope: { vipTier: "pro" } } } })
-  .post("/scene", async ({ vip }) => {
-    if (!await vip.canUseResource("scene:create")) return { error: "资源已达上限" }
-    await vip.incrementResource("scene:create")
+app
+  .use(authPlugin())
+  .use(vipPlugin())
+  .get('/pro', () => {}, { detail: { vip: { scope: { vipTier: 'pro' } } } })
+  .post('/scene', async ({ vip }) => {
+    if (!(await vip.canUseResource('scene:create'))) return { error: '资源已达上限' }
+    await vip.incrementResource('scene:create')
   })
 ```
 
 ### filePlugin
+
 ```typescript
 // 注入: getFile, getFileContent, getFileStream, getFileUrl, uploadLocal
-app.use(filePlugin())
-  .get("/avatar/:id", async ({ file, params }) => {
-    const result = await file.getFileContent(params.id)
-    return result ? new Response(result.buffer, { headers: { "Content-Type": result.file.mimeType } }) : new Response("Not found", { status: 404 })
-  })
+app.use(filePlugin()).get('/avatar/:id', async ({ file, params }) => {
+  const result = await file.getFileContent(params.id)
+  return result
+    ? new Response(result.buffer, { headers: { 'Content-Type': result.file.mimeType } })
+    : new Response('Not found', { status: 404 })
+})
 ```
 
 ### noticePlugin
+
 ```typescript
 // 注入: publishNotice, markAsRead, getUnreadCount, sendToUser
-app.use(noticePlugin())
-  .post("/broadcast", async ({ notice }) => {
-    await notice.publishNotice({ title: "通知", content: "内容", type: "1", status: 1 }, 1)
-  })
+app.use(noticePlugin()).post('/broadcast', async ({ notice }) => {
+  await notice.publishNotice({ title: '通知', content: '内容', type: '1', status: 1 }, 1)
+})
 ```
 
 ### dictPlugin & configPlugin
+
 ```typescript
 // dict: getDictMap, getDictList, getDictLabel
 // config: getConfigValue, getConfigValueOrDefault
-app.use(dictPlugin()).use(configPlugin())
-  .get("/info", ({ dict, config }) => {
-    const sexLabel = dict.getDictLabel("sys_user_sex", "0")
-    const siteName = config.getConfigValue("sys.name")
+app
+  .use(dictPlugin())
+  .use(configPlugin())
+  .get('/info', ({ dict, config }) => {
+    const sexLabel = dict.getDictLabel('sys_user_sex', '0')
+    const siteName = config.getConfigValue('sys.name')
   })
 ```
 
 ### loginLogPlugin
+
 ```typescript
 // 注入: logLogin({ userId, username, ip, userAgent, status, action, msg })
-app.use(loginLogPlugin())
-  .post("/login", async ({ loginLog, body }) => {
-    await loginLog.logLogin({ username: body.username, status: 1, action: "login" })
-  })
+app.use(loginLogPlugin()).post('/login', async ({ loginLog, body }) => {
+  await loginLog.logLogin({ username: body.username, status: 1, action: 'login' })
+})
 ```
 
 ## 统一响应 R
@@ -119,10 +136,9 @@ R.forbidden(msg?)     // { code: 403 }
 ```typescript
 // backend/modules/xxx/main/plugin.ts
 export function xxxPlugin() {
-  return new Elysia({ name: 'xxx-plugin' })
-    .derive({ as: 'global' }, () => ({
-      xxx: { doSomething: async () => {} }
-    }))
+  return new Elysia({ name: 'xxx-plugin' }).derive({ as: 'global' }, () => ({
+    xxx: { doSomething: async () => {} },
+  }))
 }
 ```
 
@@ -132,7 +148,9 @@ export function xxxPlugin() {
 // backend/models/xxx/seed.ts
 const xxxSeed: SeedDefinition = {
   name: 'xxx-default',
-  run: async () => { /* 填充逻辑 */ }
+  run: async () => {
+    /* 填充逻辑 */
+  },
 }
 // 在 seed/main/register.ts 注册
 ```

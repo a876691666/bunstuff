@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { dictPlugin } from './plugin'
+import { operLogPlugin } from '../oper-log/plugin'
 import DictType from '@/models/dict-type'
 import DictData from '@/models/dict-data'
 
@@ -21,6 +22,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
   .use(rbacPlugin())
   .use(vipPlugin())
   .use(dictPlugin())
+  .use(operLogPlugin())
   // ============ 字典类型 ============
   .get(
     '/type',
@@ -73,6 +75,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
         summary: '创建字典类型',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['dict:admin:type:create'] } },
+        operLog: { title: '字典类型', type: 'create' },
       },
     },
   )
@@ -92,11 +95,16 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
     {
       params: idParams({ label: '字典类型ID' }),
       body: DictType.getSchema({ exclude: ['id'], partial: true }),
-      response: { 200: SuccessResponse(DictType.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
+      response: {
+        200: SuccessResponse(DictType.getSchema()),
+        400: ErrorResponse,
+        404: ErrorResponse,
+      },
       detail: {
         summary: '更新字典类型',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['dict:admin:type:update'] } },
+        operLog: { title: '字典类型', type: 'update' },
       },
     },
   )
@@ -116,6 +124,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
         summary: '删除字典类型',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['dict:admin:type:delete'] } },
+        operLog: { title: '字典类型', type: 'delete' },
       },
     },
   )
@@ -169,6 +178,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
         summary: '创建字典数据',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['dict:admin:data:create'] } },
+        operLog: { title: '字典数据', type: 'create' },
       },
     },
   )
@@ -184,11 +194,16 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
     {
       params: idParams({ label: '字典数据ID' }),
       body: DictData.getSchema({ exclude: ['id'], partial: true }),
-      response: { 200: SuccessResponse(DictData.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
+      response: {
+        200: SuccessResponse(DictData.getSchema()),
+        400: ErrorResponse,
+        404: ErrorResponse,
+      },
       detail: {
         summary: '更新字典数据',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['dict:admin:data:update'] } },
+        operLog: { title: '字典数据', type: 'update' },
       },
     },
   )
@@ -208,6 +223,7 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
         summary: '删除字典数据',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['dict:admin:data:delete'] } },
+        operLog: { title: '字典数据', type: 'delete' },
       },
     },
   )

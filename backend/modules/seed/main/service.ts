@@ -1,4 +1,3 @@
-
 import type { Insert } from '@/packages/orm'
 import SeedLog from '@/models/seed-log'
 

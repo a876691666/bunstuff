@@ -1,4 +1,3 @@
-
 import type { Insert, Update } from '@/packages/orm'
 import SysConfig from '@/models/sys-config'
 

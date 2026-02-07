@@ -12,7 +12,13 @@ description: Elysia CRUD API 最佳实践。基于 Model.getSchema() 的增删�
 ```typescript
 import { Elysia, t } from 'elysia'
 import { idParams, query } from '@/packages/route-model'
-import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from '@/modules/response'
+import {
+  R,
+  PagedResponse,
+  SuccessResponse,
+  MessageResponse,
+  ErrorResponse,
+} from '@/modules/response'
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import MyModel from '@/models/my-model'
@@ -20,12 +26,13 @@ import MyModel from '@/models/my-model'
 export const myController = new Elysia({ prefix: '/items', tags: ['业务模块'] })
   .use(authPlugin())
   .use(rbacPlugin())
-  // ... 路由定义
+// ... 路由定义
 ```
 
 ## Schema 定义规范
 
 **✅ 推荐**：使用 `Model.getSchema()` 内联定义
+
 ```typescript
 // ✅ 直接在使用处生成 Schema
 {
@@ -35,6 +42,7 @@ export const myController = new Elysia({ prefix: '/items', tags: ['业务模块'
 ```
 
 **❌ 避免**：预先定义常量（增加维护成本）
+
 ```typescript
 // ❌ 不推荐：重复定义
 const MySchema = MyModel.getSchema()
@@ -45,6 +53,7 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
 ## CRUD 模板
 
 ### 1. 列表查询（List）
+
 ```typescript
 .get(
   '/',
@@ -68,6 +77,7 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
 ```
 
 ### 2. 详情查询（Read）
+
 ```typescript
 .get(
   '/:id',
@@ -93,6 +103,7 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
 ```
 
 ### 3. 创建（Create）
+
 ```typescript
 .post(
   '/',
@@ -100,7 +111,7 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
     // 业务校验
     const existing = await service.findByName(body.name)
     if (existing) return R.badRequest('名称已存在')
-    
+
     const data = await service.create(body)
     return R.ok(data, '创建成功')
   },
@@ -127,13 +138,14 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
 ```
 
 ### 4. 更新（Update）
+
 ```typescript
 .put(
   '/:id',
   async ({ params, body }) => {
     const existing = await service.findById(params.id)
     if (!existing) return R.notFound('资源')
-    
+
     const data = await service.update(params.id, body)
     return R.ok(data, '更新成功')
   },
@@ -155,13 +167,14 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
 ```
 
 ### 5. 删除（Delete）
+
 ```typescript
 .delete(
   '/:id',
   async ({ params }) => {
     const existing = await service.findById(params.id)
     if (!existing) return R.notFound('资源')
-    
+
     await service.delete(params.id)
     return R.success('删除成功')
   },
@@ -183,31 +196,29 @@ const MyUpdateSchema = MyModel.getSchema({ exclude: ['id'], partial: true })
 
 ## Model.getSchema() 参数速查
 
-| 参数 | 类型 | 说明 | 示例 |
-|------|------|------|------|
-| `exclude` | `string[]` | 排除字段 | `{ exclude: ['id', 'password'] }` |
-| `include` | `string[]` | 仅包含字段 | `{ include: ['id', 'name'] }` |
-| `partial` | `boolean` | 所有字段可选 | `{ partial: true }` |
-| `required` | `string[]` | 指定必填字段 | `{ required: ['name', 'email'] }` |
-| `timestamps` | `boolean` | 包含时间戳（默认 true） | `{ timestamps: false }` |
-| `description` | `string` | Schema 描述 | `{ description: '用户信息' }` |
+| 参数          | 类型       | 说明                    | 示例                              |
+| ------------- | ---------- | ----------------------- | --------------------------------- |
+| `exclude`     | `string[]` | 排除字段                | `{ exclude: ['id', 'password'] }` |
+| `include`     | `string[]` | 仅包含字段              | `{ include: ['id', 'name'] }`     |
+| `partial`     | `boolean`  | 所有字段可选            | `{ partial: true }`               |
+| `required`    | `string[]` | 指定必填字段            | `{ required: ['name', 'email'] }` |
+| `timestamps`  | `boolean`  | 包含时间戳（默认 true） | `{ timestamps: false }`           |
+| `description` | `string`   | Schema 描述             | `{ description: '用户信息' }`     |
 
 **第二参数**：额外字段
+
 ```typescript
-MyModel.getSchema(
-  { exclude: ['id'] },
-  { extraField: t.String({ description: '额外字段' }) }
-)
+MyModel.getSchema({ exclude: ['id'] }, { extraField: t.String({ description: '额外字段' }) })
 ```
 
 ## 响应类型速查
 
-| 类型 | 用途 | 示例 |
-|------|------|------|
-| `SuccessResponse(schema, desc?)` | 单条数据成功 | `200: SuccessResponse(MySchema)` |
-| `PagedResponse(schema, desc?)` | 分页列表 | `200: PagedResponse(MySchema)` |
-| `MessageResponse` | 仅消息（无 data） | `200: MessageResponse` |
-| `ErrorResponse` | 错误响应 | `400/404: ErrorResponse` |
+| 类型                             | 用途              | 示例                             |
+| -------------------------------- | ----------------- | -------------------------------- |
+| `SuccessResponse(schema, desc?)` | 单条数据成功      | `200: SuccessResponse(MySchema)` |
+| `PagedResponse(schema, desc?)`   | 分页列表          | `200: PagedResponse(MySchema)`   |
+| `MessageResponse`                | 仅消息（无 data） | `200: MessageResponse`           |
+| `ErrorResponse`                  | 错误响应          | `400/404: ErrorResponse`         |
 
 ## 权限配置 (rbac.scope)
 
@@ -251,7 +262,13 @@ R.notFound(name)              // { code: 404, msg: '${name}不存在' }
 ```typescript
 import { Elysia, t } from 'elysia'
 import { idParams, query } from '@/packages/route-model'
-import { R, PagedResponse, SuccessResponse, MessageResponse, ErrorResponse } from '@/modules/response'
+import {
+  R,
+  PagedResponse,
+  SuccessResponse,
+  MessageResponse,
+  ErrorResponse,
+} from '@/modules/response'
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import User from '@/models/users'
@@ -259,93 +276,113 @@ import User from '@/models/users'
 export const userController = new Elysia({ prefix: '/users', tags: ['管理 - 用户'] })
   .use(authPlugin())
   .use(rbacPlugin())
-  
+
   // 列表
-  .get('/', async ({ query }) => {
-    const result = await userService.findAll(query)
-    return R.page(result)
-  }, {
-    query: query(),
-    response: { 200: PagedResponse(User.getSchema(), '用户列表') },
-    detail: {
-      summary: '获取用户列表',
-      description: '分页获取用户列表\n\n🔐 **所需权限**: `user:list`',
-      security: [{ bearerAuth: [] }],
-      rbac: { scope: { permissions: ['user:list'] } },
+  .get(
+    '/',
+    async ({ query }) => {
+      const result = await userService.findAll(query)
+      return R.page(result)
     },
-  })
-  
+    {
+      query: query(),
+      response: { 200: PagedResponse(User.getSchema(), '用户列表') },
+      detail: {
+        summary: '获取用户列表',
+        description: '分页获取用户列表\n\n🔐 **所需权限**: `user:list`',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['user:list'] } },
+      },
+    },
+  )
+
   // 详情
-  .get('/:id', async ({ params }) => {
-    const data = await userService.findById(params.id)
-    if (!data) return R.notFound('用户')
-    const { password, ...safe } = data
-    return R.ok(safe)
-  }, {
-    params: idParams({ label: '用户ID' }),
-    response: { 200: SuccessResponse(User.getSchema()), 404: ErrorResponse },
-    detail: {
-      summary: '获取用户详情',
-      description: '根据ID获取用户信息\n\n🔐 **所需权限**: `user:read`',
-      security: [{ bearerAuth: [] }],
-      rbac: { scope: { permissions: ['user:read'] } },
+  .get(
+    '/:id',
+    async ({ params }) => {
+      const data = await userService.findById(params.id)
+      if (!data) return R.notFound('用户')
+      const { password, ...safe } = data
+      return R.ok(safe)
     },
-  })
-  
+    {
+      params: idParams({ label: '用户ID' }),
+      response: { 200: SuccessResponse(User.getSchema()), 404: ErrorResponse },
+      detail: {
+        summary: '获取用户详情',
+        description: '根据ID获取用户信息\n\n🔐 **所需权限**: `user:read`',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['user:read'] } },
+      },
+    },
+  )
+
   // 创建
-  .post('/', async ({ body }) => {
-    const existing = await userService.findByUsername(body.username)
-    if (existing) return R.badRequest('用户名已存在')
-    const data = await userService.create(body)
-    return R.ok(data, '创建成功')
-  }, {
-    body: User.getSchema(
-      { exclude: ['id'], required: ['username', 'password'] },
-      { confirmPassword: t.String({ description: '确认密码', minLength: 6 }) }
-    ),
-    response: { 200: SuccessResponse(User.getSchema()), 400: ErrorResponse },
-    detail: {
-      summary: '创建用户',
-      description: '创建新用户\n\n🔐 **所需权限**: `user:create`',
-      security: [{ bearerAuth: [] }],
-      rbac: { scope: { permissions: ['user:create'] } },
+  .post(
+    '/',
+    async ({ body }) => {
+      const existing = await userService.findByUsername(body.username)
+      if (existing) return R.badRequest('用户名已存在')
+      const data = await userService.create(body)
+      return R.ok(data, '创建成功')
     },
-  })
-  
+    {
+      body: User.getSchema(
+        { exclude: ['id'], required: ['username', 'password'] },
+        { confirmPassword: t.String({ description: '确认密码', minLength: 6 }) },
+      ),
+      response: { 200: SuccessResponse(User.getSchema()), 400: ErrorResponse },
+      detail: {
+        summary: '创建用户',
+        description: '创建新用户\n\n🔐 **所需权限**: `user:create`',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['user:create'] } },
+      },
+    },
+  )
+
   // 更新
-  .put('/:id', async ({ params, body }) => {
-    const existing = await userService.findById(params.id)
-    if (!existing) return R.notFound('用户')
-    const data = await userService.update(params.id, body)
-    return R.ok(data, '更新成功')
-  }, {
-    params: idParams({ label: '用户ID' }),
-    body: User.getSchema({ exclude: ['id', 'password'], partial: true }),
-    response: { 200: SuccessResponse(User.getSchema()), 404: ErrorResponse },
-    detail: {
-      summary: '更新用户',
-      description: '更新用户信息\n\n🔐 **所需权限**: `user:update`',
-      security: [{ bearerAuth: [] }],
-      rbac: { scope: { permissions: ['user:update'] } },
+  .put(
+    '/:id',
+    async ({ params, body }) => {
+      const existing = await userService.findById(params.id)
+      if (!existing) return R.notFound('用户')
+      const data = await userService.update(params.id, body)
+      return R.ok(data, '更新成功')
     },
-  })
-  
+    {
+      params: idParams({ label: '用户ID' }),
+      body: User.getSchema({ exclude: ['id', 'password'], partial: true }),
+      response: { 200: SuccessResponse(User.getSchema()), 404: ErrorResponse },
+      detail: {
+        summary: '更新用户',
+        description: '更新用户信息\n\n🔐 **所需权限**: `user:update`',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['user:update'] } },
+      },
+    },
+  )
+
   // 删除
-  .delete('/:id', async ({ params }) => {
-    const existing = await userService.findById(params.id)
-    if (!existing) return R.notFound('用户')
-    await userService.delete(params.id)
-    return R.success('删除成功')
-  }, {
-    params: idParams({ label: '用户ID' }),
-    response: { 200: MessageResponse, 404: ErrorResponse },
-    detail: {
-      summary: '删除用户',
-      description: '删除用户\n\n🔐 **所需权限**: `user:delete`',
-      security: [{ bearerAuth: [] }],
-      rbac: { scope: { permissions: ['user:delete'] } },
+  .delete(
+    '/:id',
+    async ({ params }) => {
+      const existing = await userService.findById(params.id)
+      if (!existing) return R.notFound('用户')
+      await userService.delete(params.id)
+      return R.success('删除成功')
     },
-  })
+    {
+      params: idParams({ label: '用户ID' }),
+      response: { 200: MessageResponse, 404: ErrorResponse },
+      detail: {
+        summary: '删除用户',
+        description: '删除用户\n\n🔐 **所需权限**: `user:delete`',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['user:delete'] } },
+      },
+    },
+  )
 ```
 
 ## 最佳实践总结

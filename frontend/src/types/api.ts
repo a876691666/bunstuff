@@ -447,6 +447,24 @@ export interface LoginLog {
   loginTime: string
 }
 
+/** 操作日志 */
+export interface OperLog {
+  id: number
+  title: string
+  type: string
+  method: string
+  url: string
+  ip: string | null
+  params: string | null
+  result: string | null
+  status: number
+  errorMsg: string | null
+  userId: number | null
+  username: string
+  costTime: number
+  operTime: string
+}
+
 /** 创建字典类型请求 */
 export interface CreateDictTypeRequest {
   name: string
@@ -562,4 +580,56 @@ export interface SysFile {
   md5: string | null
   createdAt?: string
   updatedAt?: string
+}
+
+// ============ 定时任务类型 ============
+
+/** 定时任务 */
+export interface Job {
+  id: number
+  name: string
+  group: string
+  handler: string
+  cron: string
+  params: string | null
+  status: number
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 任务执行日志 */
+export interface JobLog {
+  id: number
+  jobId: number
+  jobName: string
+  handler: string
+  message: string | null
+  status: number
+  errorMsg: string | null
+  startTime: string
+  endTime: string
+  costTime: number
+}
+
+/** 创建任务请求 */
+export interface CreateJobRequest {
+  name: string
+  group?: string
+  handler: string
+  cron: string
+  params?: string
+  status?: number
+  remark?: string
+}
+
+/** 更新任务请求 */
+export interface UpdateJobRequest {
+  name?: string
+  group?: string
+  handler?: string
+  cron?: string
+  params?: string
+  status?: number
+  remark?: string
 }

@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import Role from '@/models/role'
 
 /** 角色管理控制器（管理端） */
@@ -18,6 +19,7 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取角色列表 */
   .get(
     '/',
@@ -32,7 +34,8 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
       },
       detail: {
         summary: '获取角色列表',
-        description: '分页获取角色列表，支持按名称、编码、状态筛选\n\n🔐 **所需权限**: `role:admin:list`',
+        description:
+          '分页获取角色列表，支持按名称、编码、状态筛选\n\n🔐 **所需权限**: `role:admin:list`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role:admin:list'] } },
       },
@@ -116,6 +119,7 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
         description: '创建新角色，角色编码必须唯一\n\n🔐 **所需权限**: `role:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role:admin:create'] } },
+        operLog: { title: '角色管理', type: 'create' },
       },
     },
   )
@@ -147,6 +151,7 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
         description: '更新指定角色的信息，支持部分更新\n\n🔐 **所需权限**: `role:admin:update`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role:admin:update'] } },
+        operLog: { title: '角色管理', type: 'update' },
       },
     },
   )
@@ -170,7 +175,8 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
         summary: '删除角色',
         description: '删除指定角色，此操作不可恢复\n\n🔐 **所需权限**: `role:admin:delete`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['role:admin:delete'] } },
+        ac: { scope: { permissions: ['role:admin:delete'] } },
+        operLog: { title: '角色管理', type: 'delete' },
       },
     },
   )

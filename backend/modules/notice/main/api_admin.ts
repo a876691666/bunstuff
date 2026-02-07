@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { noticePlugin } from './plugin'
+import { operLogPlugin } from '@/modules/system'
 import Notice from '@/models/notice'
 
 /** 通知公告管理控制器（管理端） */
@@ -20,6 +21,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
   .use(rbacPlugin())
   .use(vipPlugin())
   .use(noticePlugin())
+  .use(operLogPlugin())
   .get(
     '/',
     async ({ query }) => {
@@ -68,6 +70,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
         summary: '创建通知公告',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['notice:admin:create'] } },
+        operLog: { title: '通知公告', type: 'create' },
       },
     },
   )
@@ -83,11 +86,16 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
     {
       params: idParams({ label: '通知公告ID' }),
       body: Notice.getSchema({ exclude: ['id', 'createBy'], partial: true }),
-      response: { 200: SuccessResponse(Notice.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
+      response: {
+        200: SuccessResponse(Notice.getSchema()),
+        400: ErrorResponse,
+        404: ErrorResponse,
+      },
       detail: {
         summary: '更新通知公告',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['notice:admin:update'] } },
+        operLog: { title: '通知公告', type: 'update' },
       },
     },
   )
@@ -107,6 +115,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
         summary: '删除通知公告',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['notice:admin:delete'] } },
+        operLog: { title: '通知公告', type: 'delete' },
       },
     },
   )
@@ -127,6 +136,7 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
         description: '将通知公告状态改为正常并广播给所有在线用户',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['notice:admin:publish'] } },
+        operLog: { title: '通知公告', type: 'update' },
       },
     },
   )

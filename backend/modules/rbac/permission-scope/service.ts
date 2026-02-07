@@ -1,4 +1,3 @@
-
 import type { Insert, Update } from '@/packages/orm'
 import PermissionScope from '@/models/permission-scope'
 import { rbacCache } from '@/modules/rbac/main/cache'
@@ -6,11 +5,7 @@ import { rbacCache } from '@/modules/rbac/main/cache'
 /** 数据过滤规则服务 */
 export class PermissionScopeService {
   /** 获取所有数据过滤规则 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize

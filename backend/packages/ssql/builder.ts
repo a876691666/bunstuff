@@ -1,4 +1,12 @@
-import { Op, Logic, type Value, type Values, type SQLResult, type Dialect, type CompileOptions } from './types'
+import {
+  Op,
+  Logic,
+  type Value,
+  type Values,
+  type SQLResult,
+  type Dialect,
+  type CompileOptions,
+} from './types'
 import { FieldExpr, LogicExpr, GroupExpr, type Expression } from './expression'
 import { mysql, postgres, sqlite } from './dialect'
 

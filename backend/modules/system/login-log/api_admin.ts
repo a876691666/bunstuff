@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { loginLogPlugin } from './plugin'
+import { operLogPlugin } from '../oper-log/plugin'
 import LoginLog from '@/models/login-log'
 
 /** 登录日志管理控制器（管理端） */
@@ -23,6 +24,7 @@ export const loginLogAdminController = new Elysia({
   .use(rbacPlugin())
   .use(vipPlugin())
   .use(loginLogPlugin())
+  .use(operLogPlugin())
   .get(
     '/',
     async ({ query }) => {
@@ -78,6 +80,7 @@ export const loginLogAdminController = new Elysia({
         summary: '删除登录日志',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['loginLog:admin:delete'] } },
+        operLog: { title: '登录日志', type: 'delete' },
       },
     },
   )
@@ -94,6 +97,7 @@ export const loginLogAdminController = new Elysia({
         summary: '清空登录日志',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['loginLog:admin:clear'] } },
+        operLog: { title: '登录日志', type: 'other' },
       },
     },
   )

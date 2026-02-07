@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { generateRoutes } from './dynamic'
+import type { MenuTree } from '@/types'
 
 // 布局组件
 import { AdminLayout } from '@/layouts'
@@ -7,31 +9,7 @@ import { AdminLayout } from '@/layouts'
 // 认证页面
 import { Login, ChangePassword, Profile } from '@/views/auth'
 
-// 系统管理页面
-import {
-  Users,
-  Roles,
-  Permissions,
-  PermissionScopes,
-  Menus,
-  DictTypes,
-  DictData,
-  Configs,
-  LoginLogs,
-} from '@/views/admin/system'
-
-// RBAC页面
-import { RoleMenus, RolePermissions, Sessions, Cache } from '@/views/admin/rbac'
-
-// VIP页面
-import { Tiers as VipTiers, Users as VipUsers, ResourceLimits } from '@/views/admin/vip'
-
-// 通知公告页面
-import { Notices } from '@/views/admin/notice'
-
-// 文件管理页面
-import { Files } from '@/views/admin/file'
-
+/** 静态路由 - 无需权限 */
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -41,6 +19,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/',
+    name: 'Layout',
     component: AdminLayout,
     redirect: '/dashboard',
     children: [
@@ -62,174 +41,61 @@ const routes: RouteRecordRaw[] = [
         component: ChangePassword,
         meta: { title: '修改密码' },
       },
-      // 系统管理
-      {
-        path: 'system',
-        name: 'System',
-        redirect: '/system/users',
-        meta: { title: '系统管理' },
-        children: [
-          {
-            path: 'users',
-            name: 'SystemUsers',
-            component: Users,
-            meta: { title: '用户管理' },
-          },
-          {
-            path: 'roles',
-            name: 'SystemRoles',
-            component: Roles,
-            meta: { title: '角色管理' },
-          },
-          {
-            path: 'permissions',
-            name: 'SystemPermissions',
-            component: Permissions,
-            meta: { title: '权限管理' },
-          },
-          {
-            path: 'permission-scopes',
-            name: 'SystemPermissionScopes',
-            component: PermissionScopes,
-            meta: { title: '数据权限' },
-          },
-          {
-            path: 'menus',
-            name: 'SystemMenus',
-            component: Menus,
-            meta: { title: '菜单管理' },
-          },
-          {
-            path: 'dict-types',
-            name: 'SystemDictTypes',
-            component: DictTypes,
-            meta: { title: '字典类型' },
-          },
-          {
-            path: 'dict-data',
-            name: 'SystemDictData',
-            component: DictData,
-            meta: { title: '字典数据' },
-          },
-          {
-            path: 'configs',
-            name: 'SystemConfigs',
-            component: Configs,
-            meta: { title: '参数配置' },
-          },
-          {
-            path: 'login-logs',
-            name: 'SystemLoginLogs',
-            component: LoginLogs,
-            meta: { title: '登录日志' },
-          },
-        ],
-      },
-      // RBAC管理
-      {
-        path: 'rbac',
-        name: 'RBAC',
-        redirect: '/rbac/role-menus',
-        meta: { title: '权限配置' },
-        children: [
-          {
-            path: 'role-menus',
-            name: 'RBACRoleMenus',
-            component: RoleMenus,
-            meta: { title: '角色菜单' },
-          },
-          {
-            path: 'role-permissions',
-            name: 'RBACRolePermissions',
-            component: RolePermissions,
-            meta: { title: '角色权限' },
-          },
-          {
-            path: 'sessions',
-            name: 'RBACSessions',
-            component: Sessions,
-            meta: { title: '会话管理' },
-          },
-          {
-            path: 'cache',
-            name: 'RBACCache',
-            component: Cache,
-            meta: { title: '缓存管理' },
-          },
-        ],
-      },
-      // VIP管理
-      {
-        path: 'vip',
-        name: 'VIP',
-        redirect: '/vip/tiers',
-        meta: { title: 'VIP管理' },
-        children: [
-          {
-            path: 'tiers',
-            name: 'VipTiers',
-            component: VipTiers,
-            meta: { title: 'VIP等级' },
-          },
-          {
-            path: 'users',
-            name: 'VipUsers',
-            component: VipUsers,
-            meta: { title: '用户VIP' },
-          },
-          {
-            path: 'resource-limits',
-            name: 'VipResourceLimits',
-            component: ResourceLimits,
-            meta: { title: '资源限制' },
-          },
-        ],
-      },
-      // 通知公告
-      {
-        path: 'notice',
-        name: 'Notice',
-        redirect: '/notice/list',
-        meta: { title: '通知公告' },
-        children: [
-          {
-            path: 'list',
-            name: 'NoticeList',
-            component: Notices,
-            meta: { title: '公告管理' },
-          },
-        ],
-      },
-      // 文件管理
-      {
-        path: 'file',
-        name: 'File',
-        redirect: '/file/list',
-        meta: { title: '文件管理' },
-        children: [
-          {
-            path: 'list',
-            name: 'FileList',
-            component: Files,
-            meta: { title: '文件列表' },
-          },
-        ],
-      },
     ],
   },
   // 404
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import('@/views/NotFound.vue'),
-    meta: { title: '页面不存在', public: true },
-  },
 ]
+
+const notFoundRoute: RouteRecordRaw = {
+  path: '/:pathMatch(.*)*',
+  name: 'NotFound',
+  component: () => import('@/views/NotFound.vue'),
+  meta: { title: '页面不存在', public: true },
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
+
+/** 已添加的动态路由名称集合 */
+const dynamicRouteNames = new Set<string>()
+
+/** 根据菜单树生成并注入动态路由（在 fetchMenuTree 后调用） */
+export function addDynamicRoutes(menuTree: MenuTree[]) {
+  // 先清理旧的动态路由
+  resetDynamicRoutes()
+
+  const dynamicRoutes = generateRoutes(menuTree)
+  for (const route of dynamicRoutes) {
+    router.addRoute('Layout', route)
+    if (route.name) dynamicRouteNames.add(route.name as string)
+    // 收集子路由名称
+    collectChildNames(route)
+  }
+
+  // 确保 404 路由在最后
+  if (!router.hasRoute('NotFound')) {
+    router.addRoute(notFoundRoute)
+  }
+}
+
+function collectChildNames(route: RouteRecordRaw) {
+  if (route.children) {
+    for (const child of route.children) {
+      if (child.name) dynamicRouteNames.add(child.name as string)
+      collectChildNames(child)
+    }
+  }
+}
+
+/** 重置动态路由（登出时调用） */
+export function resetDynamicRoutes() {
+  for (const name of dynamicRouteNames) {
+    router.removeRoute(name)
+  }
+  dynamicRouteNames.clear()
+}
 
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
@@ -249,13 +115,16 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 有 token 时，确保已初始化用户信息和菜单
+  // 有 token 时，确保已初始化用户信息（init 内部会获取菜单并注入路由）
   if (token) {
     const { useAuthStore } = await import('@/stores/auth')
     const authStore = useAuthStore()
-    // 如果未登录状态，初始化用户信息（包括菜单）
+
     if (!authStore.isLoggedIn) {
       await authStore.init()
+      // init 完成后动态路由已注入，重新匹配当前路径
+      next({ ...to, replace: true })
+      return
     }
   }
 

@@ -1,4 +1,3 @@
-
 import type { Insert, Update } from '@/packages/orm'
 import Permission from '@/models/permission'
 import RolePermission from '@/models/role-permission'
@@ -8,11 +7,7 @@ import { rbacCache } from '@/modules/rbac/main/cache'
 /** 权限服务 */
 export class PermissionService {
   /** 获取所有权限 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize

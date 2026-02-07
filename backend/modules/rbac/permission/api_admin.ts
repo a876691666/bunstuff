@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import Permission from '@/models/permission'
 
 /** 权限管理控制器（管理端） */
@@ -21,6 +22,7 @@ export const permissionAdminController = new Elysia({
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取权限列表 */
   .get(
     '/',
@@ -88,6 +90,7 @@ export const permissionAdminController = new Elysia({
           '创建新权限，权限编码必须唯一，格式建议：资源:操作，如 user:create\n\n🔐 **所需权限**: `permission:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission:admin:create'] } },
+        operLog: { title: '权限管理', type: 'create' },
       },
     },
   )
@@ -116,9 +119,11 @@ export const permissionAdminController = new Elysia({
       },
       detail: {
         summary: '更新权限',
-        description: '更新指定权限的信息，支持部分更新\n\n🔐 **所需权限**: `permission:admin:update`',
+        description:
+          '更新指定权限的信息，支持部分更新\n\n🔐 **所需权限**: `permission:admin:update`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission:admin:update'] } },
+        operLog: { title: '权限管理', type: 'update' },
       },
     },
   )
@@ -143,6 +148,7 @@ export const permissionAdminController = new Elysia({
         description: '删除指定权限，此操作不可恢复\n\n🔐 **所需权限**: `permission:admin:delete`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['permission:admin:delete'] } },
+        operLog: { title: '权限管理', type: 'delete' },
       },
     },
   )

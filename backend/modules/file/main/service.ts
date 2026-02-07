@@ -1,4 +1,3 @@
-
 import type { Row, Insert } from '@/packages/orm'
 import SysFile from '@/models/sys-file'
 import * as path from 'path'
@@ -36,11 +35,7 @@ export class FileService {
   }
 
   /** 获取文件列表 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
@@ -184,7 +179,9 @@ export class FileService {
   }
 
   /** 获取文件内容 (用于下载) */
-  async getFileContent(id: number): Promise<{ buffer: ArrayBuffer; file: Row<typeof SysFile> } | null> {
+  async getFileContent(
+    id: number,
+  ): Promise<{ buffer: ArrayBuffer; file: Row<typeof SysFile> } | null> {
     const file = await this.findById(id)
     if (!file) return null
 
@@ -206,7 +203,9 @@ export class FileService {
   }
 
   /** 获取文件流 (用于大文件下载) */
-  async getFileStream(id: number): Promise<{ stream: ReadableStream; file: Row<typeof SysFile> } | null> {
+  async getFileStream(
+    id: number,
+  ): Promise<{ stream: ReadableStream; file: Row<typeof SysFile> } | null> {
     const file = await this.findById(id)
     if (!file) return null
 

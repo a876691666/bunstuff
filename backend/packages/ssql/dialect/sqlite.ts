@@ -4,8 +4,8 @@ import type { Dialect, Value, Values } from '../types'
 function escapeString(str: string): string {
   // SQLite 使用双单引号转义，同时移除危险字符
   return str
-    .replace(/\x00/g, '')        // 移除 NULL 字节
-    .replace(/'/g, "''")         // 转义单引号
+    .replace(/\x00/g, '') // 移除 NULL 字节
+    .replace(/'/g, "''") // 转义单引号
 }
 
 // SQLite 方言
@@ -75,6 +75,10 @@ export const sqlite: Dialect = {
 
   deleteSql(tableName: string, whereClause: string): string {
     return `DELETE FROM ${this.quote(tableName)} WHERE ${whereClause}`
+  },
+
+  truncateSql(tableName: string): string {
+    return `DELETE FROM ${this.quote(tableName)}`
   },
 
   selectSql(

@@ -1,4 +1,3 @@
-
 import type { Insert } from '@/packages/orm'
 import LoginLog from '@/models/login-log'
 
@@ -8,11 +7,7 @@ export type LoginAction = 'login' | 'logout' | 'kick'
 /** 登录日志服务 */
 export class LoginLogService {
   /** 获取登录日志列表 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
@@ -40,7 +35,7 @@ export class LoginLogService {
 
   /** 清空登录日志 */
   async clear() {
-    return await LoginLog.deleteMany()
+    return await LoginLog.truncate()
   }
 
   /** 记录登录日志 */

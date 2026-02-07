@@ -41,6 +41,12 @@ const defaultPermissions = [
   { code: 'loginLog:admin:list', name: '查看登录日志列表', description: '获取登录日志列表' },
   { code: 'loginLog:admin:read', name: '查看登录日志详情', description: '获取登录日志详情' },
 
+  // ========== 操作日志权限 (operLog) ==========
+  { code: 'operLog:admin:list', name: '查看操作日志列表', description: '获取操作日志列表' },
+  { code: 'operLog:admin:read', name: '查看操作日志详情', description: '获取操作日志详情' },
+  { code: 'operLog:admin:delete', name: '删除操作日志', description: '删除操作日志' },
+  { code: 'operLog:admin:clear', name: '清空操作日志', description: '清空所有操作日志' },
+
   // ========== 菜单管理权限 (menu) ==========
   { code: 'menu:admin:create', name: '创建菜单', description: '创建新菜单' },
   { code: 'menu:admin:delete', name: '删除菜单', description: '删除菜单' },
@@ -172,6 +178,20 @@ const defaultPermissions = [
   { code: 'seed:admin:reset', name: '重置Seed', description: '重置Seed执行记录' },
   { code: 'seed:admin:run', name: '执行Seed', description: '执行单个Seed' },
   { code: 'seed:admin:run-all', name: '执行所有Seed', description: '执行所有Seed' },
+
+  // ========== 定时任务权限 (job) ==========
+  { code: 'job:admin:create', name: '创建定时任务', description: '创建新定时任务' },
+  { code: 'job:admin:delete', name: '删除定时任务', description: '删除定时任务' },
+  { code: 'job:admin:list', name: '查看任务列表', description: '获取定时任务列表' },
+  { code: 'job:admin:read', name: '查看任务详情', description: '获取定时任务详情' },
+  { code: 'job:admin:run', name: '手动触发任务', description: '手动触发执行定时任务' },
+  { code: 'job:admin:update', name: '更新定时任务', description: '更新定时任务配置' },
+
+  // ========== 定时任务日志权限 (jobLog) ==========
+  { code: 'jobLog:admin:clear', name: '清空任务日志', description: '清空任务执行日志' },
+  { code: 'jobLog:admin:delete', name: '删除任务日志', description: '删除任务执行日志' },
+  { code: 'jobLog:admin:list', name: '查看任务日志', description: '获取任务执行日志列表' },
+  { code: 'jobLog:admin:read', name: '查看任务日志详情', description: '获取任务日志详情' },
 
   // ========== 用户管理权限 (user) ==========
   { code: 'user:admin:create', name: '创建用户', description: '创建新用户' },

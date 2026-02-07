@@ -8,7 +8,7 @@ import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/modules/re
 import { authPlugin } from './plugin'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
-import { loginLogPlugin } from '@/modules/system'
+import { loginLogPlugin, operLogPlugin } from '@/modules/system'
 
 /** Auth 管理控制器（管理端） */
 export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 - 认证'] })
@@ -16,6 +16,7 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   .use(rbacPlugin())
   .use(vipPlugin())
   .use(loginLogPlugin())
+  .use(operLogPlugin())
   /** 获取在线统计 */
   .get(
     '/admin/stats',
@@ -90,7 +91,8 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
       },
       detail: {
         summary: '获取所有会话',
-        description: '获取系统中所有登录会话列表（管理员接口）\n\n🔐 **所需权限**: `auth:admin:sessions`',
+        description:
+          '获取系统中所有登录会话列表（管理员接口）\n\n🔐 **所需权限**: `auth:admin:sessions`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['auth:admin:sessions'] } },
       },
@@ -133,9 +135,11 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
       },
       detail: {
         summary: '踢用户下线',
-        description: '强制指定用户的所有会话下线（管理员接口）\n\n🔐 **所需权限**: `auth:admin:kick-user`',
+        description:
+          '强制指定用户的所有会话下线（管理员接口）\n\n🔐 **所需权限**: `auth:admin:kick-user`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['auth:admin:kick-user'] } },
+        operLog: { title: '会话管理', type: 'delete' },
       },
     },
   )
@@ -185,6 +189,7 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
           '强制指定会话下线，需要提供完整令牌（管理员接口）\n\n🔐 **所需权限**: `auth:admin:kick-session`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['auth:admin:kick-session'] } },
+        operLog: { title: '会话管理', type: 'delete' },
       },
     },
   )

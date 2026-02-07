@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import RoleMenu from '@/models/role-menu'
 
 /** 角色菜单关联管理控制器（管理端） */
@@ -21,6 +22,7 @@ export const roleMenuAdminController = new Elysia({
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取角色菜单关联列表 */
   .get(
     '/',
@@ -96,7 +98,11 @@ export const roleMenuAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: RoleMenu.getSchema({ exclude: ['id'], required: ['roleId', 'menuId'], timestamps: false }),
+      body: RoleMenu.getSchema({
+        exclude: ['id'],
+        required: ['roleId', 'menuId'],
+        timestamps: false,
+      }),
       response: {
         200: SuccessResponse(RoleMenu.getSchema({ timestamps: false }), '新创建的角色菜单关联信息'),
       },
@@ -105,6 +111,7 @@ export const roleMenuAdminController = new Elysia({
         description: '为角色添加单个菜单关联\n\n🔐 **所需权限**: `role-menu:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-menu:admin:create'] } },
+        operLog: { title: '角色菜单', type: 'create' },
       },
     },
   )
@@ -122,7 +129,10 @@ export const roleMenuAdminController = new Elysia({
         menuIds: t.Array(t.Number({ description: '菜单ID' }), { description: '菜单ID列表' }),
       }),
       response: {
-        200: SuccessResponse(t.Array(RoleMenu.getSchema({ timestamps: false })), '批量创建的角色菜单关联列表'),
+        200: SuccessResponse(
+          t.Array(RoleMenu.getSchema({ timestamps: false })),
+          '批量创建的角色菜单关联列表',
+        ),
       },
       detail: {
         summary: '批量设置角色菜单',
@@ -130,6 +140,7 @@ export const roleMenuAdminController = new Elysia({
           '批量设置角色的菜单关联，会先删除原有关联再创建新的（全量更新）\n\n🔐 **所需权限**: `role-menu:admin:batch`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-menu:admin:batch'] } },
+        operLog: { title: '角色菜单', type: 'update' },
       },
     },
   )
@@ -154,6 +165,7 @@ export const roleMenuAdminController = new Elysia({
         description: '删除指定的角色菜单关联\n\n🔐 **所需权限**: `role-menu:admin:delete`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-menu:admin:delete'] } },
+        operLog: { title: '角色菜单', type: 'delete' },
       },
     },
   )

@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { configPlugin } from './plugin'
+import { operLogPlugin } from '../oper-log/plugin'
 import SysConfig from '@/models/sys-config'
 
 /** 参数配置管理控制器（管理端） */
@@ -20,6 +21,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
   .use(rbacPlugin())
   .use(vipPlugin())
   .use(configPlugin())
+  .use(operLogPlugin())
   .get(
     '/',
     async ({ query }) => {
@@ -70,6 +72,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
         summary: '创建参数配置',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['config:admin:create'] } },
+        operLog: { title: '参数配置', type: 'create' },
       },
     },
   )
@@ -89,11 +92,16 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
     {
       params: idParams({ label: '参数配置ID' }),
       body: SysConfig.getSchema({ exclude: ['id'], partial: true }),
-      response: { 200: SuccessResponse(SysConfig.getSchema()), 400: ErrorResponse, 404: ErrorResponse },
+      response: {
+        200: SuccessResponse(SysConfig.getSchema()),
+        400: ErrorResponse,
+        404: ErrorResponse,
+      },
       detail: {
         summary: '更新参数配置',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['config:admin:update'] } },
+        operLog: { title: '参数配置', type: 'update' },
       },
     },
   )
@@ -114,6 +122,7 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
         summary: '删除参数配置',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['config:admin:delete'] } },
+        operLog: { title: '参数配置', type: 'delete' },
       },
     },
   )

@@ -12,6 +12,7 @@ import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
 import { filePlugin } from './plugin'
+import { operLogPlugin } from '@/modules/system'
 import SysFile from '@/models/sys-file'
 
 /** 文件管理控制器（管理端） */
@@ -20,6 +21,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
   .use(rbacPlugin())
   .use(vipPlugin())
   .use(filePlugin())
+  .use(operLogPlugin())
   .get(
     '/',
     async ({ query }) => {
@@ -79,6 +81,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
         summary: '上传文件',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['file:admin:upload'] } },
+        operLog: { title: '文件管理', type: 'create' },
       },
     },
   )
@@ -98,6 +101,7 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
         summary: '删除文件',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['file:admin:delete'] } },
+        operLog: { title: '文件管理', type: 'delete' },
       },
     },
   )

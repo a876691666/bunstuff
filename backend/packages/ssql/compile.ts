@@ -218,20 +218,24 @@ export function compileFieldCondition(
     return compileField(dialect, field, Op.Eq, condition, offset, options)
   }
 
-  if (isOrmEqCondition(condition)) return compileField(dialect, field, Op.Eq, condition.$eq, offset, options)
+  if (isOrmEqCondition(condition))
+    return compileField(dialect, field, Op.Eq, condition.$eq, offset, options)
   if (isOrmNeCondition(condition))
     return compileField(dialect, field, Op.Neq, condition.$ne, offset, options)
-  if (isOrmGtCondition(condition)) return compileField(dialect, field, Op.Gt, condition.$gt, offset, options)
+  if (isOrmGtCondition(condition))
+    return compileField(dialect, field, Op.Gt, condition.$gt, offset, options)
   if (isOrmGteCondition(condition))
     return compileField(dialect, field, Op.Gte, condition.$gte, offset, options)
-  if (isOrmLtCondition(condition)) return compileField(dialect, field, Op.Lt, condition.$lt, offset, options)
+  if (isOrmLtCondition(condition))
+    return compileField(dialect, field, Op.Lt, condition.$lt, offset, options)
   if (isOrmLteCondition(condition))
     return compileField(dialect, field, Op.Lte, condition.$lte, offset, options)
   if (isOrmLikeCondition(condition))
     return compileField(dialect, field, Op.Like, condition.$like, offset, options)
   if (isOrmNotLikeCondition(condition))
     return compileField(dialect, field, Op.NotLike, condition.$notLike, offset, options)
-  if (isOrmInCondition(condition)) return compileField(dialect, field, Op.In, condition.$in, offset, options)
+  if (isOrmInCondition(condition))
+    return compileField(dialect, field, Op.In, condition.$in, offset, options)
   if (isOrmNotInCondition(condition))
     return compileField(dialect, field, Op.NotIn, condition.$notIn, offset, options)
   if (isOrmIsNullCondition(condition))
@@ -260,7 +264,12 @@ export function compileWhere(
     if (key === '$or' && Array.isArray(value)) {
       const orParts: string[] = []
       for (const c of value) {
-        const [sql, vals] = compileWhere(dialect, c as OrmWhereCondition, offset + params.length, options)
+        const [sql, vals] = compileWhere(
+          dialect,
+          c as OrmWhereCondition,
+          offset + params.length,
+          options,
+        )
         if (sql && sql !== '1=1') {
           orParts.push(`(${sql})`)
           params.push(...vals)
@@ -275,7 +284,12 @@ export function compileWhere(
     if (key === '$and' && Array.isArray(value)) {
       const andParts: string[] = []
       for (const c of value) {
-        const [sql, vals] = compileWhere(dialect, c as OrmWhereCondition, offset + params.length, options)
+        const [sql, vals] = compileWhere(
+          dialect,
+          c as OrmWhereCondition,
+          offset + params.length,
+          options,
+        )
         if (sql && sql !== '1=1') {
           andParts.push(`(${sql})`)
           params.push(...vals)

@@ -109,13 +109,23 @@ const columns: DataTableColumns<UserVip> = [
       h(NSpace, { size: 'small' }, () => [
         h(
           NButton,
-          { size: 'small', quaternary: true, type: 'primary', onClick: () => handleViewDetail(row) },
+          {
+            size: 'small',
+            quaternary: true,
+            type: 'primary',
+            onClick: () => handleViewDetail(row),
+          },
           () => '资源详情',
         ),
         row.bindingStatus === 0
           ? h(
               NButton,
-              { size: 'small', quaternary: true, type: 'success', onClick: () => handleConfirmBinding(row.id, true) },
+              {
+                size: 'small',
+                quaternary: true,
+                type: 'success',
+                onClick: () => handleConfirmBinding(row.id, true),
+              },
               () => '确认绑定',
             )
           : null,

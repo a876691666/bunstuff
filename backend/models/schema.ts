@@ -11,6 +11,11 @@ export { Schema as dictTypeSchema } from './dict-type'
 export { Schema as dictDataSchema } from './dict-data'
 export { Schema as sysConfigSchema } from './sys-config'
 export { Schema as loginLogSchema } from './login-log'
+export { Schema as operLogSchema } from './oper-log'
+
+// Job 模块
+export { Schema as jobSchema } from './job'
+export { Schema as jobLogSchema } from './job-log'
 
 // Notice 模块
 export { Schema as noticeSchema } from './notice'

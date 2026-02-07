@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { shallowRef } from 'vue'
 import { authApi, rbacApi } from '@/api'
 import { http } from '@/utils'
+import { addDynamicRoutes, resetDynamicRoutes } from '@/router'
 import type { User, MenuTree, LoginRequest, RegisterRequest } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -33,6 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
       permissions.value = []
       menuTree.value = []
       isLoggedIn.value = false
+      resetDynamicRoutes()
     }
   }
 
@@ -60,11 +62,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /** 获取菜单树 */
+  /** 获取菜单树并注入动态路由 */
   async function fetchMenuTree() {
     try {
       const res = await rbacApi.getMyMenuTree()
       menuTree.value = res
+      // 菜单数据拿到后立即生成并注入动态路由
+      if (res.length > 0) {
+        addDynamicRoutes(res)
+      }
     } catch {
       menuTree.value = []
     }

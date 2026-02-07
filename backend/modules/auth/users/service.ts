@@ -1,15 +1,10 @@
-
 import type { Insert, Update } from '@/packages/orm'
 import User from '@/models/users'
 
 /** 用户服务 */
 export class UserService {
   /** 获取所有用户 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize

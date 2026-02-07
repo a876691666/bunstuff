@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import RolePermission from '@/models/role-permission'
 
 /** 角色权限关联管理控制器（管理端） */
@@ -21,6 +22,7 @@ export const rolePermissionAdminController = new Elysia({
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取角色权限关联列表 */
   .get(
     '/',
@@ -31,7 +33,10 @@ export const rolePermissionAdminController = new Elysia({
     {
       query: query(),
       response: {
-        200: PagedResponse(RolePermission.getSchema({ timestamps: false }), '角色权限关联列表分页数据'),
+        200: PagedResponse(
+          RolePermission.getSchema({ timestamps: false }),
+          '角色权限关联列表分页数据',
+        ),
       },
       detail: {
         summary: '获取角色权限关联列表',
@@ -76,12 +81,16 @@ export const rolePermissionAdminController = new Elysia({
     {
       params: idParams({ label: '角色权限关联ID' }),
       response: {
-        200: SuccessResponse(RolePermission.getSchema({ timestamps: false }), '角色权限关联详情数据'),
+        200: SuccessResponse(
+          RolePermission.getSchema({ timestamps: false }),
+          '角色权限关联详情数据',
+        ),
         404: ErrorResponse,
       },
       detail: {
         summary: '获取角色权限关联详情',
-        description: '根据ID获取角色权限关联详细信息\n\n🔐 **所需权限**: `role-permission:admin:read`',
+        description:
+          '根据ID获取角色权限关联详细信息\n\n🔐 **所需权限**: `role-permission:admin:read`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-permission:admin:read'] } },
       },
@@ -96,15 +105,23 @@ export const rolePermissionAdminController = new Elysia({
       return R.ok(data, '创建成功')
     },
     {
-      body: RolePermission.getSchema({ exclude: ['id'], required: ['roleId', 'permissionId'], timestamps: false }),
+      body: RolePermission.getSchema({
+        exclude: ['id'],
+        required: ['roleId', 'permissionId'],
+        timestamps: false,
+      }),
       response: {
-        200: SuccessResponse(RolePermission.getSchema({ timestamps: false }), '新创建的角色权限关联信息'),
+        200: SuccessResponse(
+          RolePermission.getSchema({ timestamps: false }),
+          '新创建的角色权限关联信息',
+        ),
       },
       detail: {
         summary: '创建角色权限关联',
         description: '为角色添加单个权限关联\n\n🔐 **所需权限**: `role-permission:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-permission:admin:create'] } },
+        operLog: { title: '角色权限', type: 'create' },
       },
     },
   )
@@ -125,7 +142,10 @@ export const rolePermissionAdminController = new Elysia({
         permissionIds: t.Array(t.Number({ description: '权限ID' }), { description: '权限ID列表' }),
       }),
       response: {
-        200: SuccessResponse(t.Array(RolePermission.getSchema({ timestamps: false })), '批量创建的角色权限关联列表'),
+        200: SuccessResponse(
+          t.Array(RolePermission.getSchema({ timestamps: false })),
+          '批量创建的角色权限关联列表',
+        ),
       },
       detail: {
         summary: '批量设置角色权限',
@@ -133,6 +153,7 @@ export const rolePermissionAdminController = new Elysia({
           '批量设置角色的权限关联，会先删除原有关联再创建新的（全量更新）\n\n🔐 **所需权限**: `role-permission:admin:batch`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-permission:admin:batch'] } },
+        operLog: { title: '角色权限', type: 'update' },
       },
     },
   )
@@ -157,6 +178,7 @@ export const rolePermissionAdminController = new Elysia({
         description: '删除指定的角色权限关联\n\n🔐 **所需权限**: `role-permission:admin:delete`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role-permission:admin:delete'] } },
+        operLog: { title: '角色权限', type: 'delete' },
       },
     },
   )

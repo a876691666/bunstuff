@@ -5,6 +5,7 @@
  * - dict: 字典管理
  * - config: 参数配置
  * - login-log: 登录日志
+ * - oper-log: 操作日志
  */
 
 // ============ Dict 模块导出 ============
@@ -27,3 +28,10 @@ export { loginLogService, LoginLogService } from './login-log/service'
 export type { LoginAction } from './login-log/service'
 export { loginLogPlugin } from './login-log/plugin'
 export type { LoginLogContext } from './login-log/plugin'
+
+// ============ OperLog 模块导出 ============
+export { operLogAdminController } from './oper-log/api_admin'
+export { operLogService, OperLogService } from './oper-log/service'
+export type { OperType } from './oper-log/service'
+export { operLogPlugin } from './oper-log/plugin'
+export type { OperLogContext } from './oper-log/plugin'

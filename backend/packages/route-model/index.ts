@@ -77,10 +77,7 @@ export function merge(...objects: TProperties[]): TProperties {
 /**
  * 从对象中排除指定键
  */
-export function omit<T extends TProperties, K extends keyof T>(
-  obj: T,
-  keys: K[],
-): Omit<T, K> {
+export function omit<T extends TProperties, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   const result = {} as TProperties
   for (const key of Object.keys(obj)) {
     if (!keys.includes(key as K)) {
@@ -93,10 +90,7 @@ export function omit<T extends TProperties, K extends keyof T>(
 /**
  * 从对象中选取指定键
  */
-export function pick<T extends TProperties, K extends keyof T>(
-  obj: T,
-  keys: K[],
-): Pick<T, K> {
+export function pick<T extends TProperties, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
   const result = {} as TProperties
   for (const key of keys) {
     if (key in obj) {
@@ -158,10 +152,7 @@ export function schema<T extends TProperties>(
  * })
  * ```
  */
-export function body<T extends TProperties>(
-  properties: T,
-  options: BodyOptions = {},
-): TObject<T> {
+export function body<T extends TProperties>(properties: T, options: BodyOptions = {}): TObject<T> {
   const { description, exclude = [] } = options
   const props = exclude.length ? omit(properties, exclude as (keyof T)[]) : properties
   return t.Object(props as T, description ? { description } : undefined)
@@ -255,7 +246,9 @@ export function tree<T extends TProperties>(properties: T, options: TreeOptions 
   return t.Recursive(
     (Self) =>
       t.Object(
-        merge(props as T, { [childrenField]: t.Optional(t.Array(Self, { description: '子节点列表' })) }),
+        merge(props as T, {
+          [childrenField]: t.Optional(t.Array(Self, { description: '子节点列表' })),
+        }),
       ),
     description ? { description } : undefined,
   )
@@ -278,7 +271,7 @@ export interface FromModelOptions {
  * @example
  * ```ts
  * import UsersSchema from '@/models/users/schema'
- * 
+ *
  * export const UserSchema = fromModel(UsersSchema)
  * export const UserSchemaWithoutPassword = fromModel(UsersSchema, { exclude: ['password'] })
  * ```
@@ -348,4 +341,3 @@ function columnToTypeBox(column: ColumnBuilder<any, any>): TSchema {
   // 如果字段可为 null，使用 Nullable 包装
   return _nullable ? t.Nullable(baseType) : baseType
 }
-

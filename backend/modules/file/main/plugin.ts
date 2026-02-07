@@ -14,7 +14,9 @@ export interface FileContext {
   /** 获取文件内容 */
   getFileContent: (id: number) => Promise<{ buffer: ArrayBuffer; file: Row<typeof SysFile> } | null>
   /** 获取文件流 */
-  getFileStream: (id: number) => Promise<{ stream: ReadableStream; file: Row<typeof SysFile> } | null>
+  getFileStream: (
+    id: number,
+  ) => Promise<{ stream: ReadableStream; file: Row<typeof SysFile> } | null>
   /** 获取文件URL */
   getFileUrl: (file: Row<typeof SysFile>, baseUrl?: string) => string
   /** 上传文件到本地 */

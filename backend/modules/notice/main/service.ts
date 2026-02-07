@@ -1,4 +1,3 @@
-
 import type { Row, Insert, Update } from '@/packages/orm'
 import Notice from '@/models/notice'
 import NoticeRead from '@/models/notice-read'
@@ -57,11 +56,7 @@ export const noticeSSE = new NoticeSSE()
 /** 通知公告服务 */
 export class NoticeService {
   /** 获取通知公告列表 */
-  async findAll(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize

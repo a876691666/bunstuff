@@ -73,6 +73,10 @@ export const postgres: Dialect = {
     return `DELETE FROM ${this.quote(tableName)} WHERE ${whereClause}`
   },
 
+  truncateSql(tableName: string): string {
+    return `TRUNCATE TABLE ${this.quote(tableName)} RESTART IDENTITY`
+  },
+
   selectSql(
     tableName: string,
     columns: string,

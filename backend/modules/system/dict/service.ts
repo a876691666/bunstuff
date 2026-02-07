@@ -1,4 +1,3 @@
-
 import type { Insert, Update } from '@/packages/orm'
 import DictType from '@/models/dict-type'
 import DictData from '@/models/dict-data'
@@ -51,11 +50,7 @@ export class DictService {
   // ============ 字典类型 ============
 
   /** 获取字典类型列表 */
-  async findAllTypes(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAllTypes(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
@@ -104,11 +99,7 @@ export class DictService {
   // ============ 字典数据 ============
 
   /** 获取字典数据列表 */
-  async findAllData(query?: {
-    page?: number
-    pageSize?: number
-    filter?: string
-  }) {
+  async findAllData(query?: { page?: number; pageSize?: number; filter?: string }) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize

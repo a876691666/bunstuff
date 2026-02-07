@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/modules/auth'
 import { rbacPlugin } from '@/modules/rbac'
 import { vipPlugin } from '@/modules/vip'
+import { operLogPlugin } from '@/modules/system'
 import Menu from '@/models/menu'
 
 /** 菜单管理控制器（管理端） */
@@ -18,6 +19,7 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
+  .use(operLogPlugin())
   /** 获取菜单列表 */
   .get(
     '/',
@@ -32,7 +34,8 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '获取菜单列表',
-        description: '分页获取菜单列表，支持按名称、状态、类型筛选\n\n🔐 **所需权限**: `menu:admin:list`',
+        description:
+          '分页获取菜单列表，支持按名称、状态、类型筛选\n\n🔐 **所需权限**: `menu:admin:list`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['menu:admin:list'] } },
       },
@@ -114,9 +117,11 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
       },
       detail: {
         summary: '创建菜单',
-        description: '创建新菜单，支持目录、菜单、按钮三种类型\n\n🔐 **所需权限**: `menu:admin:create`',
+        description:
+          '创建新菜单，支持目录、菜单、按钮三种类型\n\n🔐 **所需权限**: `menu:admin:create`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['menu:admin:create'] } },
+        operLog: { title: '菜单管理', type: 'create' },
       },
     },
   )
@@ -142,6 +147,7 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
         description: '更新指定菜单的信息，支持部分更新\n\n🔐 **所需权限**: `menu:admin:update`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['menu:admin:update'] } },
+        operLog: { title: '菜单管理', type: 'update' },
       },
     },
   )
@@ -166,6 +172,7 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
         description: '删除指定菜单，此操作不可恢复\n\n🔐 **所需权限**: `menu:admin:delete`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['menu:admin:delete'] } },
+        operLog: { title: '菜单管理', type: 'delete' },
       },
     },
   )

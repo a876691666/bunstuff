@@ -28,15 +28,15 @@ export class FieldValidationError extends Error {
 /** 验证字段名是否在白名单中 */
 export function validateField(field: string, options?: CompileOptions): boolean {
   if (!options?.allowedFields) return true
-  
+
   // 支持 table.field 格式，只验证字段部分
   const fieldName = field.includes('.') ? field.split('.').pop()! : field
   const isValid = options.allowedFields.includes(fieldName) || options.allowedFields.includes(field)
-  
+
   if (!isValid && options.throwOnInvalidField !== false) {
     throw new FieldValidationError(field, options.allowedFields)
   }
-  
+
   return isValid
 }
 
@@ -226,6 +226,9 @@ export interface Dialect {
 
   /** 删除 SQL */
   deleteSql(tableName: string, whereClause: string): string
+
+  /** 清空表 SQL（TRUNCATE） */
+  truncateSql(tableName: string): string
 
   /** SELECT SQL */
   selectSql(
