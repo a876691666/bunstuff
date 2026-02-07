@@ -2,6 +2,8 @@
 import { h, ref, onMounted } from 'vue'
 import { NButton, NTag, NSpace, useMessage, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
+import { CronNaive } from '@vue-js-cron/naive-ui'
+import '@vue-js-cron/naive-ui/dist/naive-ui.css'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
 import { useTable, useModal } from '@/composables'
 import { jobApi } from '@/api'
@@ -218,7 +220,7 @@ async function handleToggle(row: Job) {
           />
         </NFormItem>
         <NFormItem label="Cron" required>
-          <NInput v-model:value="modal.formData.cron" placeholder="如: 0 2 * * *" />
+          <CronNaive v-model="modal.formData.cron" locale="zh-cn" />
         </NFormItem>
         <NFormItem label="参数(JSON)">
           <NInput
