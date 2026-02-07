@@ -26,6 +26,9 @@ import { noticeSeed } from '@/models/notice/seed'
 // Job 模块 Seeds
 import { jobSeed } from '@/models/job/seed'
 
+// RateLimit 模块 Seeds
+import { rateLimitRuleSeed } from '@/models/rate-limit-rule/seed'
+
 /**
  * 注册所有 Seeds
  * 注意：Seeds 按顺序执行，需要注意依赖关系
@@ -63,6 +66,8 @@ export function registerSeeds() {
     noticeSeed,
     // Job 模块
     jobSeed,
+    // RateLimit 模块
+    rateLimitRuleSeed,
   ])
 
   console.log('✅ Seeds registered')

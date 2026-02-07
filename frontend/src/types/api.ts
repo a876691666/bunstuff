@@ -633,3 +633,123 @@ export interface UpdateJobRequest {
   status?: number
   remark?: string
 }
+
+// ============ 限流规则类型 ============
+
+/** 限流规则 */
+export interface RateLimitRule {
+  id: number
+  /** 规则名称 */
+  name: string
+  /** 规则编码（唯一标识） */
+  code: string
+  /** 限流模式: time_window-时间窗口 concurrent-并发限流 sliding_window-滑动窗口 */
+  mode: 'time_window' | 'concurrent' | 'sliding_window'
+  /** 匹配路径模式 */
+  pathPattern: string
+  /** 请求方法：*或GET,POST等 */
+  method: string
+  /** 限流维度: ip-按IP global-全局 user-按用户 */
+  dimension: 'ip' | 'global' | 'user'
+  /** 时间窗口（秒） */
+  windowSeconds: number
+  /** 最大请求数 */
+  maxRequests: number
+  /** 最大并发数 */
+  maxConcurrent: number
+  /** 黑名单自动封禁阈值 */
+  blacklistThreshold: number
+  /** 响应状态码 */
+  responseCode: number
+  /** 响应消息 */
+  responseMessage: string
+  /** 优先级 */
+  priority: number
+  /** 状态：1启用 0禁用 */
+  status: number
+  /** 备注 */
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 创建限流规则请求 */
+export interface CreateRateLimitRuleRequest {
+  name: string
+  code: string
+  mode: string
+  pathPattern: string
+  method?: string
+  dimension?: string
+  windowSeconds?: number
+  maxRequests?: number
+  maxConcurrent?: number
+  blacklistThreshold?: number
+  responseCode?: number
+  responseMessage?: string
+  priority?: number
+  status?: number
+  remark?: string
+}
+
+/** 更新限流规则请求 */
+export interface UpdateRateLimitRuleRequest {
+  name?: string
+  code?: string
+  mode?: string
+  pathPattern?: string
+  method?: string
+  dimension?: string
+  windowSeconds?: number
+  maxRequests?: number
+  maxConcurrent?: number
+  blacklistThreshold?: number
+  responseCode?: number
+  responseMessage?: string
+  priority?: number
+  status?: number
+  remark?: string
+}
+
+// ============ IP黑名单类型 ============
+
+/** IP黑名单 */
+export interface IpBlacklist {
+  id: number
+  /** IP地址 */
+  ip: string
+  /** 封禁原因 */
+  reason: string
+  /** 封禁来源: manual-手动 auto-自动 */
+  source: 'manual' | 'auto'
+  /** 触发的限流规则ID */
+  ruleId: number | null
+  /** 触发次数 */
+  triggerCount: number
+  /** 过期时间 */
+  expireAt: string | null
+  /** 状态：1封禁中 0已解封 */
+  status: number
+  /** 备注 */
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 创建IP黑名单请求 */
+export interface CreateIpBlacklistRequest {
+  ip: string
+  reason?: string
+  expireAt?: string | null
+  status?: number
+  remark?: string
+}
+
+/** 更新IP黑名单请求 */
+export interface UpdateIpBlacklistRequest {
+  ip?: string
+  reason?: string
+  expireAt?: string | null
+  status?: number
+  remark?: string
+}

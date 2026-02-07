@@ -35,3 +35,10 @@ export { operLogService, OperLogService } from './oper-log/service'
 export type { OperType } from './oper-log/service'
 export { operLogPlugin } from './oper-log/plugin'
 export type { OperLogContext } from './oper-log/plugin'
+
+// ============ RateLimit 模块导出 ============
+export { rateLimitRuleAdminController } from './rate-limit/api_rule_admin'
+export { ipBlacklistAdminController } from './rate-limit/api_blacklist_admin'
+export { rateLimitRuleService, RateLimitRuleService, ipBlacklistService, IpBlacklistService, rateLimitCache, rateLimitCounter } from './rate-limit/service'
+export { rateLimitPlugin } from './rate-limit/plugin'
+export type { RateLimitContext } from './rate-limit/plugin'

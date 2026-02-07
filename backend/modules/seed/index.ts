@@ -5,7 +5,6 @@ import { Elysia, t } from 'elysia'
 import { seedService } from './main/service'
 import { registerSeeds } from './main/register'
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/modules/response'
-import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** Seed 模块配置 */
 export interface SeedModuleOptions {
@@ -13,26 +12,26 @@ export interface SeedModuleOptions {
   autoRun?: boolean
 }
 
-/** 创建 Seed 模块控制器 */
-export const createSeedController = (options: SeedModuleOptions = {}) => {
+/**
+ * 独立的 Seed 执行函数，在服务启动前同步调用
+ * 确保 seed 数据就绪后再加载缓存和启动服务
+ */
+export async function runSeeds(options: SeedModuleOptions = {}) {
   // 注册所有 Seeds
   registerSeeds()
 
-  // 如果配置了自动执行，则在初始化时执行
   if (options.autoRun) {
-    // 使用 setTimeout 确保在服务启动后执行
-    setTimeout(async () => {
-      try {
-        await seedService.autoRun()
-        // Seed 执行完成后重新加载 RBAC 缓存
-        await rbacCache.reload()
-        console.log('✅ RBAC cache reloaded after seed')
-      } catch (err) {
-        console.error('[Seed] 自动执行失败:', err)
-      }
-    }, 0)
+    try {
+      await seedService.autoRun()
+      console.log('✅ Seeds executed')
+    } catch (err) {
+      console.error('[Seed] 自动执行失败:', err)
+    }
   }
+}
 
+/** 创建 Seed 模块控制器（仅挂载 API 路由，不再自动执行 seed） */
+export const createSeedController = (_options: SeedModuleOptions = {}) => {
   return (
     new Elysia({ prefix: '/seed', tags: ['管理 - Seed'] })
       /** 获取所有 Seed 日志 */
@@ -205,8 +204,3 @@ export type { SeedDefinition } from './main/service'
 
 // 注册导出
 export { registerSeeds } from './main/register'
-
-/** 默认 Seed 控制器（不自动执行） */
-export const seedController = createSeedController()
-
-export default seedController

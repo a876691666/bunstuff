@@ -445,6 +445,52 @@ const defaultMenus = [
     sort: 1,
     permCode: 'job:admin:list',
   },
+
+  // ========== 8. 限流保护目录 ==========
+  {
+    id: 31,
+    parentId: null,
+    name: '限流保护',
+    path: '/rate-limit',
+    component: null,
+    icon: 'shield',
+    type: 1,
+    visible: 1,
+    status: 1,
+    redirect: '/rate-limit/rules',
+    sort: 8,
+    permCode: null,
+  },
+  // 限流规则页面
+  {
+    id: 32,
+    parentId: 31,
+    name: '限流规则',
+    path: '/rate-limit/rules',
+    component: 'admin/rate-limit/RateLimitRules',
+    icon: 'setting',
+    type: 2,
+    visible: 1,
+    status: 1,
+    redirect: null,
+    sort: 1,
+    permCode: 'rateLimit:admin:rule:list',
+  },
+  // IP黑名单页面
+  {
+    id: 33,
+    parentId: 31,
+    name: 'IP黑名单',
+    path: '/rate-limit/blacklist',
+    component: 'admin/rate-limit/IpBlacklist',
+    icon: 'lock',
+    type: 2,
+    visible: 1,
+    status: 1,
+    redirect: null,
+    sort: 2,
+    permCode: 'rateLimit:admin:blacklist:list',
+  },
 ]
 
 /** 菜单表 Seed */

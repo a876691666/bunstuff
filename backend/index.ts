@@ -5,42 +5,37 @@ import { createAdminApi, createApi } from './modules'
 import { openapi } from '@elysiajs/openapi'
 import { sessionStore } from '@/modules/auth'
 import { rbacService } from '@/modules/rbac'
-import { dictService, configService } from '@/modules/system'
+import { dictService, configService, rateLimitRuleService } from '@/modules/system'
+import { rateLimitPlugin } from '@/modules/system/rate-limit/plugin'
 import { jobService } from '@/modules/job'
+import { runSeeds } from '@/modules/seed'
 
 // 从环境变量或命令行参数读取配置
 const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === 'true' || Bun.argv.includes('--seed')
 
-// 初始化会话存储（从数据库加载）
+// ===== 阶段1: 执行 Seed（确保数据库基础数据就绪） =====
+await runSeeds({ autoRun: SEED_AUTO_RUN || true })
+
+// ===== 阶段2: 初始化所有缓存（基于 seed 后的数据） =====
 await sessionStore.init()
 
-// 初始化 RBAC 缓存
 await rbacService.init()
 console.log('✅ RBAC cache initialized')
 
-// 初始化字典缓存
 await dictService.initCache()
 console.log('✅ Dict cache initialized')
 
-// 初始化配置缓存
 await configService.initCache()
 console.log('✅ Config cache initialized')
 
-// 启动定时任务调度器
+await rateLimitRuleService.initCache()
+console.log('✅ RateLimit cache initialized')
+
+// ===== 阶段3: 构建 Elysia 应用并启动 =====
 await jobService.start()
 
-// 创建 API 实例，传入 seed 配置
-const api = createApi({
-  seed: {
-    autoRun: SEED_AUTO_RUN || true,
-  },
-})
-
-const adminApi = createAdminApi({
-  seed: {
-    autoRun: SEED_AUTO_RUN || true,
-  },
-})
+const api = createApi()
+const adminApi = createAdminApi()
 
 const app = new Elysia()
   .use(cors())
@@ -87,6 +82,8 @@ const app = new Elysia()
           { name: '管理 - 通知公告', description: '【管理】通知公告发布管理' },
           { name: '管理 - 文件管理', description: '【管理】文件上传删除管理' },
           { name: '管理 - 定时任务', description: '【管理】定时任务调度管理' },
+          { name: '管理 - 限流规则', description: '【管理】API限流规则配置管理' },
+          { name: '管理 - IP黑名单', description: '【管理】IP黑名单管理' },
           { name: '管理 - Seed', description: '【管理】数据初始化管理' },
         ],
       },
@@ -97,6 +94,7 @@ const app = new Elysia()
     assets: './uploads',
     prefix: '/uploads',
   }))
+  .use(rateLimitPlugin())
   .get('/', () => 'Hello from Elysia!')
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(api)

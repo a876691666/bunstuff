@@ -23,3 +23,7 @@ export { Schema as noticeReadSchema } from './notice-read'
 
 // File 模块
 export { Schema as sysFileSchema } from './sys-file'
+
+// RateLimit 模块
+export { Schema as rateLimitRuleSchema } from './rate-limit-rule'
+export { Schema as ipBlacklistSchema } from './ip-blacklist'

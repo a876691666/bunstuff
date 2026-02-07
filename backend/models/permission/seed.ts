@@ -236,6 +236,20 @@ const defaultPermissions = [
     name: '直接升级用户VIP',
     description: '直接升级用户VIP等级',
   },
+
+  // ========== 限流管理权限 (rateLimit) ==========
+  // 限流规则
+  { code: 'rateLimit:admin:rule:list', name: '查看限流规则列表', description: '获取限流规则列表' },
+  { code: 'rateLimit:admin:rule:read', name: '查看限流规则详情', description: '获取限流规则详情' },
+  { code: 'rateLimit:admin:rule:create', name: '创建限流规则', description: '创建新限流规则' },
+  { code: 'rateLimit:admin:rule:update', name: '更新限流规则', description: '更新限流规则' },
+  { code: 'rateLimit:admin:rule:delete', name: '删除限流规则', description: '删除限流规则' },
+  // IP黑名单
+  { code: 'rateLimit:admin:blacklist:list', name: '查看IP黑名单列表', description: '获取IP黑名单列表' },
+  { code: 'rateLimit:admin:blacklist:read', name: '查看IP黑名单详情', description: '获取IP黑名单详情' },
+  { code: 'rateLimit:admin:blacklist:create', name: '添加IP黑名单', description: '手动添加IP到黑名单' },
+  { code: 'rateLimit:admin:blacklist:update', name: '更新IP黑名单', description: '更新IP黑名单/解封' },
+  { code: 'rateLimit:admin:blacklist:delete', name: '删除IP黑名单', description: '删除IP黑名单记录' },
 ]
 
 /** 权限表 Seed */

@@ -24,6 +24,8 @@ import {
   configAdminController,
   loginLogAdminController,
   operLogAdminController,
+  rateLimitRuleAdminController,
+  ipBlacklistAdminController,
 } from './system'
 // Job 模块
 import { jobAdminController, jobLogAdminController } from './job'
@@ -32,17 +34,8 @@ import { noticeController, noticeAdminController } from './notice'
 // File 模块
 import { fileController, fileAdminController } from './file'
 
-/** API 模块配置 */
-export interface ApiOptions {
-  /** Seed 模块配置 */
-  seed?: {
-    /** 是否在初始化时自动执行所有未执行的 Seeds，默认 false */
-    autoRun?: boolean
-  }
-}
-
 /** 创建 API 路由 */
-export const createApi = (options: ApiOptions = {}) => {
+export const createApi = () => {
   return (
     new Elysia({ prefix: '/api' })
       .use(authController)
@@ -58,7 +51,7 @@ export const createApi = (options: ApiOptions = {}) => {
 }
 
 /** 创建管理端 API 路由 */
-export const createAdminApi = (options: ApiOptions = {}) => {
+export const createAdminApi = () => {
   return (
     new Elysia({ prefix: '/api/admin' })
       .use(authAdminController)
@@ -76,6 +69,8 @@ export const createAdminApi = (options: ApiOptions = {}) => {
       .use(configAdminController)
       .use(loginLogAdminController)
       .use(operLogAdminController)
+      .use(rateLimitRuleAdminController)
+      .use(ipBlacklistAdminController)
       // Notice 模块
       .use(noticeAdminController)
       // Job 模块
@@ -83,7 +78,7 @@ export const createAdminApi = (options: ApiOptions = {}) => {
       .use(jobLogAdminController)
       // File 模块
       .use(fileAdminController)
-      // Seed 模块
-      .use(createSeedController(options.seed))
+      // Seed 模块（仅 API 路由，seed 已在启动时执行完毕）
+      .use(createSeedController())
   )
 }
