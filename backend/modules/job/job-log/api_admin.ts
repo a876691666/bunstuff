@@ -25,8 +25,8 @@ export const jobLogAdminController = new Elysia({
   // 列表
   .get(
     '/',
-    async ({ query }) => {
-      const result = await jobLogService.findAll(query)
+    async (ctx) => {
+      const result = await jobLogService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -43,8 +43,8 @@ export const jobLogAdminController = new Elysia({
   // 详情
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await jobLogService.findById(params.id)
+    async (ctx) => {
+      const data = await jobLogService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('日志')
       return R.ok(data)
     },
@@ -65,10 +65,10 @@ export const jobLogAdminController = new Elysia({
   // 删除
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await jobLogService.findById(params.id)
+    async (ctx) => {
+      const existing = await jobLogService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('日志')
-      await jobLogService.delete(params.id)
+      await jobLogService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

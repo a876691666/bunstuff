@@ -38,10 +38,10 @@ export interface NoticeContext {
  * ```
  */
 export function noticePlugin() {
-  return new Elysia({ name: 'notice-plugin' }).derive({ as: 'global' }, () => {
+  return new Elysia({ name: 'notice-plugin' }).derive({ as: 'global' }, (ctx) => {
     const notice: NoticeContext = {
       publishNotice: async (data, createBy) => {
-        return await noticeService.create({ ...data, status: 1 }, createBy)
+        return await noticeService.create({ ...data, status: 1 }, { ...ctx, userId: createBy })
       },
       markAsRead: (noticeId, userId) => noticeService.markAsRead(noticeId, userId),
       getUnreadCount: (userId) => noticeService.getUnreadCount(userId),

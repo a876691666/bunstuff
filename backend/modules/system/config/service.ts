@@ -1,5 +1,6 @@
 import type { Insert, Update } from '@/packages/orm'
 import SysConfig from '@/models/sys-config'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 
 /** 参数配置缓存 */
 class ConfigCache {
@@ -41,48 +42,35 @@ class ConfigCache {
 export const configCache = new ConfigCache()
 
 /** 参数配置服务 */
-export class ConfigService {
-  /** 获取参数配置列表 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await SysConfig.findMany({ where: query?.filter, limit: pageSize, offset })
-    const total = await SysConfig.count(query?.filter)
-
-    return { data, total, page, pageSize }
-  }
-
-  /** 根据ID获取参数配置 */
-  async findById(id: number) {
-    return await SysConfig.findOne({ where: `id = ${id}` })
+export class ConfigService extends CrudService<typeof SysConfig.schema> {
+  constructor() {
+    super(SysConfig)
   }
 
   /** 根据键名获取参数配置 */
   async findByKey(key: string) {
-    return await SysConfig.findOne({ where: `key = '${key}'` })
+    return await this.model.findOne({ where: `key = '${key}'` })
   }
 
   /** 创建参数配置 */
-  async create(data: Insert<typeof SysConfig>) {
-    const result = await SysConfig.create(data)
-    await configCache.reload()
+  override async create(data: Insert<typeof SysConfig>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await configCache.reload()
     return result
   }
 
   /** 更新参数配置 */
-  async update(id: number, data: Update<typeof SysConfig>) {
-    const result = await SysConfig.update(id, data)
-    await configCache.reload()
+  override async update(id: number, data: Update<typeof SysConfig>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await configCache.reload()
     return result
   }
 
   /** 删除参数配置 */
-  async delete(id: number) {
-    const result = await SysConfig.delete(id)
-    await configCache.reload()
-    return result
+  override async delete(id: number, ctx?: CrudContext) {
+    const ok = await super.delete(id, ctx)
+    if (ok) await configCache.reload()
+    return ok
   }
 
   // ============ 缓存相关 ============

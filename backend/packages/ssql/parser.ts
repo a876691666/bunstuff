@@ -1,5 +1,5 @@
 import { Op, Logic, TokenType, type Token, type Value, type Values } from './types'
-import { FieldExpr, LogicExpr, GroupExpr, type Expression } from './expression'
+import { FieldExpr, LogicExpr, GroupExpr, LiteralExpr, type Expression } from './expression'
 import { tokenize } from './lexer'
 
 // 语法分析器
@@ -71,6 +71,8 @@ export class Parser {
         return this.parseGroup()
       case TokenType.Field:
         return this.parseField()
+      case TokenType.Value:
+        return this.parseLiteral()
       case TokenType.EOF:
         return null
       default:
@@ -107,6 +109,23 @@ export class Parser {
     this.adv()
 
     return new FieldExpr(field, op, this.convertVal(valTok.value))
+  }
+
+  private parseLiteral(): LiteralExpr {
+    const leftTok = this.adv()
+    const left = this.convertVal(leftTok.value)
+
+    const opTok = this.cur()
+    if (opTok.type !== TokenType.Op) throw new Error(`值 '${leftTok.value}' 后缺少操作符`)
+    this.adv()
+
+    const op = this.strToOp(opTok.value)
+
+    const rightTok = this.cur()
+    if (rightTok.type !== TokenType.Value) throw new Error(`缺少右侧值 位置 ${rightTok.pos}`)
+    this.adv()
+
+    return new LiteralExpr(left, op, this.convertVal(rightTok.value))
   }
 
   private parseArray(): Values {

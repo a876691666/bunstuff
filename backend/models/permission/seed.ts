@@ -59,7 +59,6 @@ const defaultPermissions = [
   { code: 'notice:admin:create', name: '创建通知', description: '创建新通知' },
   { code: 'notice:admin:delete', name: '删除通知', description: '删除通知' },
   { code: 'notice:admin:list', name: '查看通知列表', description: '获取通知列表' },
-  { code: 'notice:admin:publish', name: '发布通知', description: '发布通知' },
   { code: 'notice:admin:read', name: '查看通知详情', description: '获取通知详情' },
   { code: 'notice:admin:update', name: '更新通知', description: '更新通知内容' },
 

@@ -4,6 +4,37 @@ import VipResourceLimit from '@/models/vip-resource-limit'
 import UserVip from '@/models/user-vip'
 import UserResourceUsage from '@/models/user-resource-usage'
 import User from '@/models/users'
+import { CrudService, type CrudContext, type PageQuery, type PageResult } from '@/modules/crud-service'
+
+/** VIP 等级 CrudService 子类（自定义排序） */
+class TierCrud extends CrudService<typeof VipTier.schema> {
+  constructor() { super(VipTier) }
+
+  override async findAll(query?: PageQuery, ctx?: CrudContext) {
+    const page = query?.page ?? 1
+    const pageSize = query?.pageSize ?? 10
+    const offset = (page - 1) * pageSize
+    const where = this.buildWhere(query?.filter, ctx)
+    const data = await VipTier.findMany({ where, limit: pageSize, offset, orderBy: [{ column: 'id', order: 'asc' }] })
+    const total = await VipTier.count(where)
+    return { data, total, page, pageSize }
+  }
+}
+
+/** 用户VIP CrudService 子类（自定义排序） */
+class UserVipCrud extends CrudService<typeof UserVip.schema> {
+  constructor() { super(UserVip) }
+
+  override async findAll(query?: PageQuery, ctx?: CrudContext) {
+    const page = query?.page ?? 1
+    const pageSize = query?.pageSize ?? 10
+    const offset = (page - 1) * pageSize
+    const where = this.buildWhere(query?.filter, ctx)
+    const data = await UserVip.findMany({ where, limit: pageSize, offset, orderBy: [{ column: 'id', order: 'desc' }] })
+    const total = await UserVip.count(where)
+    return { data, total, page, pageSize }
+  }
+}
 
 /** VIP 绑定回调函数类型 */
 export type VipBindingCallback = (params: {
@@ -19,6 +50,10 @@ export type VipBindingCallback = (params: {
 export class VipService {
   /** VIP 绑定回调 */
   private bindingCallback: VipBindingCallback | null = null
+  /** CrudService 实例 */
+  private tierCrud = new TierCrud()
+  private resourceLimitCrud = new CrudService(VipResourceLimit)
+  private userVipCrud = new UserVipCrud()
 
   /** 设置绑定回调 */
   setBindingCallback(callback: VipBindingCallback) {
@@ -28,26 +63,13 @@ export class VipService {
   // ============ VIP 等级管理 ============
 
   /** 获取所有 VIP 等级 */
-  async findAllTiers(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await VipTier.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-      orderBy: [{ column: 'id', order: 'asc' }],
-    })
-
-    const total = await VipTier.count(query?.filter)
-
-    return { data, total, page, pageSize }
+  async findAllTiers(query?: { page?: number; pageSize?: number; filter?: string }, ctx?: CrudContext) {
+    return this.tierCrud.findAll(query, ctx)
   }
 
   /** 根据 ID 获取 VIP 等级 */
-  async findTierById(id: number) {
-    return await VipTier.findOne({ where: `id = ${id}` })
+  async findTierById(id: number, ctx?: CrudContext) {
+    return this.tierCrud.findById(id, ctx)
   }
 
   /** 根据代码获取 VIP 等级 */
@@ -56,41 +78,41 @@ export class VipService {
   }
 
   /** 创建 VIP 等级 */
-  async createTier(data: Insert<typeof VipTier>) {
-    return await VipTier.create(data)
+  async createTier(data: Insert<typeof VipTier>, ctx?: CrudContext) {
+    return this.tierCrud.create(data, ctx)
   }
 
   /** 更新 VIP 等级 */
-  async updateTier(id: number, data: Update<typeof VipTier>) {
-    return await VipTier.update(id, data)
+  async updateTier(id: number, data: Update<typeof VipTier>, ctx?: CrudContext) {
+    return this.tierCrud.update(id, data, ctx)
   }
 
   /** 删除 VIP 等级 */
-  async deleteTier(id: number) {
+  async deleteTier(id: number, ctx?: CrudContext) {
     // 检查是否有用户使用该 VIP 等级
     const usersWithTier = await UserVip.findMany({ where: `vipTierId = ${id}` })
     if (usersWithTier.length > 0) {
       throw new Error(`无法删除 VIP 等级：有 ${usersWithTier.length} 个用户正在使用`)
     }
     // 级联删除资源限制
-    await VipResourceLimit.deleteMany(`vipTierId = ${id}`)
-    return await VipTier.delete(id)
+    await this.resourceLimitCrud.deleteMany(`vipTierId = ${id}`, ctx)
+    return this.tierCrud.delete(id, ctx)
   }
 
   // ============ VIP 资源限制管理 ============
 
   /** 获取 VIP 等级的资源限制 */
-  async findResourceLimitsByTierId(vipTierId: number) {
-    return await VipResourceLimit.findMany({ where: `vipTierId = ${vipTierId}` })
+  async findResourceLimitsByTierId(vipTierId: number, ctx?: CrudContext) {
+    return this.resourceLimitCrud.findMany(`vipTierId = ${vipTierId}`, ctx)
   }
 
   /** 根据 ID 获取资源限制 */
-  async findResourceLimitById(id: number) {
-    return await VipResourceLimit.findOne({ where: `id = ${id}` })
+  async findResourceLimitById(id: number, ctx?: CrudContext) {
+    return this.resourceLimitCrud.findById(id, ctx)
   }
 
   /** 创建资源限制 */
-  async createResourceLimit(data: Insert<typeof VipResourceLimit>) {
+  async createResourceLimit(data: Insert<typeof VipResourceLimit>, ctx?: CrudContext) {
     // 检查是否已存在相同的资源限制
     const existing = await VipResourceLimit.findOne({
       where: `vipTierId = ${data.vipTierId} && resourceKey = '${data.resourceKey}'`,
@@ -98,41 +120,28 @@ export class VipService {
     if (existing) {
       throw new Error('该 VIP 等级已存在相同资源键的限制')
     }
-    return await VipResourceLimit.create(data)
+    return this.resourceLimitCrud.create(data, ctx)
   }
 
   /** 更新资源限制 */
-  async updateResourceLimit(id: number, data: Update<typeof VipResourceLimit>) {
-    return await VipResourceLimit.update(id, data)
+  async updateResourceLimit(id: number, data: Update<typeof VipResourceLimit>, ctx?: CrudContext) {
+    return this.resourceLimitCrud.update(id, data, ctx)
   }
 
   /** 删除资源限制 */
-  async deleteResourceLimit(id: number) {
-    return await VipResourceLimit.delete(id)
+  async deleteResourceLimit(id: number, ctx?: CrudContext) {
+    return this.resourceLimitCrud.delete(id, ctx)
   }
 
   // ============ 用户 VIP 管理 ============
 
   /** 获取所有用户 VIP 列表 */
-  async findAllUserVips(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await UserVip.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-      orderBy: [{ column: 'id', order: 'desc' }],
-    })
-
-    const total = await UserVip.count(query?.filter)
-
-    return { data, total, page, pageSize }
+  async findAllUserVips(query?: { page?: number; pageSize?: number; filter?: string }, ctx?: CrudContext) {
+    return this.userVipCrud.findAll(query, ctx)
   }
 
   /** 获取用户的 VIP 信息 */
-  async getUserVip(userId: number): Promise<
+  async getUserVip(userId: number, ctx?: CrudContext): Promise<
     | (Row<typeof UserVip> & {
         vipTier: Row<typeof VipTier> | null
         resourceLimits: Row<typeof VipResourceLimit>[]
@@ -158,8 +167,8 @@ export class VipService {
   }
 
   /** 根据 ID 获取用户 VIP */
-  async getUserVipById(id: number) {
-    return await UserVip.findOne({ where: `id = ${id}` })
+  async getUserVipById(id: number, ctx?: CrudContext) {
+    return this.userVipCrud.findById(id, ctx)
   }
 
   /**

@@ -15,7 +15,7 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色树 */
   .get(
     '/roles/tree',
-    async () => {
+    async (ctx) => {
       const data = await rbacService.getRoleTree()
       return R.ok(data)
     },
@@ -50,8 +50,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色的父级链 */
   .get(
     '/roles/:roleId/chain',
-    async ({ params }) => {
-      const data = await rbacService.getRoleChain(params.roleId)
+    async (ctx) => {
+      const data = await rbacService.getRoleChain(ctx.params.roleId)
       return R.ok(data)
     },
     {
@@ -84,8 +84,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色的所有子角色ID */
   .get(
     '/roles/:roleId/children',
-    async ({ params }) => {
-      const data = await rbacService.getChildRoleIds(params.roleId)
+    async (ctx) => {
+      const data = await rbacService.getChildRoleIds(ctx.params.roleId)
       return R.ok(data)
     },
     {
@@ -110,8 +110,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色的权限列表 */
   .get(
     '/roles/:roleId/permissions',
-    async ({ params }) => {
-      const data = await rbacService.getRolePermissions(params.roleId)
+    async (ctx) => {
+      const data = await rbacService.getRolePermissions(ctx.params.roleId)
       return R.ok(data)
     },
     {
@@ -144,8 +144,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 检查角色是否拥有指定权限 */
   .post(
     '/roles/:roleId/permissions/check',
-    async ({ params, body }) => {
-      const hasPermission = await rbacService.hasPermission(params.roleId, body.permissionCode)
+    async (ctx) => {
+      const hasPermission = await rbacService.hasPermission(ctx.params.roleId, ctx.body.permissionCode)
       return R.ok({ hasPermission })
     },
     {
@@ -176,8 +176,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 检查角色是否拥有任一权限 */
   .post(
     '/roles/:roleId/permissions/check-any',
-    async ({ params, body }) => {
-      const hasPermission = await rbacService.hasAnyPermission(params.roleId, body.permissionCodes)
+    async (ctx) => {
+      const hasPermission = await rbacService.hasAnyPermission(ctx.params.roleId, ctx.body.permissionCodes)
       return R.ok({ hasPermission })
     },
     {
@@ -208,8 +208,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 检查角色是否拥有所有权限 */
   .post(
     '/roles/:roleId/permissions/check-all',
-    async ({ params, body }) => {
-      const hasPermission = await rbacService.hasAllPermissions(params.roleId, body.permissionCodes)
+    async (ctx) => {
+      const hasPermission = await rbacService.hasAllPermissions(ctx.params.roleId, ctx.body.permissionCodes)
       return R.ok({ hasPermission })
     },
     {
@@ -242,8 +242,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色的菜单列表 */
   .get(
     '/roles/:roleId/menus',
-    async ({ params }) => {
-      const data = await rbacService.getRoleMenus(params.roleId)
+    async (ctx) => {
+      const data = await rbacService.getRoleMenus(ctx.params.roleId)
       return R.ok(data)
     },
     {
@@ -266,8 +266,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色的菜单树 */
   .get(
     '/roles/:roleId/menus/tree',
-    async ({ params }) => {
-      const data = await rbacService.getRoleMenuTree(params.roleId)
+    async (ctx) => {
+      const data = await rbacService.getRoleMenuTree(ctx.params.roleId)
       return R.ok(data)
     },
     {
@@ -311,8 +311,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色的数据过滤规则 */
   .get(
     '/roles/:roleId/scopes',
-    async ({ params }) => {
-      const scopeMap = await rbacService.getRoleScopes(params.roleId)
+    async (ctx) => {
+      const scopeMap = await rbacService.getRoleScopes(ctx.params.roleId)
       // 将 Map 转为对象
       const data: Record<string, any[]> = {}
       for (const [key, value] of scopeMap) {
@@ -354,8 +354,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色对指定表的数据过滤规则 */
   .get(
     '/roles/:roleId/scopes/table',
-    async ({ params, query }) => {
-      const data = await rbacService.getRoleScopesForTable(params.roleId, query.tableName)
+    async (ctx) => {
+      const data = await rbacService.getRoleScopesForTable(ctx.params.roleId, ctx.query.tableName)
       return R.ok(data)
     },
     {
@@ -392,8 +392,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取角色对指定表的 SSQL 规则 */
   .get(
     '/roles/:roleId/scopes/ssql',
-    async ({ params, query }) => {
-      const data = await rbacService.getRoleSsqlRules(params.roleId, query.tableName)
+    async (ctx) => {
+      const data = await rbacService.getRoleSsqlRules(ctx.params.roleId, ctx.query.tableName)
       return R.ok(data)
     },
     {
@@ -421,8 +421,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取用户的完整权限信息 */
   .get(
     '/users/:userId/info',
-    async ({ params }) => {
-      const info = await rbacService.getUserPermissionInfo(params.userId)
+    async (ctx) => {
+      const info = await rbacService.getUserPermissionInfo(ctx.params.userId)
       if (!info) return R.notFound('用户')
       // 转换 Set 和 Map 为可序列化格式
       const data = {
@@ -464,8 +464,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 检查用户是否拥有指定权限 */
   .post(
     '/users/:userId/permissions/check',
-    async ({ params, body }) => {
-      const hasPermission = await rbacService.userHasPermission(params.userId, body.permissionCode)
+    async (ctx) => {
+      const hasPermission = await rbacService.userHasPermission(ctx.params.userId, ctx.body.permissionCode)
       return R.ok({ hasPermission })
     },
     {
@@ -496,10 +496,10 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 检查用户是否拥有任一权限 */
   .post(
     '/users/:userId/permissions/check-any',
-    async ({ params, body }) => {
+    async (ctx) => {
       const hasPermission = await rbacService.userHasAnyPermission(
-        params.userId,
-        body.permissionCodes,
+        ctx.params.userId,
+        ctx.body.permissionCodes,
       )
       return R.ok({ hasPermission })
     },
@@ -531,8 +531,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取用户的菜单树 */
   .get(
     '/users/:userId/menus/tree',
-    async ({ params }) => {
-      const data = await rbacService.getUserMenuTree(params.userId)
+    async (ctx) => {
+      const data = await rbacService.getUserMenuTree(ctx.params.userId)
       return R.ok(data)
     },
     {
@@ -574,8 +574,8 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取用户对指定表的数据过滤规则 */
   .get(
     '/users/:userId/scopes/table',
-    async ({ params, query }) => {
-      const data = await rbacService.getUserScopesForTable(params.userId, query.tableName)
+    async (ctx) => {
+      const data = await rbacService.getUserScopesForTable(ctx.params.userId, ctx.query.tableName)
       return R.ok(data)
     },
     {
@@ -614,7 +614,7 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 获取缓存状态 */
   .get(
     '/cache/status',
-    () => {
+    (ctx) => {
       const data = rbacService.getCacheStatus()
       return R.ok(data)
     },
@@ -644,7 +644,7 @@ export const rbacAdminController = new Elysia({ prefix: '/rbac', tags: ['管理 
   /** 刷新缓存 */
   .post(
     '/cache/reload',
-    async () => {
+    async (ctx) => {
       await rbacService.reloadCache()
       return R.success('缓存刷新成功')
     },

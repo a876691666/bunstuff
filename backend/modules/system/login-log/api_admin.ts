@@ -27,8 +27,8 @@ export const loginLogAdminController = new Elysia({
   .use(operLogPlugin())
   .get(
     '/',
-    async ({ query }) => {
-      const result = await loginLogService.findAll(query)
+    async (ctx) => {
+      const result = await loginLogService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -46,8 +46,8 @@ export const loginLogAdminController = new Elysia({
 
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await loginLogService.findById(params.id)
+    async (ctx) => {
+      const data = await loginLogService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('登录日志')
       return R.ok(data)
     },
@@ -67,10 +67,10 @@ export const loginLogAdminController = new Elysia({
 
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await loginLogService.findById(params.id)
+    async (ctx) => {
+      const existing = await loginLogService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('登录日志')
-      await loginLogService.delete(params.id)
+      await loginLogService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

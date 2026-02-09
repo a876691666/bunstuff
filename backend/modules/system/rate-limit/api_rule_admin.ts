@@ -26,8 +26,8 @@ export const rateLimitRuleAdminController = new Elysia({
   // GET / - 列表
   .get(
     '/',
-    async ({ query }) => {
-      const result = await rateLimitRuleService.findAll(query)
+    async (ctx) => {
+      const result = await rateLimitRuleService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -62,8 +62,8 @@ export const rateLimitRuleAdminController = new Elysia({
   // GET /:id - 详情
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await rateLimitRuleService.findById(params.id)
+    async (ctx) => {
+      const data = await rateLimitRuleService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('限流规则')
       return R.ok(data)
     },
@@ -85,10 +85,10 @@ export const rateLimitRuleAdminController = new Elysia({
   // POST / - 创建
   .post(
     '/',
-    async ({ body }) => {
-      const existing = await rateLimitRuleService.findByCode(body.code)
+    async (ctx) => {
+      const existing = await rateLimitRuleService.findByCode(ctx.body.code)
       if (existing) return R.badRequest('规则编码已存在')
-      const data = await rateLimitRuleService.create(body)
+      const data = await rateLimitRuleService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -113,14 +113,14 @@ export const rateLimitRuleAdminController = new Elysia({
   // PUT /:id - 更新
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await rateLimitRuleService.findById(params.id)
+    async (ctx) => {
+      const existing = await rateLimitRuleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('限流规则')
-      if (body.code && body.code !== existing.code) {
-        const codeExists = await rateLimitRuleService.findByCode(body.code)
+      if (ctx.body.code && ctx.body.code !== existing.code) {
+        const codeExists = await rateLimitRuleService.findByCode(ctx.body.code)
         if (codeExists) return R.badRequest('规则编码已存在')
       }
-      const data = await rateLimitRuleService.update(params.id, body)
+      const data = await rateLimitRuleService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -144,10 +144,10 @@ export const rateLimitRuleAdminController = new Elysia({
   // DELETE /:id - 删除
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await rateLimitRuleService.findById(params.id)
+    async (ctx) => {
+      const existing = await rateLimitRuleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('限流规则')
-      await rateLimitRuleService.delete(params.id)
+      await rateLimitRuleService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

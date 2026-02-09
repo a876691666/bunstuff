@@ -24,8 +24,8 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
   .use(operLogPlugin())
   .get(
     '/',
-    async ({ query }) => {
-      const result = await configService.findAll(query)
+    async (ctx) => {
+      const result = await configService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -41,8 +41,8 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
 
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await configService.findById(params.id)
+    async (ctx) => {
+      const data = await configService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('参数配置')
       return R.ok(data)
     },
@@ -59,10 +59,10 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
 
   .post(
     '/',
-    async ({ body }) => {
-      const existing = await configService.findByKey(body.key)
+    async (ctx) => {
+      const existing = await configService.findByKey(ctx.body.key)
       if (existing) return R.badRequest('参数键名已存在')
-      const data = await configService.create(body)
+      const data = await configService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -79,14 +79,14 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
 
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await configService.findById(params.id)
+    async (ctx) => {
+      const existing = await configService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('参数配置')
-      if (body.key && body.key !== existing.key) {
-        const keyExists = await configService.findByKey(body.key)
+      if (ctx.body.key && ctx.body.key !== existing.key) {
+        const keyExists = await configService.findByKey(ctx.body.key)
         if (keyExists) return R.badRequest('参数键名已存在')
       }
-      const data = await configService.update(params.id, body)
+      const data = await configService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -108,11 +108,11 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
 
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await configService.findById(params.id)
+    async (ctx) => {
+      const existing = await configService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('参数配置')
       if (existing.isBuiltin === 1) return R.badRequest('系统内置参数不可删除')
-      await configService.delete(params.id)
+      await configService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

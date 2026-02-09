@@ -1,6 +1,7 @@
 import type { Row, Insert, Update } from '@/packages/orm'
 import Notice from '@/models/notice'
 import NoticeRead from '@/models/notice-read'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 
 /** SSE 连接管理 */
 class NoticeSSE {
@@ -54,57 +55,31 @@ class NoticeSSE {
 export const noticeSSE = new NoticeSSE()
 
 /** 通知公告服务 */
-export class NoticeService {
-  /** 获取通知公告列表 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await Notice.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-      orderBy: [{ column: 'createdAt', order: 'DESC' }],
-    })
-    const total = await Notice.count(query?.filter)
-
-    return { data, total, page, pageSize }
+export class NoticeService extends CrudService<typeof Notice.schema> {
+  constructor() {
+    super(Notice)
   }
 
-  /** 根据ID获取通知公告 */
-  async findById(id: number) {
-    return await Notice.findOne({ where: `id = ${id}` })
-  }
-
-  /** 创建通知公告 */
-  async create(data: Insert<typeof Notice>, createBy: number) {
-    const result = await Notice.create({ ...data, createBy })
+  /** 创建通知公告（覆盖基类，附加广播逻辑） */
+  override async create(data: Insert<typeof Notice>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
     // 广播新公告
-    if (result.status === 1) {
+    if (result && result.status === 1) {
       noticeSSE.broadcast(result)
     }
     return result
   }
 
-  /** 更新通知公告 */
-  async update(id: number, data: Update<typeof Notice>) {
-    return await Notice.update(id, data)
-  }
-
-  /** 删除通知公告 */
-  async delete(id: number) {
-    // 删除关联的已读记录
+  /** 删除通知公告（覆盖基类，同时删除关联已读记录） */
+  override async delete(id: number, ctx?: CrudContext) {
     await NoticeRead.deleteMany(`noticeId = ${id}`)
-    return await Notice.delete(id)
+    return await super.delete(id, ctx)
   }
 
-  /** 发布通知（状态改为正常并广播） */
-  async publish(id: number) {
-    const notice = await this.findById(id)
-    if (!notice) return null
-    const result = await Notice.update(id, { status: 1 })
-    if (result) {
+  /** 更新通知公告（覆盖基类，状态变为正常时广播） */
+  override async update(id: number, data: Update<typeof Notice>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result && result.status === 1 && data.status === 1) {
       noticeSSE.broadcast(result)
     }
     return result
@@ -120,7 +95,7 @@ export class NoticeService {
     const offset = (page - 1) * pageSize
 
     // 获取正常状态的公告
-    const notices = await Notice.findMany({
+    const notices = await this.model.findMany({
       where: `status = 1`,
       limit: pageSize,
       offset,
@@ -140,14 +115,13 @@ export class NoticeService {
       readAt: readMap.get(notice.id)?.toISOString() || null,
     }))
 
-    const total = await Notice.count(`status = 1`)
+    const total = await this.model.count(`status = 1`)
 
     return { data, total, page, pageSize }
   }
 
   /** 标记通知已读 */
   async markAsRead(noticeId: number, userId: number) {
-    // 检查是否已读
     const existing = await NoticeRead.findOne({
       where: `noticeId = ${noticeId} && userId = ${userId}`,
     })
@@ -162,7 +136,7 @@ export class NoticeService {
 
   /** 批量标记已读 */
   async markAllAsRead(userId: number) {
-    const notices = await Notice.findMany({ where: `status = 1` })
+    const notices = await this.model.findMany({ where: `status = 1` })
     for (const notice of notices) {
       await this.markAsRead(notice.id, userId)
     }
@@ -171,7 +145,7 @@ export class NoticeService {
 
   /** 获取未读数量 */
   async getUnreadCount(userId: number): Promise<number> {
-    const totalNotices = await Notice.count(`status = 1`)
+    const totalNotices = await this.model.count(`status = 1`)
     const readCount = await NoticeRead.count(`userId = ${userId}`)
     return Math.max(0, totalNotices - readCount)
   }

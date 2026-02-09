@@ -26,8 +26,8 @@ export const roleMenuAdminController = new Elysia({
   /** 获取角色菜单关联列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await roleMenuService.findAll(query)
+    async (ctx) => {
+      const result = await roleMenuService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -70,8 +70,8 @@ export const roleMenuAdminController = new Elysia({
   /** 根据ID获取角色菜单关联 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await roleMenuService.findById(params.id)
+    async (ctx) => {
+      const data = await roleMenuService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('角色菜单关联')
       return R.ok(data)
     },
@@ -93,8 +93,8 @@ export const roleMenuAdminController = new Elysia({
   /** 创建角色菜单关联 */
   .post(
     '/',
-    async ({ body }) => {
-      const data = await roleMenuService.create(body)
+    async (ctx) => {
+      const data = await roleMenuService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -119,8 +119,8 @@ export const roleMenuAdminController = new Elysia({
   /** 批量设置角色菜单 */
   .post(
     '/batch',
-    async ({ body }) => {
-      const data = await roleMenuService.batchSetRoleMenus(body.roleId, body.menuIds)
+    async (ctx) => {
+      const data = await roleMenuService.batchSetRoleMenus(ctx.body.roleId, ctx.body.menuIds, ctx)
       return R.ok(data, '设置成功')
     },
     {
@@ -148,10 +148,10 @@ export const roleMenuAdminController = new Elysia({
   /** 删除角色菜单关联 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await roleMenuService.findById(params.id)
+    async (ctx) => {
+      const existing = await roleMenuService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('角色菜单关联')
-      await roleMenuService.delete(params.id)
+      await roleMenuService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

@@ -26,8 +26,8 @@ export const permissionScopeAdminController = new Elysia({
   /** 获取数据过滤规则列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await permissionScopeService.findAll(query)
+    async (ctx) => {
+      const result = await permissionScopeService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -48,8 +48,8 @@ export const permissionScopeAdminController = new Elysia({
   /** 根据ID获取数据过滤规则 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await permissionScopeService.findById(params.id)
+    async (ctx) => {
+      const data = await permissionScopeService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('数据过滤规则')
       return R.ok(data)
     },
@@ -72,17 +72,21 @@ export const permissionScopeAdminController = new Elysia({
   /** 创建数据过滤规则 */
   .post(
     '/',
-    async ({ body }) => {
-      const data = await permissionScopeService.create(body)
+    async (ctx) => {
+      const data = await permissionScopeService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
       body: PermissionScope.getSchema({
         exclude: ['id'],
+        timestamps: false,
         required: ['permissionId', 'name', 'tableName', 'ssqlRule'],
       }),
       response: {
-        200: SuccessResponse(PermissionScope.getSchema(), '新创建的数据过滤规则信息'),
+        200: SuccessResponse(
+          PermissionScope.getSchema({ timestamps: false }),
+          '新创建的数据过滤规则信息',
+        ),
       },
       detail: {
         summary: '创建数据过滤规则',
@@ -98,10 +102,10 @@ export const permissionScopeAdminController = new Elysia({
   /** 更新数据过滤规则 */
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await permissionScopeService.findById(params.id)
+    async (ctx) => {
+      const existing = await permissionScopeService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('数据过滤规则')
-      const data = await permissionScopeService.update(params.id, body)
+      const data = await permissionScopeService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -125,10 +129,10 @@ export const permissionScopeAdminController = new Elysia({
   /** 删除数据过滤规则 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await permissionScopeService.findById(params.id)
+    async (ctx) => {
+      const existing = await permissionScopeService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('数据过滤规则')
-      await permissionScopeService.delete(params.id)
+      await permissionScopeService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

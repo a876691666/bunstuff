@@ -1,4 +1,5 @@
 import OperLog from '@/models/oper-log'
+import { CrudService } from '@/modules/crud-service'
 
 /** 操作类型 */
 export type OperType =
@@ -12,44 +13,21 @@ export type OperType =
   | 'other'
 
 /** 操作日志服务 */
-export class OperLogService {
-  /** 获取操作日志列表 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await OperLog.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-      orderBy: [{ column: 'operTime', order: 'DESC' }],
-    })
-    const total = await OperLog.count(query?.filter)
-
-    return { data, total, page, pageSize }
-  }
-
-  /** 根据ID获取操作日志 */
-  async findById(id: number) {
-    return await OperLog.findOne({ where: `id = ${id}` })
-  }
-
-  /** 删除操作日志 */
-  async delete(id: number) {
-    return await OperLog.delete(id)
+export class OperLogService extends CrudService<typeof OperLog.schema> {
+  constructor() {
+    super(OperLog)
   }
 
   /** 清空操作日志 */
   async clear() {
-    return await OperLog.truncate()
+    return await this.model.truncate()
   }
 
   /** 清理N天前的操作日志 */
   async clearBefore(days: number) {
     const date = new Date()
     date.setDate(date.getDate() - days)
-    return await OperLog.deleteMany(`operTime < '${date.toISOString()}'`)
+    return await this.model.deleteMany(`operTime < '${date.toISOString()}'`)
   }
 
   /** 记录操作日志 */

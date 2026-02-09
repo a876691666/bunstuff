@@ -23,8 +23,8 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
   /** 获取用户列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await userService.findAll(query)
+    async (ctx) => {
+      const result = await userService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -45,8 +45,8 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
   /** 根据ID获取用户 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await userService.findById(params.id)
+    async (ctx) => {
+      const data = await userService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('用户')
       // 不返回密码
       const { password, ...userWithoutPassword } = data
@@ -70,11 +70,11 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
   /** 创建用户 */
   .post(
     '/',
-    async ({ body }) => {
+    async (ctx) => {
       // 检查用户名是否已存在
-      const existing = await userService.findByUsername(body.username)
+      const existing = await userService.findByUsername(ctx.body.username)
       if (existing) return R.badRequest('用户名已存在')
-      const data = await userService.create(body)
+      const data = await userService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -101,10 +101,10 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
   /** 更新用户 */
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await userService.findById(params.id)
+    async (ctx) => {
+      const existing = await userService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('用户')
-      const data = await userService.update(params.id, body)
+      const data = await userService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -127,10 +127,10 @@ export const userAdminController = new Elysia({ prefix: '/users', tags: ['管理
   /** 删除用户 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await userService.findById(params.id)
+    async (ctx) => {
+      const existing = await userService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('用户')
-      await userService.delete(params.id)
+      await userService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

@@ -1,75 +1,49 @@
 import type { Insert } from '@/packages/orm'
 import RolePermission from '@/models/role-permission'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 角色权限关联服务 */
-export class RolePermissionService {
-  /** 获取所有角色权限关联 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await RolePermission.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-
-    const total = await RolePermission.count(query?.filter)
-
-    return {
-      data,
-      total,
-      page,
-      pageSize,
-    }
-  }
-
-  /** 根据ID获取角色权限关联 */
-  async findById(id: number) {
-    return await RolePermission.findOne({ where: `id = ${id}` })
+export class RolePermissionService extends CrudService<typeof RolePermission.schema> {
+  constructor() {
+    super(RolePermission)
   }
 
   /** 根据角色ID获取权限ID列表 */
   async findPermissionIdsByRoleId(roleId: number) {
-    const records = await RolePermission.findMany({ where: `roleId = ${roleId}` })
+    const records = await this.model.findMany({ where: `roleId = ${roleId}` })
     return records.map((r) => r.permissionId)
   }
 
   /** 创建角色权限关联 */
-  async create(data: Insert<typeof RolePermission>) {
-    const result = await RolePermission.create(data)
-    await rbacCache.reload()
+  override async create(data: Insert<typeof RolePermission>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 删除角色权限关联 */
-  async delete(id: number) {
-    const result = await RolePermission.delete(id)
-    await rbacCache.reload()
-    return result
+  override async delete(id: number, ctx?: CrudContext) {
+    const ok = await super.delete(id, ctx)
+    if (ok) await rbacCache.reload()
+    return ok
   }
 
   /** 根据角色ID删除所有关联 */
   async deleteByRoleId(roleId: number) {
-    const result = await RolePermission.deleteMany(`roleId = ${roleId}`)
+    const result = await this.model.deleteMany(`roleId = ${roleId}`)
     await rbacCache.reload()
     return result
   }
 
   /** 批量设置角色权限 */
-  async batchSetRolePermissions(roleId: number, permissionIds: number[]) {
-    // 先删除该角色的所有权限关联
+  async batchSetRolePermissions(roleId: number, permissionIds: number[], ctx?: CrudContext) {
     await this.deleteByRoleId(roleId)
-
-    // 批量创建新的关联
     const results = []
     for (const permissionId of permissionIds) {
-      const result = await this.create({ roleId, permissionId })
+      const result = await this.create({ roleId, permissionId }, ctx)
       results.push(result)
     }
-
     return results
   }
 }

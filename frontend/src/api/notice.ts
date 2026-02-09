@@ -30,9 +30,6 @@ export const noticeApi = {
 
   /** 删除公告 */
   delete: (id: number) => http.delete(`/admin/notice/${id}`),
-
-  /** 发布公告 */
-  publish: (id: number) => http.post(`/admin/notice/${id}/publish`),
 }
 
 /** 客户端通知公告 API（路径前缀: /api/notice） */

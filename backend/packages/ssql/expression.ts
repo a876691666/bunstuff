@@ -97,7 +97,7 @@ export class FieldExpr {
 export class LogicExpr {
   constructor(
     public readonly logic: Logic,
-    public readonly exprs: (FieldExpr | LogicExpr | GroupExpr)[],
+    public readonly exprs: (FieldExpr | LogicExpr | GroupExpr | LiteralExpr)[],
   ) {}
 
   /** 转为 SSQL 字符串 */
@@ -166,7 +166,7 @@ export class LogicExpr {
 // ============ 分组表达式 ============
 
 export class GroupExpr {
-  constructor(public readonly inner: FieldExpr | LogicExpr | GroupExpr) {}
+  constructor(public readonly inner: FieldExpr | LogicExpr | GroupExpr | LiteralExpr) {}
 
   /** 转为 SSQL 字符串 */
   toString(): string {
@@ -193,4 +193,68 @@ export class GroupExpr {
 }
 
 /** 表达式类型 */
-export type Expression = FieldExpr | LogicExpr | GroupExpr
+export type Expression = FieldExpr | LogicExpr | GroupExpr | LiteralExpr
+
+// ============ 字面量比较表达式 ============
+
+/** 字面量比较表达式（如 1 = 1, 'get' = 'get'） */
+export class LiteralExpr {
+  constructor(
+    public readonly left: Value,
+    public readonly op: Op,
+    public readonly right: Value,
+  ) {}
+
+  /** 转为 SSQL 字符串 */
+  toString(): string {
+    return `${this.formatVal(this.left)} ${this.opStr()} ${this.formatVal(this.right)}`
+  }
+
+  /** @internal 内部编译方法 */
+  _compile(dialect: Dialect, _offset = 0, _options?: CompileOptions): InternalSQL {
+    const opSql = this.opToSQL()
+    return [`${dialect.escape(this.left)} ${opSql} ${dialect.escape(this.right)}`, []]
+  }
+
+  /** 转为数据库 SQL */
+  toSQL(dialect: Dialect, offset = 0, options?: CompileOptions): SQLResult {
+    const [sql, params] = this._compile(dialect, offset, options)
+    return toResult(dialect, sql, params)
+  }
+
+  /** 转为 ORM WhereCondition（字面量比较不映射到 ORM 条件，返回空） */
+  toWhere(): OrmWhereCondition {
+    return {}
+  }
+
+  private formatVal(v: Value): string {
+    if (v === null) return 'null'
+    if (typeof v === 'boolean') return String(v)
+    if (typeof v === 'string') return `'${v}'`
+    return String(v)
+  }
+
+  private opStr(): string {
+    switch (this.op) {
+      case Op.Eq: return '='
+      case Op.Neq: return '!='
+      case Op.Gt: return '>'
+      case Op.Gte: return '>='
+      case Op.Lt: return '<'
+      case Op.Lte: return '<='
+      default: return '='
+    }
+  }
+
+  private opToSQL(): string {
+    switch (this.op) {
+      case Op.Eq: return '='
+      case Op.Neq: return '!='
+      case Op.Gt: return '>'
+      case Op.Gte: return '>='
+      case Op.Lt: return '<'
+      case Op.Lte: return '<='
+      default: return '='
+    }
+  }
+}

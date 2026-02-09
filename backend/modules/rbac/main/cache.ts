@@ -21,6 +21,8 @@ import RolePermission from '@/models/role-permission'
 import RoleMenu from '@/models/role-menu'
 import Menu from '@/models/menu'
 
+type PermissionScopeRow = Row<typeof PermissionScope>
+
 // ============ 缓存数据结构 ============
 
 /** 角色缓存数据 */
@@ -385,6 +387,24 @@ class RbacCache {
     const scopeMap = new Map<string, Row<typeof PermissionScope>[]>()
 
     for (const perm of permissions) {
+      for (const scope of perm.scopes) {
+        const list = scopeMap.get(scope.tableName) || []
+        list.push(scope)
+        scopeMap.set(scope.tableName, list)
+      }
+    }
+
+    return scopeMap
+  }
+
+  /** 获取角色中指定权限编码的数据过滤规则（按表名分组） */
+  getRoleScopesByPermissions(roleId: number, permissionCodes: string[]): Map<string, Row<typeof PermissionScope>[]> {
+    const permissions = this.getRolePermissions(roleId)
+    const codeSet = new Set(permissionCodes)
+    const scopeMap = new Map<string, Row<typeof PermissionScope>[]>()
+
+    for (const perm of permissions) {
+      if (!codeSet.has(perm.code)) continue
       for (const scope of perm.scopes) {
         const list = scopeMap.get(scope.tableName) || []
         list.push(scope)

@@ -1,6 +1,7 @@
 import type { Insert, Update } from '@/packages/orm'
 import DictType from '@/models/dict-type'
 import DictData from '@/models/dict-data'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 
 /** 字典缓存 */
 class DictCache {
@@ -47,23 +48,19 @@ export const dictCache = new DictCache()
 
 /** 字典服务 */
 export class DictService {
+  private typeCrud = new CrudService(DictType)
+  private dataCrud = new CrudService(DictData)
+
   // ============ 字典类型 ============
 
   /** 获取字典类型列表 */
-  async findAllTypes(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await DictType.findMany({ where: query?.filter, limit: pageSize, offset })
-    const total = await DictType.count(query?.filter)
-
-    return { data, total, page, pageSize }
+  async findAllTypes(query?: { page?: number; pageSize?: number; filter?: string }, ctx?: CrudContext) {
+    return this.typeCrud.findAll(query, ctx)
   }
 
   /** 根据ID获取字典类型 */
-  async findTypeById(id: number) {
-    return await DictType.findOne({ where: `id = ${id}` })
+  async findTypeById(id: number, ctx?: CrudContext) {
+    return this.typeCrud.findById(id, ctx)
   }
 
   /** 根据类型获取字典类型 */
@@ -72,26 +69,25 @@ export class DictService {
   }
 
   /** 创建字典类型 */
-  async createType(data: Insert<typeof DictType>) {
-    const result = await DictType.create(data)
-    return result
+  async createType(data: Insert<typeof DictType>, ctx?: CrudContext) {
+    return this.typeCrud.create(data, ctx)
   }
 
   /** 更新字典类型 */
-  async updateType(id: number, data: Update<typeof DictType>) {
-    const result = await DictType.update(id, data)
+  async updateType(id: number, data: Update<typeof DictType>, ctx?: CrudContext) {
+    const result = await this.typeCrud.update(id, data, ctx)
     await dictCache.reload()
     return result
   }
 
   /** 删除字典类型 */
-  async deleteType(id: number) {
-    const type = await this.findTypeById(id)
+  async deleteType(id: number, ctx?: CrudContext) {
+    const type = await this.findTypeById(id, ctx)
     if (type) {
       // 删除关联的字典数据
-      await DictData.deleteMany(`dictType = '${type.type}'`)
+      await this.dataCrud.deleteMany(`dictType = '${type.type}'`, ctx)
     }
-    const result = await DictType.delete(id)
+    const result = await this.typeCrud.delete(id, ctx)
     await dictCache.reload()
     return result
   }
@@ -99,24 +95,13 @@ export class DictService {
   // ============ 字典数据 ============
 
   /** 获取字典数据列表 */
-  async findAllData(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await DictData.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-    const total = await DictData.count(query?.filter)
-
-    return { data, total, page, pageSize }
+  async findAllData(query?: { page?: number; pageSize?: number; filter?: string }, ctx?: CrudContext) {
+    return this.dataCrud.findAll(query, ctx)
   }
 
   /** 根据ID获取字典数据 */
-  async findDataById(id: number) {
-    return await DictData.findOne({ where: `id = ${id}` })
+  async findDataById(id: number, ctx?: CrudContext) {
+    return this.dataCrud.findById(id, ctx)
   }
 
   /** 根据字典类型获取数据列表 */
@@ -128,22 +113,22 @@ export class DictService {
   }
 
   /** 创建字典数据 */
-  async createData(data: Insert<typeof DictData>) {
-    const result = await DictData.create(data)
+  async createData(data: Insert<typeof DictData>, ctx?: CrudContext) {
+    const result = await this.dataCrud.create(data, ctx)
     await dictCache.reload()
     return result
   }
 
   /** 更新字典数据 */
-  async updateData(id: number, data: Update<typeof DictData>) {
-    const result = await DictData.update(id, data)
+  async updateData(id: number, data: Update<typeof DictData>, ctx?: CrudContext) {
+    const result = await this.dataCrud.update(id, data, ctx)
     await dictCache.reload()
     return result
   }
 
   /** 删除字典数据 */
-  async deleteData(id: number) {
-    const result = await DictData.delete(id)
+  async deleteData(id: number, ctx?: CrudContext) {
+    const result = await this.dataCrud.delete(id, ctx)
     await dictCache.reload()
     return result
   }

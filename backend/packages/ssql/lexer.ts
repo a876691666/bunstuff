@@ -127,6 +127,9 @@ export class Lexer {
       case '<':
         if (this.char() === '=') op += this.advance()
         break
+      case '=':
+        if (this.char() === '=') this.advance() // == 当作 =
+        break
       case '?':
         if (this.char() === '=') {
           op += this.advance()

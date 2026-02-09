@@ -9,6 +9,8 @@ import type { Row } from '@/packages/orm'
 import PermissionScope from '@/models/permission-scope'
 import { rbacService } from './service'
 
+type PermissionScopeRow = Row<typeof PermissionScope>
+
 /** RBAC Scope 配置 */
 export interface RbacScope {
   /** 需要的权限编码（必须全部满足） */
@@ -86,8 +88,9 @@ export function rbacPlugin() {
         return { dataScope: null as DataScope | null }
       }
 
-      // 获取角色的数据权限
-      const scopes = rbacService.getRoleScopes(roleId)
+      // 获取角色的数据权限（仅限路由配置的权限）
+      const permissionCodes = scope.permissions!
+      const scopes = rbacService.getRoleScopesByPermissions(roleId, permissionCodes)
 
       const dataScope: DataScope = {
         scopes,

@@ -26,8 +26,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
   // ============ 字典类型 ============
   .get(
     '/type',
-    async ({ query }) => {
-      const result = await dictService.findAllTypes(query)
+    async (ctx) => {
+      const result = await dictService.findAllTypes(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -44,8 +44,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .get(
     '/type/:id',
-    async ({ params }) => {
-      const data = await dictService.findTypeById(params.id)
+    async (ctx) => {
+      const data = await dictService.findTypeById(ctx.params.id, ctx)
       if (!data) return R.notFound('字典类型')
       return R.ok(data)
     },
@@ -62,10 +62,11 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .post(
     '/type',
-    async ({ body }) => {
-      const existing = await dictService.findTypeByType(body.type)
+    async (ctx) => {
+      const existing = await dictService.findTypeByType(ctx.body.type)
       if (existing) return R.badRequest('字典类型已存在')
-      const data = await dictService.createType(body)
+      const data = await dictService.createType(ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作')
       return R.ok(data, '创建成功')
     },
     {
@@ -82,14 +83,15 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .put(
     '/type/:id',
-    async ({ params, body }) => {
-      const existing = await dictService.findTypeById(params.id)
+    async (ctx) => {
+      const existing = await dictService.findTypeById(ctx.params.id, ctx)
       if (!existing) return R.notFound('字典类型')
-      if (body.type && body.type !== existing.type) {
-        const typeExists = await dictService.findTypeByType(body.type)
+      if (ctx.body.type && ctx.body.type !== existing.type) {
+        const typeExists = await dictService.findTypeByType(ctx.body.type)
         if (typeExists) return R.badRequest('字典类型已存在')
       }
-      const data = await dictService.updateType(params.id, body)
+      const data = await dictService.updateType(ctx.params.id, ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作该记录')
       return R.ok(data, '更新成功')
     },
     {
@@ -111,10 +113,10 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .delete(
     '/type/:id',
-    async ({ params }) => {
-      const existing = await dictService.findTypeById(params.id)
+    async (ctx) => {
+      const existing = await dictService.findTypeById(ctx.params.id, ctx)
       if (!existing) return R.notFound('字典类型')
-      await dictService.deleteType(params.id)
+      await dictService.deleteType(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {
@@ -132,8 +134,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
   // ============ 字典数据 ============
   .get(
     '/data',
-    async ({ query }) => {
-      const result = await dictService.findAllData(query)
+    async (ctx) => {
+      const result = await dictService.findAllData(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -149,8 +151,8 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .get(
     '/data/:id',
-    async ({ params }) => {
-      const data = await dictService.findDataById(params.id)
+    async (ctx) => {
+      const data = await dictService.findDataById(ctx.params.id, ctx)
       if (!data) return R.notFound('字典数据')
       return R.ok(data)
     },
@@ -167,8 +169,9 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .post(
     '/data',
-    async ({ body }) => {
-      const data = await dictService.createData(body)
+    async (ctx) => {
+      const data = await dictService.createData(ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作')
       return R.ok(data, '创建成功')
     },
     {
@@ -185,10 +188,11 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .put(
     '/data/:id',
-    async ({ params, body }) => {
-      const existing = await dictService.findDataById(params.id)
+    async (ctx) => {
+      const existing = await dictService.findDataById(ctx.params.id, ctx)
       if (!existing) return R.notFound('字典数据')
-      const data = await dictService.updateData(params.id, body)
+      const data = await dictService.updateData(ctx.params.id, ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作该记录')
       return R.ok(data, '更新成功')
     },
     {
@@ -210,10 +214,10 @@ export const dictAdminController = new Elysia({ prefix: '/dict', tags: ['管理 
 
   .delete(
     '/data/:id',
-    async ({ params }) => {
-      const existing = await dictService.findDataById(params.id)
+    async (ctx) => {
+      const existing = await dictService.findDataById(ctx.params.id, ctx)
       if (!existing) return R.notFound('字典数据')
-      await dictService.deleteData(params.id)
+      await dictService.deleteData(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

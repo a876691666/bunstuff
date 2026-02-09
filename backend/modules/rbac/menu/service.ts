@@ -1,71 +1,46 @@
 import type { Insert, Update } from '@/packages/orm'
 import Menu from '@/models/menu'
 import RoleMenu from '@/models/role-menu'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 菜单服务 */
-export class MenuService {
-  /** 获取所有菜单 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await Menu.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-
-    const total = await Menu.count(query?.filter)
-
-    return {
-      data,
-      total,
-      page,
-      pageSize,
-    }
-  }
-
-  /** 根据ID获取菜单 */
-  async findById(id: number) {
-    return await Menu.findOne({ where: `id = ${id}` })
+export class MenuService extends CrudService<typeof Menu.schema> {
+  constructor() {
+    super(Menu)
   }
 
   /** 创建菜单 */
-  async create(data: Insert<typeof Menu>) {
-    const result = await Menu.create(data)
-    await rbacCache.reload()
+  override async create(data: Insert<typeof Menu>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 更新菜单 */
-  async update(id: number, data: Update<typeof Menu>) {
-    const result = await Menu.update(id, data)
-    await rbacCache.reload()
+  override async update(id: number, data: Update<typeof Menu>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 删除菜单 */
-  async delete(id: number) {
+  override async delete(id: number, ctx?: CrudContext) {
     // 检查是否有子菜单
-    const childMenus = await Menu.findMany({ where: `parentId = ${id}` })
+    const childMenus = await this.model.findMany({ where: `parentId = ${id}` })
     if (childMenus.length > 0) {
       throw new Error(`无法删除菜单：存在 ${childMenus.length} 个子菜单`)
     }
-
     // 级联删除角色菜单关联
     await RoleMenu.deleteMany(`menuId = ${id}`)
-
-    // 删除菜单
-    const result = await Menu.delete(id)
-    await rbacCache.reload()
-    return result
+    const ok = await super.delete(id, ctx)
+    if (ok) await rbacCache.reload()
+    return ok
   }
 
   /** 获取菜单树 */
   async getTree() {
-    const menus = await Menu.findMany({
+    const menus = await this.model.findMany({
       orderBy: [{ column: 'sort', order: 'ASC' }],
     })
     return this.buildTree(menus)

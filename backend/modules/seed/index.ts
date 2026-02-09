@@ -37,7 +37,7 @@ export const createSeedController = (_options: SeedModuleOptions = {}) => {
       /** 获取所有 Seed 日志 */
       .get(
         '/logs',
-        async () => {
+        async (ctx) => {
           const data = await seedService.getLogs()
           return R.ok(data)
         },
@@ -69,7 +69,7 @@ export const createSeedController = (_options: SeedModuleOptions = {}) => {
       /** 获取所有注册的 Seeds */
       .get(
         '/registered',
-        () => {
+        (ctx) => {
           const seeds = seedService.getRegisteredSeeds()
           const data = seeds.map((s) => ({
             name: s.name,
@@ -101,8 +101,8 @@ export const createSeedController = (_options: SeedModuleOptions = {}) => {
       /** 执行单个 Seed */
       .post(
         '/run/:name',
-        async ({ params, query }) => {
-          const result = await seedService.runSeed(params.name, query.force)
+        async (ctx) => {
+          const result = await seedService.runSeed(ctx.params.name, ctx.query.force)
           return result.success ? R.success(result.message) : R.fail(result.message!)
         },
         {
@@ -130,8 +130,8 @@ export const createSeedController = (_options: SeedModuleOptions = {}) => {
       /** 执行所有 Seeds */
       .post(
         '/run-all',
-        async ({ query }) => {
-          const result = await seedService.runAll(query.force)
+        async (ctx) => {
+          const result = await seedService.runAll(ctx.query.force)
           return R.ok(result, '执行完成')
         },
         {
@@ -171,8 +171,8 @@ export const createSeedController = (_options: SeedModuleOptions = {}) => {
       /** 重置 Seed */
       .delete(
         '/reset/:name',
-        async ({ params }) => {
-          const success = await seedService.resetSeed(params.name)
+        async (ctx) => {
+          const success = await seedService.resetSeed(ctx.params.name)
           if (success) {
             return R.success('重置成功')
           }

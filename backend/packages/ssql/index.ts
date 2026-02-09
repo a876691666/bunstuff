@@ -12,7 +12,7 @@ export type {
 export { Op, Logic, TokenType, FieldValidationError, validateField } from './types'
 
 // ============ 表达式导出 ============
-export { FieldExpr, LogicExpr, GroupExpr, type Expression } from './expression'
+export { FieldExpr, LogicExpr, GroupExpr, LiteralExpr, type Expression } from './expression'
 
 // ============ 方言导出 ============
 export { mysql, postgres, sqlite, getDialect, getDialectFromConnection } from './dialect'

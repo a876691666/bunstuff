@@ -1,5 +1,6 @@
 import type { Row, Insert } from '@/packages/orm'
 import SysFile from '@/models/sys-file'
+import { CrudService, type CrudContext, type PageQuery, type PageResult } from '@/modules/crud-service'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -24,9 +25,13 @@ export interface FileServiceConfig {
 }
 
 /** 文件服务 */
-export class FileService {
+export class FileService extends CrudService<typeof SysFile.schema> {
   private config: FileServiceConfig = {
     localUploadPath: './uploads',
+  }
+
+  constructor() {
+    super(SysFile)
   }
 
   /** 设置配置 */
@@ -35,25 +40,21 @@ export class FileService {
   }
 
   /** 获取文件列表 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
+  override async findAll(query?: PageQuery, ctx?: CrudContext) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
+    const where = this.buildWhere(query?.filter, ctx)
 
     const data = await SysFile.findMany({
-      where: query?.filter,
+      where,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'createdAt', order: 'DESC' }],
     })
-    const total = await SysFile.count(query?.filter)
+    const total = await SysFile.count(where)
 
     return { data, total, page, pageSize }
-  }
-
-  /** 根据ID获取文件 */
-  async findById(id: number) {
-    return await SysFile.findOne({ where: `id = ${id}` })
   }
 
   /** 根据MD5获取文件（用于秒传） */
@@ -62,7 +63,7 @@ export class FileService {
   }
 
   /** 上传文件到本地 */
-  async uploadLocal(file: File, uploadBy: number): Promise<Row<typeof SysFile>> {
+  async uploadLocal(file: File, uploadBy: number, ctx?: CrudContext): Promise<Row<typeof SysFile> | null> {
     const buffer = await file.arrayBuffer()
     const md5 = Bun.hash(buffer).toString(16)
 
@@ -87,7 +88,7 @@ export class FileService {
     await Bun.write(fullPath, buffer)
 
     // 保存元数据
-    return await SysFile.create({
+    return await this.create({
       originalName: file.name,
       storageName,
       storagePath: relativePath,
@@ -98,11 +99,11 @@ export class FileService {
       s3Bucket: null,
       uploadBy,
       md5,
-    })
+    }, ctx)
   }
 
   /** 上传文件到S3 */
-  async uploadS3(file: File, uploadBy: number): Promise<Row<typeof SysFile>> {
+  async uploadS3(file: File, uploadBy: number, ctx?: CrudContext): Promise<Row<typeof SysFile> | null> {
     if (!this.config.s3Config) {
       throw new Error('S3 configuration not set')
     }
@@ -143,7 +144,7 @@ export class FileService {
     }
 
     // 保存元数据
-    return await SysFile.create({
+    return await this.create({
       originalName: file.name,
       storageName,
       storagePath: key,
@@ -154,13 +155,13 @@ export class FileService {
       s3Bucket: bucket,
       uploadBy,
       md5,
-    })
+    }, ctx)
   }
 
   /** 删除文件 */
-  async delete(id: number) {
-    const file = await this.findById(id)
-    if (!file) return null
+  override async delete(id: number, ctx?: CrudContext): Promise<boolean> {
+    const file = await this.findById(id, ctx)
+    if (!file) return false
 
     // 删除实际文件
     if (file.storageType === 'local') {
@@ -175,7 +176,7 @@ export class FileService {
       await fetch(url, { method: 'DELETE' })
     }
 
-    return await SysFile.delete(id)
+    return await super.delete(id, ctx)
   }
 
   /** 获取文件内容 (用于下载) */

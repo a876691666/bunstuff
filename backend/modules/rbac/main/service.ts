@@ -10,6 +10,9 @@ import Menu from '@/models/menu'
 import PermissionScope from '@/models/permission-scope'
 import { rbacCache, type CachedRole, type CachedPermission } from './cache'
 
+type MenuRow = Row<typeof Menu>
+type PermissionScopeRow = Row<typeof PermissionScope>
+
 /** 用户权限信息 */
 export interface UserPermissionInfo {
   /** 用户ID */
@@ -135,6 +138,11 @@ export class RbacService {
     return rbacCache.getRoleScopes(roleId)
   }
 
+  /** 获取角色中指定权限编码的数据过滤规则（按表名分组） */
+  getRoleScopesByPermissions(roleId: number, permissionCodes: string[]): Map<string, PermissionScopeRow[]> {
+    return rbacCache.getRoleScopesByPermissions(roleId, permissionCodes)
+  }
+
   /** 获取角色对指定表的数据过滤规则 */
   getRoleScopesForTable(roleId: number, tableName: string): PermissionScopeRow[] {
     const scopes = this.getRoleScopes(roleId)
@@ -217,7 +225,7 @@ export class RbacService {
   // ============ 工具方法 ============
 
   /** 构建树形结构 */
-  private buildTree<T extends { id: number; parentId: number | null }>(
+  private buildTree<T extends Record<string, any>>(
     items: T[],
     parentId: number | null = null,
   ): (T & { children: any[] })[] {

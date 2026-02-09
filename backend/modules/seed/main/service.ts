@@ -7,6 +7,8 @@ export interface SeedDefinition {
   name: string
   /** Seed 描述 */
   description?: string
+  /** 依赖的 Seed 名称列表（会先执行依赖） */
+  dependencies?: string[]
   /** Seed 执行函数 */
   run: () => Promise<void>
 }

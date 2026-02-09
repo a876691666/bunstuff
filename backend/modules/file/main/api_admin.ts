@@ -24,8 +24,8 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
   .use(operLogPlugin())
   .get(
     '/',
-    async ({ query }) => {
-      const result = await fileService.findAll(query)
+    async (ctx) => {
+      const result = await fileService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -41,8 +41,8 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
 
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await fileService.findById(params.id)
+    async (ctx) => {
+      const data = await fileService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('文件')
       return R.ok(data)
     },
@@ -59,16 +59,17 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
 
   .post(
     '/upload',
-    async ({ body, userId }) => {
-      const file = body.file
-      const storageType = body.storageType || 'local'
+    async (ctx) => {
+      const file = ctx.body.file
+      const storageType = ctx.body.storageType || 'local'
 
       let result
       if (storageType === 's3') {
-        result = await fileService.uploadS3(file, userId!)
+        result = await fileService.uploadS3(file, ctx.userId!, ctx)
       } else {
-        result = await fileService.uploadLocal(file, userId!)
+        result = await fileService.uploadLocal(file, ctx.userId!, ctx)
       }
+      if (!result) return R.forbidden('无权操作')
       return R.ok(result, '上传成功')
     },
     {
@@ -88,10 +89,9 @@ export const fileAdminController = new Elysia({ prefix: '/file', tags: ['管理 
 
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await fileService.findById(params.id)
-      if (!existing) return R.notFound('文件')
-      await fileService.delete(params.id)
+    async (ctx) => {
+      const ok = await fileService.delete(ctx.params.id, ctx)
+      if (!ok) return R.forbidden('无权操作该记录')
       return R.success('删除成功')
     },
     {

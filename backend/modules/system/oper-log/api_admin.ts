@@ -21,8 +21,8 @@ export const operLogAdminController = new Elysia({
   .use(rbacPlugin())
   .get(
     '/',
-    async ({ query }) => {
-      const result = await operLogService.findAll(query)
+    async (ctx) => {
+      const result = await operLogService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -41,8 +41,8 @@ export const operLogAdminController = new Elysia({
 
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await operLogService.findById(params.id)
+    async (ctx) => {
+      const data = await operLogService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('操作日志')
       return R.ok(data)
     },
@@ -63,10 +63,10 @@ export const operLogAdminController = new Elysia({
 
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await operLogService.findById(params.id)
+    async (ctx) => {
+      const existing = await operLogService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('操作日志')
-      await operLogService.delete(params.id)
+      await operLogService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

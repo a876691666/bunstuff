@@ -23,8 +23,8 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
   /** 获取菜单列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await menuService.findAll(query)
+    async (ctx) => {
+      const result = await menuService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -83,8 +83,8 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
   /** 根据ID获取菜单 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await menuService.findById(params.id)
+    async (ctx) => {
+      const data = await menuService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('菜单')
       return R.ok(data)
     },
@@ -106,8 +106,8 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
   /** 创建菜单 */
   .post(
     '/',
-    async ({ body }) => {
-      const data = await menuService.create(body)
+    async (ctx) => {
+      const data = await menuService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -129,10 +129,10 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
   /** 更新菜单 */
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await menuService.findById(params.id)
+    async (ctx) => {
+      const existing = await menuService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('菜单')
-      const data = await menuService.update(params.id, body)
+      const data = await menuService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -155,10 +155,10 @@ export const menuAdminController = new Elysia({ prefix: '/menu', tags: ['管理 
   /** 删除菜单 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await menuService.findById(params.id)
+    async (ctx) => {
+      const existing = await menuService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('菜单')
-      await menuService.delete(params.id)
+      await menuService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

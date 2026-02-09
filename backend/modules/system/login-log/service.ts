@@ -1,41 +1,18 @@
-import type { Insert } from '@/packages/orm'
 import LoginLog from '@/models/login-log'
+import { CrudService } from '@/modules/crud-service'
 
 /** 登录日志操作类型 */
 export type LoginAction = 'login' | 'logout' | 'kick'
 
 /** 登录日志服务 */
-export class LoginLogService {
-  /** 获取登录日志列表 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await LoginLog.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-      orderBy: [{ column: 'loginTime', order: 'DESC' }],
-    })
-    const total = await LoginLog.count(query?.filter)
-
-    return { data, total, page, pageSize }
-  }
-
-  /** 根据ID获取登录日志 */
-  async findById(id: number) {
-    return await LoginLog.findOne({ where: `id = ${id}` })
-  }
-
-  /** 删除登录日志 */
-  async delete(id: number) {
-    return await LoginLog.delete(id)
+export class LoginLogService extends CrudService<typeof LoginLog.schema> {
+  constructor() {
+    super(LoginLog)
   }
 
   /** 清空登录日志 */
   async clear() {
-    return await LoginLog.truncate()
+    return await this.model.truncate()
   }
 
   /** 记录登录日志 */

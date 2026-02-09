@@ -26,8 +26,8 @@ export const ipBlacklistAdminController = new Elysia({
   // GET / - 列表
   .get(
     '/',
-    async ({ query }) => {
-      const result = await ipBlacklistService.findAll(query)
+    async (ctx) => {
+      const result = await ipBlacklistService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -45,8 +45,8 @@ export const ipBlacklistAdminController = new Elysia({
   // GET /:id - 详情
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await ipBlacklistService.findById(params.id)
+    async (ctx) => {
+      const data = await ipBlacklistService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('黑名单记录')
       return R.ok(data)
     },
@@ -68,14 +68,14 @@ export const ipBlacklistAdminController = new Elysia({
   // POST / - 手动添加黑名单
   .post(
     '/',
-    async ({ body }) => {
-      const existing = await ipBlacklistService.findByIp(body.ip)
+    async (ctx) => {
+      const existing = await ipBlacklistService.findByIp(ctx.body.ip)
       if (existing) return R.badRequest('该IP已在黑名单中')
       const data = await ipBlacklistService.create({
-        ...body,
+        ...ctx.body,
         source: 'manual',
         triggerCount: 0,
-      })
+      }, ctx)
       return R.ok(data, '添加成功')
     },
     {
@@ -100,10 +100,10 @@ export const ipBlacklistAdminController = new Elysia({
   // PUT /:id - 更新黑名单
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await ipBlacklistService.findById(params.id)
+    async (ctx) => {
+      const existing = await ipBlacklistService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('黑名单记录')
-      const data = await ipBlacklistService.update(params.id, body)
+      const data = await ipBlacklistService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -129,10 +129,10 @@ export const ipBlacklistAdminController = new Elysia({
   // DELETE /:id - 删除
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await ipBlacklistService.findById(params.id)
+    async (ctx) => {
+      const existing = await ipBlacklistService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('黑名单记录')
-      await ipBlacklistService.delete(params.id)
+      await ipBlacklistService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

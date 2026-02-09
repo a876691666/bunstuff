@@ -24,8 +24,8 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
   .use(operLogPlugin())
   .get(
     '/',
-    async ({ query }) => {
-      const result = await noticeService.findAll(query)
+    async (ctx) => {
+      const result = await noticeService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -41,8 +41,8 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
 
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await noticeService.findById(params.id)
+    async (ctx) => {
+      const data = await noticeService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('通知公告')
       return R.ok(data)
     },
@@ -59,12 +59,17 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
 
   .post(
     '/',
-    async ({ body, userId }) => {
-      const data = await noticeService.create(body, userId!)
+    async (ctx) => {
+      const data = await noticeService.create({ ...ctx.body, createBy: ctx.userId! }, ctx)
+      if (!data) return R.forbidden('无权创建')
       return R.ok(data, '创建成功')
     },
     {
-      body: Notice.getSchema({ exclude: ['id', 'createBy'], required: ['title', 'content'] }),
+      body: Notice.getSchema({
+        exclude: ['id', 'createBy'],
+        timestamps: false,
+        required: ['title', 'content'],
+      }),
       response: { 200: SuccessResponse(Notice.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '创建通知公告',
@@ -77,10 +82,9 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
 
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await noticeService.findById(params.id)
-      if (!existing) return R.notFound('通知公告')
-      const data = await noticeService.update(params.id, body)
+    async (ctx) => {
+      const data = await noticeService.update(ctx.params.id, ctx.body, ctx)
+      if (!data) return R.forbidden('无权更新或通知公告不存在')
       return R.ok(data, '更新成功')
     },
     {
@@ -102,10 +106,9 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
 
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await noticeService.findById(params.id)
-      if (!existing) return R.notFound('通知公告')
-      await noticeService.delete(params.id)
+    async (ctx) => {
+      const ok = await noticeService.delete(ctx.params.id, ctx)
+      if (!ok) return R.forbidden('无权删除或通知公告不存在')
       return R.success('删除成功')
     },
     {
@@ -120,23 +123,4 @@ export const noticeAdminController = new Elysia({ prefix: '/notice', tags: ['管
     },
   )
 
-  .post(
-    '/:id/publish',
-    async ({ params }) => {
-      const existing = await noticeService.findById(params.id)
-      if (!existing) return R.notFound('通知公告')
-      const data = await noticeService.publish(params.id)
-      return R.ok(data, '发布成功')
-    },
-    {
-      params: idParams({ label: '通知公告ID' }),
-      response: { 200: SuccessResponse(Notice.getSchema()), 404: ErrorResponse },
-      detail: {
-        summary: '发布通知公告',
-        description: '将通知公告状态改为正常并广播给所有在线用户',
-        security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['notice:admin:publish'] } },
-        operLog: { title: '通知公告', type: 'update' },
-      },
-    },
-  )
+

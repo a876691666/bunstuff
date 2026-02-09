@@ -1,75 +1,49 @@
 import type { Insert } from '@/packages/orm'
 import RoleMenu from '@/models/role-menu'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 角色菜单关联服务 */
-export class RoleMenuService {
-  /** 获取所有角色菜单关联 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await RoleMenu.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-
-    const total = await RoleMenu.count(query?.filter)
-
-    return {
-      data,
-      total,
-      page,
-      pageSize,
-    }
-  }
-
-  /** 根据ID获取角色菜单关联 */
-  async findById(id: number) {
-    return await RoleMenu.findOne({ where: `id = ${id}` })
+export class RoleMenuService extends CrudService<typeof RoleMenu.schema> {
+  constructor() {
+    super(RoleMenu)
   }
 
   /** 根据角色ID获取菜单ID列表 */
   async findMenuIdsByRoleId(roleId: number) {
-    const records = await RoleMenu.findMany({ where: `roleId = ${roleId}` })
+    const records = await this.model.findMany({ where: `roleId = ${roleId}` })
     return records.map((r) => r.menuId)
   }
 
   /** 创建角色菜单关联 */
-  async create(data: Insert<typeof RoleMenu>) {
-    const result = await RoleMenu.create(data)
-    await rbacCache.reload()
+  override async create(data: Insert<typeof RoleMenu>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 删除角色菜单关联 */
-  async delete(id: number) {
-    const result = await RoleMenu.delete(id)
-    await rbacCache.reload()
-    return result
+  override async delete(id: number, ctx?: CrudContext) {
+    const ok = await super.delete(id, ctx)
+    if (ok) await rbacCache.reload()
+    return ok
   }
 
   /** 根据角色ID删除所有关联 */
   async deleteByRoleId(roleId: number) {
-    const result = await RoleMenu.deleteMany(`roleId = ${roleId}`)
+    const result = await this.model.deleteMany(`roleId = ${roleId}`)
     await rbacCache.reload()
     return result
   }
 
   /** 批量设置角色菜单 */
-  async batchSetRoleMenus(roleId: number, menuIds: number[]) {
-    // 先删除该角色的所有菜单关联
+  async batchSetRoleMenus(roleId: number, menuIds: number[], ctx?: CrudContext) {
     await this.deleteByRoleId(roleId)
-
-    // 批量创建新的关联
     const results = []
     for (const menuId of menuIds) {
-      const result = await this.create({ roleId, menuId })
+      const result = await this.create({ roleId, menuId }, ctx)
       results.push(result)
     }
-
     return results
   }
 }

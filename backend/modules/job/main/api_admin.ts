@@ -25,8 +25,8 @@ export const jobAdminController = new Elysia({
   // 列表
   .get(
     '/',
-    async ({ query }) => {
-      const result = await jobService.findAll(query)
+    async (ctx) => {
+      const result = await jobService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -43,8 +43,8 @@ export const jobAdminController = new Elysia({
   // 详情
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await jobService.findById(params.id)
+    async (ctx) => {
+      const data = await jobService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('任务')
       return R.ok(data)
     },
@@ -62,9 +62,10 @@ export const jobAdminController = new Elysia({
   // 创建
   .post(
     '/',
-    async ({ body }) => {
-      const result = await jobService.create(body)
-      return R.ok({ id: result.lastInsertRowid }, '创建成功')
+    async (ctx) => {
+      const result = await jobService.create(ctx.body, ctx)
+      if (!result) return R.forbidden('无权操作')
+      return R.ok(result, '创建成功')
     },
     {
       body: Job.getSchema({ exclude: ['id'], required: ['name', 'handler', 'cron'] }),
@@ -81,10 +82,9 @@ export const jobAdminController = new Elysia({
   // 更新
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await jobService.findById(params.id)
-      if (!existing) return R.notFound('任务')
-      await jobService.update(params.id, body)
+    async (ctx) => {
+      const r = await jobService.update(ctx.params.id, ctx.body, ctx)
+      if (!r) return R.forbidden('无权操作该记录')
       return R.success('更新成功')
     },
     {
@@ -103,10 +103,9 @@ export const jobAdminController = new Elysia({
   // 删除
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await jobService.findById(params.id)
-      if (!existing) return R.notFound('任务')
-      await jobService.delete(params.id)
+    async (ctx) => {
+      const ok = await jobService.delete(ctx.params.id, ctx)
+      if (!ok) return R.forbidden('无权操作该记录')
       return R.success('删除成功')
     },
     {
@@ -124,8 +123,8 @@ export const jobAdminController = new Elysia({
   // 执行任务
   .post(
     '/:id/run',
-    async ({ params }) => {
-      const result = await jobService.executeJob(params.id)
+    async (ctx) => {
+      const result = await jobService.executeJob(ctx.params.id)
       if (!result.success) return R.fail(result.error || '执行失败')
       return R.success('执行成功')
     },
@@ -144,8 +143,8 @@ export const jobAdminController = new Elysia({
   // 启用任务
   .post(
     '/:id/enable',
-    async ({ params }) => {
-      await jobService.enable(params.id)
+    async (ctx) => {
+      await jobService.enable(ctx.params.id)
       return R.success('已启用')
     },
     {
@@ -162,8 +161,8 @@ export const jobAdminController = new Elysia({
   // 禁用任务
   .post(
     '/:id/disable',
-    async ({ params }) => {
-      await jobService.disable(params.id)
+    async (ctx) => {
+      await jobService.disable(ctx.params.id)
       return R.success('已禁用')
     },
     {
@@ -180,7 +179,7 @@ export const jobAdminController = new Elysia({
   // 获取已注册的handlers
   .get(
     '/handlers',
-    () => {
+    (ctx) => {
       return R.ok(jobService.getHandlerNames())
     },
     {

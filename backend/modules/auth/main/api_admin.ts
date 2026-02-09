@@ -20,7 +20,7 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   /** 获取在线统计 */
   .get(
     '/admin/stats',
-    () => {
+    (ctx) => {
       const stats = authService.getOnlineStats()
       return R.ok(stats)
     },
@@ -51,7 +51,7 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   /** 获取所有会话（管理员） */
   .get(
     '/admin/sessions',
-    () => {
+    (ctx) => {
       const sessions = authService.getAllSessions()
       const data = sessions.map((s) => ({
         id: s.id,
@@ -102,18 +102,18 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   /** 踢用户下线（管理员） */
   .post(
     '/admin/kick-user',
-    async ({ body, request, loginLog }) => {
+    async (ctx) => {
       const ip =
-        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
-      const userAgent = request.headers.get('user-agent') || undefined
+        ctx.request.headers.get('x-forwarded-for') || ctx.request.headers.get('x-real-ip') || undefined
+      const userAgent = ctx.request.headers.get('user-agent') || undefined
 
       // 获取用户所有会话用于记录日志
-      const sessions = authService.getUserSessions(body.userId)
-      const count = await authService.kickUser(body.userId)
+      const sessions = authService.getUserSessions(ctx.body.userId)
+      const count = await authService.kickUser(ctx.body.userId)
 
       // 记录踢下线日志
       for (const session of sessions) {
-        await loginLog.logLogin({
+        await ctx.loginLog.logLogin({
           userId: session.userId,
           username: session.username,
           ip,
@@ -147,19 +147,19 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
   /** 踢指定会话下线（管理员） */
   .post(
     '/admin/kick-session',
-    async ({ body, request, loginLog }) => {
+    async (ctx) => {
       const ip =
-        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
-      const userAgent = request.headers.get('user-agent') || undefined
+        ctx.request.headers.get('x-forwarded-for') || ctx.request.headers.get('x-real-ip') || undefined
+      const userAgent = ctx.request.headers.get('user-agent') || undefined
 
       // 先获取会话信息用于记录日志
-      const session = authService.verifyToken(body.token)
+      const session = authService.verifyToken(ctx.body.token)
       if (!session) {
         return R.notFound('会话')
       }
 
       // 记录踢下线日志
-      await loginLog.logLogin({
+      await ctx.loginLog.logLogin({
         userId: session.userId,
         username: session.username,
         ip,
@@ -169,7 +169,7 @@ export const authAdminController = new Elysia({ prefix: '/auth', tags: ['管理 
         msg: '管理员踢下线',
       })
 
-      const success = await authService.kickSession(body.token)
+      const success = await authService.kickSession(ctx.body.token)
       if (!success) {
         return R.notFound('会话')
       }

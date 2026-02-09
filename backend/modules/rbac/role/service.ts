@@ -3,85 +3,57 @@ import Role from '@/models/role'
 import RolePermission from '@/models/role-permission'
 import RoleMenu from '@/models/role-menu'
 import User from '@/models/users'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 角色服务 */
-export class RoleService {
-  /** 获取所有角色 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await Role.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-
-    const total = await Role.count(query?.filter)
-
-    return {
-      data,
-      total,
-      page,
-      pageSize,
-    }
-  }
-
-  /** 根据ID获取角色 */
-  async findById(id: number) {
-    return await Role.findOne({ where: `id = ${id}` })
+export class RoleService extends CrudService<typeof Role.schema> {
+  constructor() {
+    super(Role)
   }
 
   /** 根据编码获取角色 */
   async findByCode(code: string) {
-    return await Role.findOne({ where: `code = '${code}'` })
+    return await this.model.findOne({ where: `code = '${code}'` })
   }
 
   /** 创建角色 */
-  async create(data: Insert<typeof Role>) {
-    const result = await Role.create(data)
-    await rbacCache.reload()
+  override async create(data: Insert<typeof Role>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 更新角色 */
-  async update(id: number, data: Update<typeof Role>) {
-    const result = await Role.update(id, data)
-    await rbacCache.reload()
+  override async update(id: number, data: Update<typeof Role>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 删除角色 */
-  async delete(id: number) {
+  override async delete(id: number, ctx?: CrudContext) {
     // 检查是否有用户使用该角色
     const usersWithRole = await User.findMany({ where: `roleId = ${id}` })
     if (usersWithRole.length > 0) {
       throw new Error(`无法删除角色：有 ${usersWithRole.length} 个用户正在使用该角色`)
     }
-
     // 检查是否有子角色
-    const childRoles = await Role.findMany({ where: `parentId = ${id}` })
+    const childRoles = await this.model.findMany({ where: `parentId = ${id}` })
     if (childRoles.length > 0) {
       throw new Error(`无法删除角色：存在 ${childRoles.length} 个子角色`)
     }
-
-    // 级联删除角色权限关联
+    // 级联删除
     await RolePermission.deleteMany(`roleId = ${id}`)
-
-    // 级联删除角色菜单关联
     await RoleMenu.deleteMany(`roleId = ${id}`)
-
-    // 删除角色
-    const result = await Role.delete(id)
-    await rbacCache.reload()
-    return result
+    const ok = await super.delete(id, ctx)
+    if (ok) await rbacCache.reload()
+    return ok
   }
 
   /** 获取角色树 */
   async getTree() {
-    const roles = await Role.findMany({
+    const roles = await this.model.findMany({
       orderBy: [{ column: 'sort', order: 'ASC' }],
     })
     return this.buildTree(roles)

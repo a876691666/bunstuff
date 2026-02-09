@@ -23,8 +23,8 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
   /** 获取角色列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await roleService.findAll(query)
+    async (ctx) => {
+      const result = await roleService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -78,8 +78,8 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
   /** 根据ID获取角色 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await roleService.findById(params.id)
+    async (ctx) => {
+      const data = await roleService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('角色')
       return R.ok(data)
     },
@@ -101,11 +101,11 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
   /** 创建角色 */
   .post(
     '/',
-    async ({ body }) => {
+    async (ctx) => {
       // 检查编码是否已存在
-      const existing = await roleService.findByCode(body.code)
+      const existing = await roleService.findByCode(ctx.body.code)
       if (existing) return R.badRequest('角色编码已存在')
-      const data = await roleService.create(body)
+      const data = await roleService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -127,15 +127,15 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
   /** 更新角色 */
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await roleService.findById(params.id)
+    async (ctx) => {
+      const existing = await roleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('角色')
       // 如果更新编码，检查是否重复
-      if (body.code && body.code !== existing.code) {
-        const codeExists = await roleService.findByCode(body.code)
+      if (ctx.body.code && ctx.body.code !== existing.code) {
+        const codeExists = await roleService.findByCode(ctx.body.code)
         if (codeExists) return R.badRequest('角色编码已存在')
       }
-      const data = await roleService.update(params.id, body)
+      const data = await roleService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -159,10 +159,10 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
   /** 删除角色 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await roleService.findById(params.id)
+    async (ctx) => {
+      const existing = await roleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('角色')
-      await roleService.delete(params.id)
+      await roleService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {
@@ -175,7 +175,7 @@ export const roleAdminController = new Elysia({ prefix: '/role', tags: ['管理 
         summary: '删除角色',
         description: '删除指定角色，此操作不可恢复\n\n🔐 **所需权限**: `role:admin:delete`',
         security: [{ bearerAuth: [] }],
-        ac: { scope: { permissions: ['role:admin:delete'] } },
+        rbac: { scope: { permissions: ['role:admin:delete'] } },
         operLog: { title: '角色管理', type: 'delete' },
       },
     },

@@ -17,20 +17,23 @@ export const permissionScopeSeed: SeedDefinition = {
     }
 
     // 创建示例数据过滤规则
+    // ssqlRule 使用 SSQL 语法 + Velocity 变量，可用变量:
+    //   $auth.userId, $auth.roleId, $auth.username, $auth.session.*
+    //   $req.method, $req.url, $req.headers.*, $req.params.*, $req.query.*, $req.body.*
     const scopes = [
-      {
-        permissionId: userListPermission.id,
-        name: '只能查看同部门用户',
-        tableName: 'users',
-        ssqlRule: 'dept_id == $user.dept_id',
-        description: '限制用户只能查看自己部门的用户数据',
-      },
       {
         permissionId: userListPermission.id,
         name: '只能查看自己创建的用户',
         tableName: 'users',
-        ssqlRule: 'created_by == $user.id',
+        ssqlRule: 'created_by = $auth.userId',
         description: '限制用户只能查看自己创建的用户数据',
+      },
+      {
+        permissionId: userListPermission.id,
+        name: '只能查看同角色用户',
+        tableName: 'users',
+        ssqlRule: 'roleId = $auth.roleId',
+        description: '限制用户只能查看相同角色的用户数据',
       },
     ]
 

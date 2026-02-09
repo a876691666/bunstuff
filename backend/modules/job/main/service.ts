@@ -7,6 +7,7 @@ import { Cron } from 'croner'
 import Job from '@/models/job'
 import JobLog from '@/models/job-log'
 import type { Insert } from '@/packages/orm'
+import { CrudService, type CrudContext, type PageQuery, type PageResult } from '@/modules/crud-service'
 
 /** 任务处理函数类型 */
 export type JobHandler = (params?: unknown) => Promise<void> | void
@@ -33,7 +34,7 @@ export interface JobResult {
   error?: string
 }
 
-class JobService {
+class JobService extends CrudService<typeof Job.schema> {
   /** 已注册的处理函数 */
   private handlers = new Map<string, JobHandler>()
   /** 运行中的Cron实例 */
@@ -42,6 +43,10 @@ class JobService {
   private pendingCrons: CronJobDefinition[] = []
   /** 是否已启动 */
   private started = false
+
+  constructor() {
+    super(Job)
+  }
 
   /** 注册任务处理函数 */
   register(handler: string, fn: JobHandler) {
@@ -225,47 +230,47 @@ class JobService {
 
   // ============ CRUD 操作 ============
 
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
+  override async findAll(query?: PageQuery, ctx?: CrudContext) {
     const page = query?.page ?? 1
     const pageSize = query?.pageSize ?? 10
     const offset = (page - 1) * pageSize
+    const where = this.buildWhere(query?.filter, ctx)
 
     const data = await Job.findMany({
-      where: query?.filter,
+      where,
       limit: pageSize,
       offset,
       orderBy: [{ column: 'id', order: 'DESC' }],
     })
-    const total = await Job.count(query?.filter)
+    const total = await Job.count(where)
 
     return { data, total, page, pageSize }
   }
 
-  async findById(id: number) {
-    return await Job.findOne({ where: `id = ${id}` })
+  override async findById(id: number, ctx?: CrudContext) {
+    return await super.findById(id, ctx)
   }
 
-  async create(data: Insert<typeof Job>) {
-    const result = await Job.create(data)
-    if (data.status === 1) {
-      const job = await Job.findOne({ where: `id = ${result.lastInsertRowid}` })
-      if (job) this.scheduleJob(job)
+  override async create(data: Insert<typeof Job>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result && data.status === 1) {
+      this.scheduleJob(result)
     }
     return result
   }
 
-  async update(id: number, data: Partial<Insert<typeof Job>>) {
-    const result = await Job.update(id, data)
-    await this.reload(id)
+  override async update(id: number, data: Partial<Insert<typeof Job>>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await this.reload(id)
     return result
   }
 
-  async delete(id: number) {
+  override async delete(id: number, ctx?: CrudContext) {
     if (this.cronInstances.has(id)) {
       this.cronInstances.get(id)!.stop()
       this.cronInstances.delete(id)
     }
-    return await Job.delete(id)
+    return await super.delete(id, ctx)
   }
 }
 

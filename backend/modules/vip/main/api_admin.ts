@@ -27,8 +27,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 获取 VIP 等级列表 */
   .get(
     '/tier',
-    async ({ query }) => {
-      const result = await vipService.findAllTiers(query)
+    async (ctx) => {
+      const result = await vipService.findAllTiers(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -48,8 +48,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 根据 ID 获取 VIP 等级 */
   .get(
     '/tier/:id',
-    async ({ params }) => {
-      const data = await vipService.findTierById(params.id)
+    async (ctx) => {
+      const data = await vipService.findTierById(ctx.params.id, ctx)
       if (!data) return R.notFound('VIP 等级')
       return R.ok(data)
     },
@@ -71,10 +71,11 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 创建 VIP 等级 */
   .post(
     '/tier',
-    async ({ body }) => {
-      const existing = await vipService.findTierByCode(body.code)
+    async (ctx) => {
+      const existing = await vipService.findTierByCode(ctx.body.code)
       if (existing) return R.badRequest('VIP 等级代码已存在')
-      const data = await vipService.createTier(body)
+      const data = await vipService.createTier(ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作')
       return R.ok(data, '创建成功')
     },
     {
@@ -96,14 +97,15 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 更新 VIP 等级 */
   .put(
     '/tier/:id',
-    async ({ params, body }) => {
-      const existing = await vipService.findTierById(params.id)
+    async (ctx) => {
+      const existing = await vipService.findTierById(ctx.params.id, ctx)
       if (!existing) return R.notFound('VIP 等级')
-      if (body.code && body.code !== existing.code) {
-        const codeExists = await vipService.findTierByCode(body.code)
+      if (ctx.body.code && ctx.body.code !== existing.code) {
+        const codeExists = await vipService.findTierByCode(ctx.body.code)
         if (codeExists) return R.badRequest('VIP 等级代码已存在')
       }
-      const data = await vipService.updateTier(params.id, body)
+      const data = await vipService.updateTier(ctx.params.id, ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作该记录')
       return R.ok(data, '更新成功')
     },
     {
@@ -127,11 +129,11 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 删除 VIP 等级 */
   .delete(
     '/tier/:id',
-    async ({ params }) => {
-      const existing = await vipService.findTierById(params.id)
+    async (ctx) => {
+      const existing = await vipService.findTierById(ctx.params.id, ctx)
       if (!existing) return R.notFound('VIP 等级')
       try {
-        await vipService.deleteTier(params.id)
+        await vipService.deleteTier(ctx.params.id, ctx)
         return R.ok(null, '删除成功')
       } catch (error: any) {
         return R.badRequest(error.message)
@@ -159,8 +161,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 获取 VIP 等级的资源限制 */
   .get(
     '/tier/:id/resource-limits',
-    async ({ params }) => {
-      const data = await vipService.findResourceLimitsByTierId(params.id)
+    async (ctx) => {
+      const data = await vipService.findResourceLimitsByTierId(ctx.params.id, ctx)
       return R.ok(data)
     },
     {
@@ -181,9 +183,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 创建资源限制 */
   .post(
     '/resource-limit',
-    async ({ body }) => {
+    async (ctx) => {
       try {
-        const data = await vipService.createResourceLimit(body)
+        const data = await vipService.createResourceLimit(ctx.body, ctx)
+        if (!data) return R.forbidden('无权操作')
         return R.ok(data, '创建成功')
       } catch (error: any) {
         return R.badRequest(error.message)
@@ -213,10 +216,11 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 更新资源限制 */
   .put(
     '/resource-limit/:id',
-    async ({ params, body }) => {
-      const existing = await vipService.findResourceLimitById(params.id)
+    async (ctx) => {
+      const existing = await vipService.findResourceLimitById(ctx.params.id, ctx)
       if (!existing) return R.notFound('资源限制')
-      const data = await vipService.updateResourceLimit(params.id, body)
+      const data = await vipService.updateResourceLimit(ctx.params.id, ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作该记录')
       return R.ok(data, '更新成功')
     },
     {
@@ -239,10 +243,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 删除资源限制 */
   .delete(
     '/resource-limit/:id',
-    async ({ params }) => {
-      const existing = await vipService.findResourceLimitById(params.id)
+    async (ctx) => {
+      const existing = await vipService.findResourceLimitById(ctx.params.id, ctx)
       if (!existing) return R.notFound('资源限制')
-      await vipService.deleteResourceLimit(params.id)
+      await vipService.deleteResourceLimit(ctx.params.id, ctx)
       return R.ok(null, '删除成功')
     },
     {
@@ -266,8 +270,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 获取用户 VIP 列表 */
   .get(
     '/user-vips',
-    async ({ query }) => {
-      const result = await vipService.findAllUserVips(query)
+    async (ctx) => {
+      const result = await vipService.findAllUserVips(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -287,8 +291,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 获取用户 VIP 信息 */
   .get(
     '/user/:userId',
-    async ({ params }) => {
-      const data = await vipService.getUserVip(params.userId)
+    async (ctx) => {
+      const data = await vipService.getUserVip(ctx.params.userId)
       if (!data) return R.notFound('用户 VIP')
       return R.ok(data)
     },
@@ -318,10 +322,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 升级用户 VIP */
   .post(
     '/upgrade',
-    async ({ body }) => {
+    async (ctx) => {
       try {
-        const data = await vipService.upgradeUserVip(body.userId, body.vipTierCode, {
-          expireTime: body.expireTime,
+        const data = await vipService.upgradeUserVip(ctx.body.userId, ctx.body.vipTierCode, {
+          expireTime: ctx.body.expireTime,
         })
         return R.ok(data, 'VIP 升级成功，等待确认绑定')
       } catch (error: any) {
@@ -354,10 +358,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 直接升级用户 VIP */
   .post(
     '/upgrade-direct',
-    async ({ body }) => {
+    async (ctx) => {
       try {
-        const data = await vipService.upgradeUserVipDirect(body.userId, body.vipTierCode, {
-          expireTime: body.expireTime,
+        const data = await vipService.upgradeUserVipDirect(ctx.body.userId, ctx.body.vipTierCode, {
+          expireTime: ctx.body.expireTime,
         })
         return R.ok(data, 'VIP 升级成功')
       } catch (error: any) {
@@ -390,10 +394,10 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 确认 VIP 绑定 */
   .post(
     '/confirm-binding',
-    async ({ body }) => {
+    async (ctx) => {
       try {
-        const data = await vipService.confirmVipBinding(body.userVipId, body.confirm)
-        return R.ok(data, body.confirm ? '绑定确认成功' : '绑定已取消')
+        const data = await vipService.confirmVipBinding(ctx.body.userVipId, ctx.body.confirm)
+        return R.ok(data, ctx.body.confirm ? '绑定确认成功' : '绑定已取消')
       } catch (error: any) {
         return R.badRequest(error.message)
       }
@@ -421,9 +425,9 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 取消用户 VIP */
   .post(
     '/cancel/:userId',
-    async ({ params }) => {
+    async (ctx) => {
       try {
-        await vipService.cancelUserVip(params.userId)
+        await vipService.cancelUserVip(ctx.params.userId)
         return R.ok(null, 'VIP 已取消')
       } catch (error: any) {
         return R.badRequest(error.message)
@@ -450,8 +454,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 检查资源使用 */
   .post(
     '/resource/check',
-    async ({ body }) => {
-      const data = await vipService.checkResourceUsage(body.userId, body.resourceKey, body.amount)
+    async (ctx) => {
+      const data = await vipService.checkResourceUsage(ctx.body.userId, ctx.body.resourceKey, ctx.body.amount)
       return R.ok(data)
     },
     {
@@ -484,12 +488,12 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 增加资源使用 */
   .post(
     '/resource/increment',
-    async ({ body }) => {
+    async (ctx) => {
       try {
         const data = await vipService.incrementResourceUsage(
-          body.userId,
-          body.resourceKey,
-          body.amount,
+          ctx.body.userId,
+          ctx.body.resourceKey,
+          ctx.body.amount,
         )
         return R.ok(data, '资源使用已增加')
       } catch (error: any) {
@@ -528,8 +532,8 @@ export const vipAdminController = new Elysia({ prefix: '/vip', tags: ['管理 - 
   /** 获取用户资源使用情况 */
   .get(
     '/resource/usage/:userId',
-    async ({ params }) => {
-      const data = await vipService.getUserResourceUsages(params.userId)
+    async (ctx) => {
+      const data = await vipService.getUserResourceUsages(ctx.params.userId)
       return R.ok(data)
     },
     {

@@ -26,8 +26,8 @@ export const permissionAdminController = new Elysia({
   /** 获取权限列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await permissionService.findAll(query)
+    async (ctx) => {
+      const result = await permissionService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -48,8 +48,8 @@ export const permissionAdminController = new Elysia({
   /** 根据ID获取权限 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await permissionService.findById(params.id)
+    async (ctx) => {
+      const data = await permissionService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('权限')
       return R.ok(data)
     },
@@ -71,11 +71,11 @@ export const permissionAdminController = new Elysia({
   /** 创建权限 */
   .post(
     '/',
-    async ({ body }) => {
+    async (ctx) => {
       // 检查编码是否已存在
-      const existing = await permissionService.findByCode(body.code)
+      const existing = await permissionService.findByCode(ctx.body.code)
       if (existing) return R.badRequest('权限编码已存在')
-      const data = await permissionService.create(body)
+      const data = await permissionService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -98,15 +98,15 @@ export const permissionAdminController = new Elysia({
   /** 更新权限 */
   .put(
     '/:id',
-    async ({ params, body }) => {
-      const existing = await permissionService.findById(params.id)
+    async (ctx) => {
+      const existing = await permissionService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('权限')
       // 如果更新编码，检查是否重复
-      if (body.code && body.code !== existing.code) {
-        const codeExists = await permissionService.findByCode(body.code)
+      if (ctx.body.code && ctx.body.code !== existing.code) {
+        const codeExists = await permissionService.findByCode(ctx.body.code)
         if (codeExists) return R.badRequest('权限编码已存在')
       }
-      const data = await permissionService.update(params.id, body)
+      const data = await permissionService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
@@ -131,10 +131,10 @@ export const permissionAdminController = new Elysia({
   /** 删除权限 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await permissionService.findById(params.id)
+    async (ctx) => {
+      const existing = await permissionService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('权限')
-      await permissionService.delete(params.id)
+      await permissionService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

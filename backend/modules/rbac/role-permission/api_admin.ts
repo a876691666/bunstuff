@@ -26,8 +26,8 @@ export const rolePermissionAdminController = new Elysia({
   /** 获取角色权限关联列表 */
   .get(
     '/',
-    async ({ query }) => {
-      const result = await rolePermissionService.findAll(query)
+    async (ctx) => {
+      const result = await rolePermissionService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
@@ -73,8 +73,8 @@ export const rolePermissionAdminController = new Elysia({
   /** 根据ID获取角色权限关联 */
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await rolePermissionService.findById(params.id)
+    async (ctx) => {
+      const data = await rolePermissionService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('角色权限关联')
       return R.ok(data)
     },
@@ -100,8 +100,8 @@ export const rolePermissionAdminController = new Elysia({
   /** 创建角色权限关联 */
   .post(
     '/',
-    async ({ body }) => {
-      const data = await rolePermissionService.create(body)
+    async (ctx) => {
+      const data = await rolePermissionService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
@@ -129,10 +129,11 @@ export const rolePermissionAdminController = new Elysia({
   /** 批量设置角色权限 */
   .post(
     '/batch',
-    async ({ body }) => {
+    async (ctx) => {
       const data = await rolePermissionService.batchSetRolePermissions(
-        body.roleId,
-        body.permissionIds,
+        ctx.body.roleId,
+        ctx.body.permissionIds,
+        ctx,
       )
       return R.ok(data, '设置成功')
     },
@@ -161,10 +162,10 @@ export const rolePermissionAdminController = new Elysia({
   /** 删除角色权限关联 */
   .delete(
     '/:id',
-    async ({ params }) => {
-      const existing = await rolePermissionService.findById(params.id)
+    async (ctx) => {
+      const existing = await rolePermissionService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('角色权限关联')
-      await rolePermissionService.delete(params.id)
+      await rolePermissionService.delete(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {

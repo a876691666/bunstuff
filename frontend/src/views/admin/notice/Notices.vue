@@ -125,7 +125,7 @@ const columns: DataTableColumns<Notice> = [
                 type: 'success',
                 onClick: () => handlePublish(row.id),
               },
-              () => '发布',
+              () => '上架',
             )
           : h(
               NButton,
@@ -167,17 +167,17 @@ async function handleDelete(id: number) {
 
 async function handlePublish(id: number) {
   try {
-    await noticeApi.publish(id)
-    message.success('发布成功')
+    await noticeApi.update(id, { status: 1 })
+    message.success('上架成功')
     table.reload()
   } catch (err: unknown) {
-    message.error((err as Error).message || '发布失败')
+    message.error((err as Error).message || '上架失败')
   }
 }
 
 async function handleUnpublish(id: number) {
   try {
-    await noticeApi.unpublish(id)
+    await noticeApi.update(id, { status: 0 })
     message.success('下架成功')
     table.reload()
   } catch (err: unknown) {

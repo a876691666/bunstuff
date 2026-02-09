@@ -20,7 +20,7 @@ export interface FileContext {
   /** 获取文件URL */
   getFileUrl: (file: Row<typeof SysFile>, baseUrl?: string) => string
   /** 上传文件到本地 */
-  uploadLocal: (file: File, uploadBy: number) => Promise<Row<typeof SysFile>>
+  uploadLocal: (file: File, uploadBy: number) => Promise<Row<typeof SysFile> | null>
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { Insert, Update } from '@/packages/orm'
 import RateLimitRule from '@/models/rate-limit-rule'
 import IpBlacklist from '@/models/ip-blacklist'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 
 /** 限流规则缓存（内存中维护，避免每次请求查库） */
 class RateLimitCache {
@@ -201,45 +202,31 @@ export const rateLimitCounter = new RateLimitCounter()
 
 // ===================== Service =====================
 
-export class RateLimitRuleService {
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-    const data = await RateLimitRule.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-      orderBy: [{ column: 'priority', order: 'ASC' }],
-    })
-    const total = await RateLimitRule.count(query?.filter)
-    return { data, total, page, pageSize }
-  }
-
-  async findById(id: number) {
-    return await RateLimitRule.findOne({ where: `id = ${id}` })
+export class RateLimitRuleService extends CrudService<typeof RateLimitRule.schema> {
+  constructor() {
+    super(RateLimitRule)
   }
 
   async findByCode(code: string) {
-    return await RateLimitRule.findOne({ where: `code = '${code}'` })
+    return await this.model.findOne({ where: `code = '${code}'` })
   }
 
-  async create(data: Insert<typeof RateLimitRule>) {
-    const result = await RateLimitRule.create(data)
-    await rateLimitCache.reloadRules()
+  override async create(data: Insert<typeof RateLimitRule>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rateLimitCache.reloadRules()
     return result
   }
 
-  async update(id: number, data: Update<typeof RateLimitRule>) {
-    const result = await RateLimitRule.update(id, data)
-    await rateLimitCache.reloadRules()
+  override async update(id: number, data: Update<typeof RateLimitRule>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await rateLimitCache.reloadRules()
     return result
   }
 
-  async delete(id: number) {
-    const result = await RateLimitRule.delete(id)
-    await rateLimitCache.reloadRules()
-    return result
+  override async delete(id: number, ctx?: CrudContext) {
+    const ok = await super.delete(id, ctx)
+    if (ok) await rateLimitCache.reloadRules()
+    return ok
   }
 
   async initCache() {
@@ -257,51 +244,38 @@ export class RateLimitRuleService {
 
 export const rateLimitRuleService = new RateLimitRuleService()
 
-export class IpBlacklistService {
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-    const data = await IpBlacklist.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-    const total = await IpBlacklist.count(query?.filter)
-    return { data, total, page, pageSize }
-  }
-
-  async findById(id: number) {
-    return await IpBlacklist.findOne({ where: `id = ${id}` })
+export class IpBlacklistService extends CrudService<typeof IpBlacklist.schema> {
+  constructor() {
+    super(IpBlacklist)
   }
 
   async findByIp(ip: string) {
-    return await IpBlacklist.findOne({ where: `ip = '${ip}' && status = 1` })
+    return await this.model.findOne({ where: `ip = '${ip}' && status = 1` })
   }
 
-  async create(data: Insert<typeof IpBlacklist>) {
-    const result = await IpBlacklist.create(data)
-    await rateLimitCache.reloadBlacklist()
+  override async create(data: Insert<typeof IpBlacklist>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rateLimitCache.reloadBlacklist()
     return result
   }
 
-  async update(id: number, data: Update<typeof IpBlacklist>) {
-    const result = await IpBlacklist.update(id, data)
-    await rateLimitCache.reloadBlacklist()
+  override async update(id: number, data: Update<typeof IpBlacklist>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await rateLimitCache.reloadBlacklist()
     return result
   }
 
-  async delete(id: number) {
-    const result = await IpBlacklist.delete(id)
-    await rateLimitCache.reloadBlacklist()
-    return result
+  override async delete(id: number, ctx?: CrudContext) {
+    const ok = await super.delete(id, ctx)
+    if (ok) await rateLimitCache.reloadBlacklist()
+    return ok
   }
 
   /** 解封IP */
   async unblock(id: number) {
-    const item = await IpBlacklist.findOne({ where: `id = ${id}` })
+    const item = await this.model.findOne({ where: `id = ${id}` })
     if (!item) return null
-    const result = await IpBlacklist.update(id, { status: 0 })
+    const result = await this.model.update(id, { status: 0 })
     rateLimitCache.removeFromBlacklist(item.ip)
     return result
   }
@@ -310,14 +284,11 @@ export class IpBlacklistService {
   async autoBlock(ip: string, ruleId: number, triggerCount: number, reason: string) {
     const existing = await this.findByIp(ip)
     if (existing) {
-      // 已封禁，更新触发次数
-      await IpBlacklist.update(existing.id, { triggerCount })
+      await this.model.update(existing.id, { triggerCount })
       return existing
     }
-
-    // 默认封禁24小时
     const expireAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
-    const result = await IpBlacklist.create({
+    const result = await this.model.create({
       ip,
       reason,
       source: 'auto',

@@ -2,68 +2,43 @@ import type { Insert, Update } from '@/packages/orm'
 import Permission from '@/models/permission'
 import RolePermission from '@/models/role-permission'
 import PermissionScope from '@/models/permission-scope'
+import { CrudService, type CrudContext } from '@/modules/crud-service'
 import { rbacCache } from '@/modules/rbac/main/cache'
 
 /** 权限服务 */
-export class PermissionService {
-  /** 获取所有权限 */
-  async findAll(query?: { page?: number; pageSize?: number; filter?: string }) {
-    const page = query?.page ?? 1
-    const pageSize = query?.pageSize ?? 10
-    const offset = (page - 1) * pageSize
-
-    const data = await Permission.findMany({
-      where: query?.filter,
-      limit: pageSize,
-      offset,
-    })
-
-    const total = await Permission.count(query?.filter)
-
-    return {
-      data,
-      total,
-      page,
-      pageSize,
-    }
-  }
-
-  /** 根据ID获取权限 */
-  async findById(id: number) {
-    return await Permission.findOne({ where: `id = ${id}` })
+export class PermissionService extends CrudService<typeof Permission.schema> {
+  constructor() {
+    super(Permission)
   }
 
   /** 根据编码获取权限 */
   async findByCode(code: string) {
-    return await Permission.findOne({ where: `code = '${code}'` })
+    return await this.model.findOne({ where: `code = '${code}'` })
   }
 
   /** 创建权限 */
-  async create(data: Insert<typeof Permission>) {
-    const result = await Permission.create(data)
-    await rbacCache.reload()
+  override async create(data: Insert<typeof Permission>, ctx?: CrudContext) {
+    const result = await super.create(data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 更新权限 */
-  async update(id: number, data: Update<typeof Permission>) {
-    const result = await Permission.update(id, data)
-    await rbacCache.reload()
+  override async update(id: number, data: Update<typeof Permission>, ctx?: CrudContext) {
+    const result = await super.update(id, data, ctx)
+    if (result) await rbacCache.reload()
     return result
   }
 
   /** 删除权限 */
-  async delete(id: number) {
+  override async delete(id: number, ctx?: CrudContext) {
     // 级联删除角色权限关联
     await RolePermission.deleteMany(`permissionId = ${id}`)
-
     // 级联删除数据过滤规则
     await PermissionScope.deleteMany(`permissionId = ${id}`)
-
-    // 删除权限
-    const result = await Permission.delete(id)
-    await rbacCache.reload()
-    return result
+    const ok = await super.delete(id, ctx)
+    if (ok) await rbacCache.reload()
+    return ok
   }
 }
 
