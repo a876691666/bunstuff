@@ -753,3 +753,57 @@ export interface UpdateIpBlacklistRequest {
   status?: number
   remark?: string
 }
+
+// ============ CRUD 表配置类型 ============
+
+/** CRUD 表配置 */
+export interface CrudTable {
+  id: number
+  /** 表名（唯一标识） */
+  tableName: string
+  /** 显示名称 */
+  displayName: string
+  /** 列定义 JSON */
+  columns: string
+  /** 表描述 */
+  description: string | null
+  /** 状态：1启用 0禁用 */
+  status: number
+  /** 创建者ID */
+  createBy: number
+  /** 备注 */
+  remark: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** CRUD 列定义 */
+export interface ColumnDef {
+  name: string
+  type: 'string' | 'number' | 'boolean' | 'date'
+  primaryKey?: boolean
+  autoIncrement?: boolean
+  nullable?: boolean
+  default?: unknown
+  unique?: boolean
+  description?: string
+}
+
+/** 创建CRUD表配置请求 */
+export interface CreateCrudTableRequest {
+  tableName: string
+  displayName: string
+  columns: string
+  description?: string
+  status?: number
+  remark?: string
+}
+
+/** 更新CRUD表配置请求 */
+export interface UpdateCrudTableRequest {
+  displayName?: string
+  columns?: string
+  description?: string
+  status?: number
+  remark?: string
+}

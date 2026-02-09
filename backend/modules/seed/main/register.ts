@@ -29,6 +29,9 @@ import { jobSeed } from '@/models/job/seed'
 // RateLimit 模块 Seeds
 import { rateLimitRuleSeed } from '@/models/rate-limit-rule/seed'
 
+// CRUD 模块 Seeds
+import { crudTableSeed } from '@/models/crud-table/seed'
+
 /**
  * 注册所有 Seeds
  * 注意：Seeds 按顺序执行，需要注意依赖关系
@@ -68,6 +71,8 @@ export function registerSeeds() {
     jobSeed,
     // RateLimit 模块
     rateLimitRuleSeed,
+    // CRUD 模块
+    crudTableSeed,
   ])
 
   console.log('✅ Seeds registered')

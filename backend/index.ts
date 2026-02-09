@@ -8,6 +8,7 @@ import { rbacService } from '@/modules/rbac'
 import { dictService, configService, rateLimitRuleService } from '@/modules/system'
 import { rateLimitPlugin } from '@/modules/system/rate-limit/plugin'
 import { jobService } from '@/modules/job'
+import { crudRegistry } from '@/modules/crud'
 import { runSeeds } from '@/modules/seed'
 
 // 从环境变量或命令行参数读取配置
@@ -30,6 +31,8 @@ console.log('✅ Config cache initialized')
 
 await rateLimitRuleService.initCache()
 console.log('✅ RateLimit cache initialized')
+
+await crudRegistry.initFromDb()
 
 // ===== 阶段3: 构建 Elysia 应用并启动 =====
 await jobService.start()

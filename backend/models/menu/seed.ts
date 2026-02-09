@@ -491,6 +491,52 @@ const defaultMenus = [
     sort: 2,
     permCode: 'rateLimit:admin:blacklist:list',
   },
+
+  // ========== 9. CRUD 管理目录 ==========
+  {
+    id: 34,
+    parentId: null,
+    name: 'CRUD管理',
+    path: '/crud',
+    component: null,
+    icon: 'table',
+    type: 1, // 目录
+    visible: 1,
+    status: 1,
+    redirect: '/crud/tables',
+    sort: 9,
+    permCode: null,
+  },
+  // CRUD 表配置页面
+  {
+    id: 35,
+    parentId: 34,
+    name: '表配置',
+    path: '/crud/tables',
+    component: 'admin/crud/CrudTables',
+    icon: 'setting',
+    type: 2,
+    visible: 1,
+    status: 1,
+    redirect: null,
+    sort: 1,
+    permCode: 'crud:admin:list',
+  },
+  // CRUD 数据测试页面
+  {
+    id: 36,
+    parentId: 34,
+    name: '数据测试',
+    path: '/crud/test',
+    component: 'admin/crud/CrudTest',
+    icon: 'edit',
+    type: 2,
+    visible: 1,
+    status: 1,
+    redirect: null,
+    sort: 2,
+    permCode: 'crud:admin:list',
+  },
 ]
 
 /** 菜单表 Seed */

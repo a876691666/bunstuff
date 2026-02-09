@@ -249,6 +249,13 @@ const defaultPermissions = [
   { code: 'rateLimit:admin:blacklist:create', name: '添加IP黑名单', description: '手动添加IP到黑名单' },
   { code: 'rateLimit:admin:blacklist:update', name: '更新IP黑名单', description: '更新IP黑名单/解封' },
   { code: 'rateLimit:admin:blacklist:delete', name: '删除IP黑名单', description: '删除IP黑名单记录' },
+
+  // ========== CRUD 通用管理权限 (crud) ==========
+  { code: 'crud:admin:list', name: '查看CRUD数据列表', description: '通用CRUD列表查询' },
+  { code: 'crud:admin:read', name: '查看CRUD数据详情', description: '通用CRUD详情查询' },
+  { code: 'crud:admin:create', name: '创建CRUD数据', description: '通用CRUD创建记录' },
+  { code: 'crud:admin:update', name: '更新CRUD数据', description: '通用CRUD更新记录' },
+  { code: 'crud:admin:delete', name: '删除CRUD数据', description: '通用CRUD删除记录' },
 ]
 
 /** 权限表 Seed */

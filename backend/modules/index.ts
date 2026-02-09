@@ -33,6 +33,8 @@ import { jobAdminController, jobLogAdminController } from './job'
 import { noticeController, noticeAdminController } from './notice'
 // File 模块
 import { fileController, fileAdminController } from './file'
+// CRUD 模块
+import { crudController, crudAdminController } from './crud'
 
 /** 创建 API 路由 */
 export const createApi = () => {
@@ -47,6 +49,8 @@ export const createApi = () => {
       .use(noticeController)
       // File 模块
       .use(fileController)
+      // CRUD 模块
+      .use(crudController)
   )
 }
 
@@ -78,6 +82,8 @@ export const createAdminApi = () => {
       .use(jobLogAdminController)
       // File 模块
       .use(fileAdminController)
+      // CRUD 模块
+      .use(crudAdminController)
       // Seed 模块（仅 API 路由，seed 已在启动时执行完毕）
       .use(createSeedController())
   )
