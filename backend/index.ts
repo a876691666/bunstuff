@@ -3,6 +3,8 @@ import { cors } from '@elysiajs/cors'
 import { staticPlugin } from '@elysiajs/static'
 import { createAdminApi, createApi } from './modules'
 import { openapi } from '@elysiajs/openapi'
+import { mkdirSync, existsSync } from 'fs'
+import { resolve } from 'path'
 import { sessionStore } from '@/modules/auth'
 import { rbacService } from '@/modules/rbac'
 import { dictService, configService, rateLimitRuleService } from '@/modules/system'
@@ -10,6 +12,13 @@ import { rateLimitPlugin } from '@/modules/system/rate-limit/plugin'
 import { jobService } from '@/modules/job'
 import { crudRegistry } from '@/modules/crud'
 import { runSeeds } from '@/modules/seed'
+
+// 自动创建必要目录
+const uploadsDir = resolve(process.cwd(), 'uploads')
+if (!existsSync(uploadsDir)) {
+  mkdirSync(uploadsDir, { recursive: true })
+  console.log('📁 Created uploads directory')
+}
 
 // 从环境变量或命令行参数读取配置
 const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === 'true' || Bun.argv.includes('--seed')
@@ -93,12 +102,24 @@ const app = new Elysia()
     }),
   )
   // 配置静态文件服务，提供 uploads 目录的文件访问
-  .use(staticPlugin({
-    assets: './uploads',
-    prefix: '/uploads',
-  }))
+  .use(
+    staticPlugin({
+      assets: uploadsDir,
+      prefix: '/uploads',
+    }),
+  )
+  // 配置前端静态文件服务
+  .use(
+    staticPlugin({
+      assets: resolve(process.cwd(), 'frontend'),
+      prefix: '/',
+      alwaysStatic: true,
+      ignorePatterns: ['/api', '/uploads', '/openapi'],
+    }),
+  )
+  .get('/*', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
   .use(rateLimitPlugin())
-  .get('/', () => 'Hello from Elysia!')
+  .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(api)
   .use(adminApi)

@@ -126,3 +126,20 @@ export const configAdminController = new Elysia({ prefix: '/config', tags: ['管
       },
     },
   )
+
+  .post(
+    '/refresh-cache',
+    async () => {
+      await configService.initCache()
+      return R.success('缓存刷新成功')
+    },
+    {
+      response: { 200: MessageResponse },
+      detail: {
+        summary: '刷新参数配置缓存',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['config:admin:update'] } },
+        operLog: { title: '参数配置', type: 'other' },
+      },
+    },
+  )

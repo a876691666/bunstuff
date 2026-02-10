@@ -110,6 +110,9 @@ export const configApi = {
 
   /** 删除配置 */
   delete: (id: number) => http.delete(`/admin/config/${id}`),
+
+  /** 刷新缓存 */
+  refreshCache: () => http.post('/admin/config/refresh-cache'),
 }
 
 /** 客户端配置 API（路径前缀: /api/config） */

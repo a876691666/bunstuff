@@ -92,6 +92,7 @@ export interface Menu {
 
 /** 菜单树类型 */
 export interface MenuTree extends Menu {
+  isHidden?: boolean
   children?: MenuTree[]
 }
 
