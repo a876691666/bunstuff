@@ -9,6 +9,9 @@ import {
   NFormItem,
   NInput,
   NSelect,
+  NSwitch,
+  NCard,
+  NDivider,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
@@ -68,7 +71,16 @@ function parseColumns(columnsJson: string): ColumnDef[] {
 
 // 创建默认列
 function createDefaultColumn(): ColumnDef {
-  return { name: '', type: 'string', description: '' }
+  return {
+    name: '',
+    type: 'string',
+    primaryKey: false,
+    autoIncrement: false,
+    nullable: false,
+    unique: false,
+    default: undefined,
+    description: '',
+  }
 }
 
 // useModal
@@ -245,6 +257,7 @@ async function handleDelete(id: number) {
       v-model:show="modal.visible.value"
       :title="modal.title.value"
       :loading="modal.loading.value"
+      :width="860"
       @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
@@ -267,45 +280,112 @@ async function handleDelete(id: number) {
         </NFormItem>
 
         <!-- 列定义编辑器 -->
-        <NFormItem label="列定义" required>
-          <div style="width: 100%">
-            <div
-              v-for="(col, index) in editColumns"
-              :key="index"
-              style="
-                display: flex;
-                gap: 8px;
-                margin-bottom: 8px;
-                align-items: center;
-                flex-wrap: wrap;
-              "
-            >
-              <NInput
-                v-model:value="col.name"
-                placeholder="列名"
-                style="width: 120px"
-                @update:value="onColumnChange"
-              />
-              <NSelect
-                v-model:value="col.type"
-                :options="columnTypeOptions"
-                placeholder="类型"
-                style="width: 140px"
-                @update:value="onColumnChange"
-              />
-              <NInput
-                v-model:value="col.description"
-                placeholder="说明"
-                style="width: 140px"
-                @update:value="onColumnChange"
-              />
-              <NButton size="small" quaternary type="error" @click="removeColumn(index)">
+        <NDivider style="margin: 12px 0 8px">列定义</NDivider>
+
+        <div class="col-editor">
+          <NCard
+            v-for="(col, index) in editColumns"
+            :key="index"
+            size="small"
+            class="col-card"
+            :segmented="{ content: true }"
+          >
+            <template #header>
+              <span class="col-card-title">列 {{ index + 1 }}</span>
+            </template>
+            <template #header-extra>
+              <NButton size="tiny" quaternary type="error" @click="removeColumn(index)">
                 删除
               </NButton>
+            </template>
+
+            <!-- 第一行：列名、类型、说明 -->
+            <div class="col-row">
+              <div class="col-field">
+                <label class="col-label">列名 <span class="required">*</span></label>
+                <NInput
+                  v-model:value="col.name"
+                  placeholder="如 name"
+                  size="small"
+                  @update:value="onColumnChange"
+                />
+              </div>
+              <div class="col-field">
+                <label class="col-label">类型 <span class="required">*</span></label>
+                <NSelect
+                  v-model:value="col.type"
+                  :options="columnTypeOptions"
+                  placeholder="类型"
+                  size="small"
+                  @update:value="onColumnChange"
+                />
+              </div>
+              <div class="col-field col-field-grow">
+                <label class="col-label">说明</label>
+                <NInput
+                  v-model:value="col.description"
+                  placeholder="字段描述"
+                  size="small"
+                  @update:value="onColumnChange"
+                />
+              </div>
             </div>
-            <NButton size="small" dashed @click="addColumn">+ 添加列</NButton>
-          </div>
-        </NFormItem>
+
+            <!-- 第二行：默认值 + 开关选项 -->
+            <div class="col-row" style="margin-top: 8px">
+              <div class="col-field">
+                <label class="col-label">默认值</label>
+                <NInput
+                  :value="col.default !== undefined && col.default !== null ? String(col.default) : ''"
+                  placeholder="无"
+                  size="small"
+                  @update:value="(v: string) => { col.default = v === '' ? undefined : (col.type === 'number' ? Number(v) : v); onColumnChange() }"
+                />
+              </div>
+              <div class="col-switch-group">
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.primaryKey"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>主键</span>
+                </label>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.autoIncrement"
+                    size="small"
+                    :disabled="col.type !== 'number'"
+                    @update:value="onColumnChange"
+                  />
+                  <span>自增</span>
+                </label>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.nullable"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>可空</span>
+                </label>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.unique"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>唯一</span>
+                </label>
+              </div>
+            </div>
+          </NCard>
+
+          <NButton size="small" dashed style="width: 100%" @click="addColumn">
+            + 添加列
+          </NButton>
+        </div>
+
+        <NDivider style="margin: 12px 0 8px" />
 
         <NFormItem label="状态">
           <NSelect
@@ -331,5 +411,75 @@ async function handleDelete(id: number) {
 <style scoped>
 .page-crud-tables {
   height: 100%;
+}
+
+/* 列编辑器 */
+.col-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.col-card {
+  border: 1px solid var(--n-border-color, #e0e0e6);
+  border-radius: 6px;
+}
+
+.col-card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--n-text-color-2, #666);
+}
+
+.col-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.col-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 130px;
+}
+
+.col-field-grow {
+  flex: 1;
+  min-width: 150px;
+}
+
+.col-label {
+  font-size: 12px;
+  color: var(--n-text-color-3, #999);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.col-label .required {
+  color: #e03030;
+}
+
+.col-switch-group {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-bottom: 2px;
+}
+
+.col-switch-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--n-text-color-2, #666);
+  cursor: pointer;
+  white-space: nowrap;
 }
 </style>
