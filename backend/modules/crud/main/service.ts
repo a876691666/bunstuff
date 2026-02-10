@@ -16,6 +16,14 @@ export interface ColumnDef {
   default?: any
   unique?: boolean
   description?: string
+  /** 是否在新建表单中显示 */
+  showInCreate?: boolean
+  /** 是否在更新表单中显示 */
+  showInUpdate?: boolean
+  /** 是否作为搜索过滤条件 */
+  showInFilter?: boolean
+  /** 是否在列表表格中显示 */
+  showInList?: boolean
 }
 
 /**
@@ -34,10 +42,29 @@ function buildSchemaFromColumns(columns: ColumnDef[]): SchemaDefinition {
         if (col.autoIncrement) builder = builder.autoIncrement()
         break
       case 'boolean':
-        builder = column.boolean()
+        // SQLite 没有原生 boolean，存为 0/1
+        // serialize: DB(0/1) → App(0/1 规范化)  deserialize: App(boolean/0/1/string) → DB(0/1)
+        builder = column
+          .number()
+          .serialize((v: number) => (v === 1 || (v as any) === true ? 1 : 0))
+          .deserialize((v: number) => ((v as any) === true || v === 1 || (v as any) === '1' || (v as any) === 'true' ? 1 : 0))
         break
       case 'date':
-        builder = column.date()
+        // serialize: DB(string/Date) → App(ISO string)  deserialize: App(string/Date) → DB(ISO string)
+        builder = column
+          .date()
+          .serialize((v: any) => {
+            if (!v) return null
+            if (v instanceof Date) return v.toISOString()
+            const d = new Date(v)
+            return isNaN(d.getTime()) ? v : d.toISOString()
+          })
+          .deserialize((v: any) => {
+            if (!v) return null
+            if (v instanceof Date) return v.toISOString()
+            const d = new Date(v)
+            return isNaN(d.getTime()) ? v : d.toISOString()
+          })
         break
       case 'string':
       default:
@@ -66,19 +93,27 @@ function buildSchemaFromColumns(columns: ColumnDef[]): SchemaDefinition {
 }
 
 /**
+ * 获取 CRUD 动态表在数据库中的实际表名（添加 crud_ 前缀）
+ */
+function getDbTableName(tableName: string): string {
+  return tableName.startsWith('crud_') ? tableName : `crud_${tableName}`
+}
+
+/**
  * 从 CrudTable 记录动态创建 ORM Model
  * 会自动同步表结构到数据库
  */
 async function createModelFromRecord(record: Row<typeof CrudTable>): Promise<Model<SchemaDefinition, string>> {
   const columns: ColumnDef[] = JSON.parse(record.columns || '[]')
   const schema = buildSchemaFromColumns(columns)
+  const dbTableName = getDbTableName(record.tableName)
 
-  // 同步表结构到数据库
-  await db.syncTable(record.tableName, schema)
+  // 同步表结构到数据库（使用带前缀的表名）
+  await db.syncTable(dbTableName, schema)
 
-  // 创建 Model 实例
+  // 创建 Model 实例（实际数据库表名带 crud_ 前缀）
   return new Model(db.sql, db.dialect, {
-    tableName: record.tableName,
+    tableName: dbTableName,
     schema,
   })
 }

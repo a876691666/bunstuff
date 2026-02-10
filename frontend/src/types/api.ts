@@ -787,6 +787,14 @@ export interface ColumnDef {
   default?: unknown
   unique?: boolean
   description?: string
+  /** 是否在新建表单中显示 */
+  showInCreate?: boolean
+  /** 是否在更新表单中显示 */
+  showInUpdate?: boolean
+  /** 是否作为搜索过滤条件 */
+  showInFilter?: boolean
+  /** 是否在列表表格中显示 */
+  showInList?: boolean
 }
 
 /** 创建CRUD表配置请求 */

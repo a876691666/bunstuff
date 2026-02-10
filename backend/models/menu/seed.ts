@@ -522,13 +522,13 @@ const defaultMenus = [
     sort: 1,
     permCode: 'crud:admin:list',
   },
-  // CRUD 数据测试页面
+  // CRUD 数据管理页面
   {
     id: 36,
     parentId: 34,
-    name: '数据测试',
-    path: '/crud/test',
-    component: 'admin/crud/CrudTest',
+    name: 'CRUD数据管理',
+    path: '/crud/data',
+    component: 'admin/crud/CrudData',
     icon: 'edit',
     type: 2,
     visible: 1,

@@ -80,6 +80,10 @@ function createDefaultColumn(): ColumnDef {
     unique: false,
     default: undefined,
     description: '',
+    showInCreate: true,
+    showInUpdate: true,
+    showInFilter: false,
+    showInList: true,
   }
 }
 
@@ -317,6 +321,7 @@ async function handleDelete(id: number) {
                   :options="columnTypeOptions"
                   placeholder="类型"
                   size="small"
+                  :disabled="modal.isEdit.value && !!col.name"
                   @update:value="onColumnChange"
                 />
               </div>
@@ -331,7 +336,7 @@ async function handleDelete(id: number) {
               </div>
             </div>
 
-            <!-- 第二行：默认值 + 开关选项 -->
+            <!-- 第二行：默认值 + 数据库选项 -->
             <div class="col-row" style="margin-top: 8px">
               <div class="col-field">
                 <label class="col-label">默认值</label>
@@ -375,6 +380,45 @@ async function handleDelete(id: number) {
                     @update:value="onColumnChange"
                   />
                   <span>唯一</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 第三行：UI 显示控制 -->
+            <div class="col-row" style="margin-top: 8px">
+              <div class="col-switch-group">
+                <span class="col-label" style="margin-right: 4px">UI 控制：</span>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.showInCreate"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>新建</span>
+                </label>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.showInUpdate"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>更新</span>
+                </label>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.showInFilter"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>过滤</span>
+                </label>
+                <label class="col-switch-item">
+                  <NSwitch
+                    v-model:value="col.showInList"
+                    size="small"
+                    @update:value="onColumnChange"
+                  />
+                  <span>列表</span>
                 </label>
               </div>
             </div>

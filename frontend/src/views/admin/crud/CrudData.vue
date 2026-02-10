@@ -12,16 +12,31 @@ import {
   NFormItem,
   NInput,
   NInputNumber,
+  NDatePicker,
 } from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
 // composables not used directly in this page (manual table management)
 import { crudApi, crudTableApi } from '@/api'
 import type { CrudTable as CrudTableType, ColumnDef } from '@/types'
+import { buildFormDefaults, formatCellValue, validateRow } from './serialize'
 
-defineOptions({ name: 'CrudTest' })
+defineOptions({ name: 'CrudDataManagement' })
 
 const message = useMessage()
+
+// ====== 日期工具 ======
+function dateToTs(v: unknown): number | null {
+  if (v == null || v === '') return null
+  const d = new Date(v as string)
+  return isNaN(d.getTime()) ? null : d.getTime()
+}
+function tsToDateStr(ts: number | null): string | null {
+  if (ts == null) return null
+  const d = new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
 
 // ====== 表选择 ======
 const registeredTables = ref<string[]>([])
@@ -80,13 +95,28 @@ onMounted(loadRegisteredTables)
 // 根据列定义动态生成搜索字段
 const dynamicSearchFields = computed<SearchField[]>(() => {
   return currentColumns.value
-    .filter((col) => !col.primaryKey && col.type === 'string')
+    .filter((col) => !col.primaryKey && col.showInFilter !== false)
     .slice(0, 4) // 最多 4 个搜索字段
-    .map((col) => ({
-      key: col.name,
-      label: col.description || col.name,
-      type: 'input' as const,
-    }))
+    .map((col) => {
+      const base = { key: col.name, label: col.description || col.name }
+      switch (col.type) {
+        case 'number':
+          return { ...base, type: 'number' as const }
+        case 'boolean':
+          return {
+            ...base,
+            type: 'select' as const,
+            options: [
+              { label: '是', value: 1 },
+              { label: '否', value: 0 },
+            ],
+          }
+        case 'date':
+          return { ...base, type: 'datetime' as const }
+        default:
+          return { ...base, type: 'input' as const }
+      }
+    })
 })
 
 
@@ -96,17 +126,29 @@ const dynamicTableColumns = computed<DataTableColumns<Record<string, unknown>>>(
   const cols: DataTableColumns<Record<string, unknown>> = []
 
   for (const col of currentColumns.value) {
+    if (col.showInList === false) continue
+    const colDef = col
     cols.push({
       title: col.description || col.name,
       key: col.name,
       width: col.primaryKey ? 60 : col.type === 'string' ? 150 : 100,
       ellipsis: col.type === 'string' ? { tooltip: true } : undefined,
+      render: (col.type === 'boolean' || col.type === 'date')
+        ? (row) => {
+            if (colDef.type === 'boolean') {
+              const v = row[colDef.name]
+              return h(NTag, { type: (v === true || v === 1) ? 'success' : 'default', size: 'small' }, () => formatCellValue(v, colDef))
+            }
+            return formatCellValue(row[colDef.name], colDef)
+          }
+        : undefined,
     })
   }
 
-  // 时间戳列
-  cols.push({ title: '创建时间', key: 'createdAt', width: 170 })
-  cols.push({ title: '更新时间', key: 'updatedAt', width: 170 })
+  // 时间戳列（使用 date 格式化）
+  const tsCol: ColumnDef = { name: '', type: 'date' }
+  cols.push({ title: '创建时间', key: 'createdAt', width: 170, render: (row) => formatCellValue(row.createdAt, tsCol) })
+  cols.push({ title: '更新时间', key: 'updatedAt', width: 170, render: (row) => formatCellValue(row.updatedAt, tsCol) })
 
   // 操作列
   cols.push({
@@ -211,21 +253,7 @@ const editingId = ref<number | null>(null)
 const formData = ref<Record<string, unknown>>({})
 
 function buildDefaultFormData(): Record<string, unknown> {
-  const data: Record<string, unknown> = {}
-  for (const col of currentColumns.value) {
-    if (col.primaryKey && col.autoIncrement) continue
-    switch (col.type) {
-      case 'number':
-        data[col.name] = col.default ?? 0
-        break
-      case 'boolean':
-        data[col.name] = col.default ?? false
-        break
-      default:
-        data[col.name] = col.default ?? ''
-    }
-  }
-  return data
+  return buildFormDefaults(currentColumns.value, 'create')
 }
 
 function openCreate() {
@@ -235,13 +263,24 @@ function openCreate() {
   modalVisible.value = true
 }
 
+// 获取当前表单可编辑的列（根据新建/编辑模式过滤）
+const formColumns = computed(() => {
+  const isEdit = editingId.value !== null
+  return currentColumns.value.filter((col) => {
+    if (col.primaryKey && col.autoIncrement) return false
+    return isEdit ? col.showInUpdate !== false : col.showInCreate !== false
+  })
+})
+
 function handleEdit(row: Record<string, unknown>) {
   editingId.value = row.id as number
   modalTitle.value = `编辑 ${currentConfig.value?.displayName || selectedTable.value} 数据`
+  // 后端已完成序列化，直接提取可编辑字段
   const data: Record<string, unknown> = {}
   for (const col of currentColumns.value) {
     if (col.primaryKey && col.autoIncrement) continue
-    data[col.name] = row[col.name] ?? ''
+    if (col.showInUpdate === false) continue
+    data[col.name] = row[col.name] ?? (col.type === 'boolean' ? 0 : col.type === 'number' ? 0 : col.type === 'date' ? null : '')
   }
   formData.value = data
   modalVisible.value = true
@@ -251,6 +290,13 @@ async function handleSave() {
   if (!selectedTable.value) return
   modalLoading.value = true
   try {
+    // 前端校验
+    const error = validateRow(formData.value, currentColumns.value)
+    if (error) {
+      message.warning(error)
+      modalLoading.value = false
+      return
+    }
     if (editingId.value) {
       await crudApi.update(selectedTable.value, editingId.value, formData.value)
       message.success('更新成功')
@@ -343,11 +389,8 @@ async function handleDelete(id: number) {
       @confirm="handleSave"
     >
       <NForm label-placement="left" label-width="100">
-        <template v-for="col in currentColumns" :key="col.name">
-          <NFormItem
-            v-if="!(col.primaryKey && col.autoIncrement)"
-            :label="col.description || col.name"
-          >
+        <template v-for="col in formColumns" :key="col.name">
+          <NFormItem :label="col.description || col.name">
             <!-- 数字类型 -->
             <NInputNumber
               v-if="col.type === 'number'"
@@ -355,7 +398,7 @@ async function handleDelete(id: number) {
               :placeholder="`请输入${col.description || col.name}`"
               style="width: 100%"
             />
-            <!-- 布尔类型 -->
+            <!-- 布尔类型（后端存储为 0/1） -->
             <NSelect
               v-else-if="col.type === 'boolean'"
               v-model:value="(formData[col.name] as number)"
@@ -364,12 +407,21 @@ async function handleDelete(id: number) {
                 { label: '否', value: 0 },
               ]"
             />
-            <!-- 字符串 / 日期 / 默认 -->
+            <!-- 日期时间类型 -->
+            <NDatePicker
+              v-else-if="col.type === 'date'"
+              :value="dateToTs(formData[col.name])"
+              type="datetime"
+              :placeholder="`请选择${col.description || col.name}`"
+              style="width: 100%"
+              clearable
+              @update:value="(v: number | null) => { formData[col.name] = tsToDateStr(v) }"
+            />
+            <!-- 字符串 / 默认 -->
             <NInput
               v-else
               v-model:value="(formData[col.name] as string)"
               :placeholder="`请输入${col.description || col.name}`"
-              :type="col.type === 'date' ? 'text' : 'text'"
             />
           </NFormItem>
         </template>
