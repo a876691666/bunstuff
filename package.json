@@ -6,6 +6,7 @@
     "dev": "bun run --filter '*' dev",
     "dev:backend": "cd backend && bun run dev",
     "dev:frontend": "cd frontend && bun run dev",
+    "dev:client": "cd client && bun run dev",
     "format": "prettier --write --experimental-cli \"**/*.{ts,tsx,js,jsx,vue,json,css,scss,md}\"",
     "format:check": "prettier --check --experimental-cli \"**/*.{ts,tsx,js,jsx,vue,json,css,scss,md}\""
   },

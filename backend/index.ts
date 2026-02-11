@@ -112,14 +112,24 @@ const app = new Elysia()
   .use(
     staticPlugin({
       assets: resolve(process.cwd(), 'frontend'),
-      prefix: '/',
+      prefix: '/_admin',
       alwaysStatic: true,
+      indexHTML: false,
       ignorePatterns: ['/api', '/uploads', '/openapi'],
     }),
   )
-  .get('/*', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
+  .get('/_admin/*', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
+  .use(
+    staticPlugin({
+      assets: resolve(process.cwd(), 'client'),
+      prefix: '/',
+      alwaysStatic: true,
+      indexHTML: false,
+      ignorePatterns: ['/api', '/uploads', '/openapi'],
+    }),
+  )
+  .get('/*', (c) => Bun.file(resolve(process.cwd(), 'client', 'index.html')))
   .use(rateLimitPlugin())
-  .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(api)
   .use(adminApi)

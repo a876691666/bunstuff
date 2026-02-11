@@ -15,8 +15,9 @@ const showError = (msg: string) => {
 const handleUnauthorized = () => {
   localStorage.removeItem('token')
   const currentPath = window.location.pathname
-  if (currentPath !== '/login') {
-    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+  const loginPath = `${import.meta.env.BASE_URL}login`
+  if (!currentPath.endsWith('/login')) {
+    window.location.href = `${loginPath}?redirect=${encodeURIComponent(currentPath)}`
   }
 }
 
