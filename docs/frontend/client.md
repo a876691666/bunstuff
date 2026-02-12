@@ -44,7 +44,7 @@ client/
 bun run dev:client
 ```
 
-访问地址：http://localhost:5174
+访问地址：`http://localhost:5174`
 
 ## 生产部署
 

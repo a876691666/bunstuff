@@ -54,10 +54,10 @@ bun run dev:client     # 端口 5174
 
 | 服务 | 地址 |
 |------|------|
-| 后端 API | http://localhost:3000/api |
-| OpenAPI 文档 | http://localhost:3000/api/swagger |
-| 管理端 | http://localhost:5173/_admin |
-| 客户端 | http://localhost:5174 |
+| 后端 API | `http://localhost:3000/api` |
+| OpenAPI 文档 | `http://localhost:3000/api/openapi` |
+| 管理端 | `http://localhost:5173/_admin` |
+| 客户端 | `http://localhost:5174` |
 
 ## 默认账号
 
