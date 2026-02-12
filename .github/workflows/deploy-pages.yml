@@ -26,9 +26,11 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          cache-dependency-path: docs/package.json
 
       - name: Install dependencies
-        run: npm install --frozen-lockfile --legacy-peer-deps
+        working-directory: docs
+        run: npm install
 
       - name: Determine base path
         id: base
@@ -43,8 +45,9 @@ jobs:
           echo "Base path: $BASE"
           echo "base=$BASE" >> $GITHUB_OUTPUT
 
-      - name: Typecheck + Build (Vite)
-        run: npm run build:docs -- --base=${{ steps.base.outputs.base }}
+      - name: Build (VitePress)
+        working-directory: docs
+        run: npx vitepress build --base=${{ steps.base.outputs.base }}
       
       - name: SPA fallback for GitHub Pages
         if: ${{ always() }}
