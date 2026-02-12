@@ -1,0 +1,23 @@
+services:
+  app:
+    image: bunstuff:latest
+    container_name: bunstuff
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # 前端静态资源
+      - ./frontend:/app/frontend:ro
+      - ./client:/app/client:ro
+      # 持久化数据
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - SEED_AUTO_RUN=true
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

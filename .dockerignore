@@ -1,0 +1,35 @@
+# 依赖目录
+**/node_modules
+
+# 构建产物
+**/dist
+release
+
+# 数据文件
+*.db
+*.db-journal
+*.db-wal
+
+# 上传文件
+uploads
+
+# 开发工具
+.git
+.gitignore
+.vscode
+.agents
+**/.env.local
+**/.env.*.local
+
+# 文档与杂项
+README.md
+docs
+*.md
+LICENSE
+
+# 临时文件
+backend/temp
+backend/static
+**/*.log
+.DS_Store
+Thumbs.db

@@ -111,6 +111,16 @@ const app = new Elysia()
   // 配置前端静态文件服务
   .use(
     staticPlugin({
+      assets: resolve(process.cwd(), 'client'),
+      prefix: '/',
+      alwaysStatic: true,
+      indexHTML: false,
+      ignorePatterns: ['/api', '/uploads', '/openapi', '/_admin'],
+    }),
+  )
+  .get('/*', (c) => Bun.file(resolve(process.cwd(), 'client', 'index.html')))
+  .use(
+    staticPlugin({
       assets: resolve(process.cwd(), 'frontend'),
       prefix: '/_admin',
       alwaysStatic: true,
@@ -118,17 +128,9 @@ const app = new Elysia()
       ignorePatterns: ['/api', '/uploads', '/openapi'],
     }),
   )
+  .get('/_admin', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
   .get('/_admin/*', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
-  .use(
-    staticPlugin({
-      assets: resolve(process.cwd(), 'client'),
-      prefix: '/',
-      alwaysStatic: true,
-      indexHTML: false,
-      ignorePatterns: ['/api', '/uploads', '/openapi'],
-    }),
-  )
-  .get('/*', (c) => Bun.file(resolve(process.cwd(), 'client', 'index.html')))
+  // 全局使用自定义的限流插件，应用于所有路由
   .use(rateLimitPlugin())
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(api)
