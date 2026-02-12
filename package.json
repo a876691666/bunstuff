@@ -7,6 +7,9 @@
     "dev:backend": "cd backend && bun run dev",
     "dev:frontend": "cd frontend && bun run dev",
     "dev:client": "cd client && bun run dev",
+    "dev:docs": "cd docs && bun run dev",
+    "docs:build": "cd docs && bun run build",
+    "docs:preview": "cd docs && bun run preview",
     "format": "prettier --write --experimental-cli \"**/*.{ts,tsx,js,jsx,vue,json,css,scss,md}\"",
     "format:check": "prettier --check --experimental-cli \"**/*.{ts,tsx,js,jsx,vue,json,css,scss,md}\"",
     "docker:build": "bun run docker-build.ts"
