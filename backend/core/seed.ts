@@ -1,12 +1,13 @@
 /**
- * Seed 自动注册 - 基于 glob 扫描 models 下的 seed.ts
- * 替代原先 services/seed-register.ts 中的硬编码导入
+ * Seed 自动注册 - 使用编译时生成的静态导入
+ * 替代原先基于 Glob 的运行时扫描
  */
 
-import { Glob } from 'bun'
-import { join } from 'path'
 import type { SeedDefinition } from '@/services/seed'
 import * as seedService from '@/services/seed'
+
+// 运行时 Seed 注册表（编译时生成）
+import { seedModules } from '../_generated/seeds.generated'
 
 /** 判断对象是否为 SeedDefinition */
 function isSeedDefinition(obj: unknown): obj is SeedDefinition {
@@ -56,21 +57,18 @@ function topoSort(seeds: SeedDefinition[]): SeedDefinition[] {
   return result
 }
 
-// ─── 使用 glob 自动扫描 models/*/seed.ts ───
-const glob = new Glob('*/seed.ts')
-const modelsPath = join(import.meta.dir, '../models')
+// ─── 使用编译时生成的静态导入加载所有 Seed ───
 const allSeeds: SeedDefinition[] = []
 
-for await (const file of glob.scan({ cwd: modelsPath })) {
-  const mod = await import(join(modelsPath, file))
-  const seeds = extractSeeds(mod)
+for (const mod of seedModules) {
+  const seeds = extractSeeds(mod as Record<string, unknown>)
   allSeeds.push(...seeds)
 }
 
 // 拓扑排序后注册
 const sorted = topoSort(allSeeds)
 seedService.registerMany(sorted)
-console.log(`✅ Seeds registered (${sorted.length} from glob)`)
+console.log(`✅ Seeds registered (${sorted.length} from registry)`)
 
 /** Seed 模块配置 */
 export interface SeedModuleOptions {

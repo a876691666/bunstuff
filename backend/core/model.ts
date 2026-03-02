@@ -1,10 +1,11 @@
-import { Glob } from 'bun'
-import { join } from 'path'
 import { db } from '@/models/main'
 
-// 类型定义由 scripts/gen-models.ts 自动生成
-export type { ModelRegistry, SessionRow, SessionInsert, SessionUpdate } from './model.generated'
-import type { ModelRegistry } from './model.generated'
+// 类型定义由 scripts/gen-registry.ts 自动生成
+export type { ModelRegistry, SessionRow, SessionInsert, SessionUpdate } from '../_generated/model.generated'
+import type { ModelRegistry } from '../_generated/model.generated'
+
+// 运行时 Schema 注册表（编译时生成）
+import { schemaModules } from '../_generated/schemas.generated'
 
 /** 所有已注册的 Model 实例 */
 export const model = {} as ModelRegistry
@@ -12,15 +13,10 @@ export const model = {} as ModelRegistry
 /** 数据库实例 */
 export { db }
 
-// ===== Runtime: Glob 自动加载所有 Model =====
-const glob = new Glob('*/schema.ts')
-const modelsDir = join(import.meta.dir, '../models')
-
-for await (const file of glob.scan({ cwd: modelsDir })) {
-  const mod = await import(join(modelsDir, file))
-  const { default: Schema, tableName } = mod
+// ===== 使用编译时生成的静态导入加载所有 Model =====
+for (const { tableName, Schema } of schemaModules) {
   if (!tableName || !Schema) {
-    console.warn(`⚠️ Skipping ${file}: missing tableName or default Schema export`)
+    console.warn(`⚠️ Skipping schema: missing tableName or Schema export`)
     continue
   }
   ;(model as any)[tableName] = await db.model({ tableName, schema: Schema })

@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "bun",
+			"script": "bun run backend/scripts/gen-registry.ts",
+			"problemMatcher": [],
+			"label": "generate",
+			"detail": "运行: bun run backend/scripts/gen-registry.ts"
+		}
+	]
+}

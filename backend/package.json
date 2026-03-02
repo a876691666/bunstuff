@@ -4,9 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "gen:models": "bun run scripts/gen-models.ts",
-    "dev": "bun run scripts/gen-models.ts && bun run --watch index.ts",
-    "start": "bun run scripts/gen-models.ts && bun run index.ts"
+    "gen:registry": "bun run scripts/gen-registry.ts",
+    "gen:models": "bun run scripts/gen-registry.ts",
+    "dev": "bun run scripts/gen-registry.ts && bun run --watch index.ts",
+    "start": "bun run scripts/gen-registry.ts && bun run index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

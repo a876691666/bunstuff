@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import { existsSync, rmSync, cpSync, mkdirSync } from 'fs'
+import { generateRegistry } from './backend/scripts/gen-registry'
 
 const rootDir = import.meta.dir
 const frontendDir = resolve(rootDir, 'frontend')
@@ -9,6 +10,7 @@ const clientDist = resolve(clientDir, 'dist')
 const releaseDir = resolve(rootDir, 'release')
 const releaseFrontendDir = resolve(releaseDir, 'frontend')
 const releaseClientDir = resolve(releaseDir, 'client')
+const backendDir = resolve(rootDir, 'backend')
 
 // ===== 0. 清理 release 目录 =====
 if (existsSync(releaseDir)) {
@@ -49,7 +51,11 @@ mkdirSync(releaseClientDir, { recursive: true })
 cpSync(clientDist, releaseClientDir, { recursive: true })
 console.log('✅ Client dist copied to release/client')
 
-// ===== 4. 编译后端 =====
+// ===== 4. 编译时插件：生成注册表文件 =====
+console.log('🔧 Running registry generation plugin...')
+await generateRegistry(backendDir)
+
+// ===== 5. 编译后端 =====
 console.log('📦 Building backend...')
 await Bun.build({
   entrypoints: ['./backend/index.ts'],
