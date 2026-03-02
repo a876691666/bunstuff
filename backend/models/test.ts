@@ -1,14 +1,7 @@
 import { where } from '../packages/ssql'
-import Role from './role'
+import { model } from '../core/model'
 
-// await Role.create({
-//   parentId: null,
-//   name: "tester",
-//   code: "tester",
-//   status: 1,
-//   sort: 0,
-//   description: "测试数据",
-// });
+const Role = model.role
 
 // 或使用 SSQL 字符串
 Role.findMany({

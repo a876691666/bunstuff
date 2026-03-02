@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'user_resource_usage'
+
 /** 用户资源使用表 Schema */
 export default class UserResourceUsageSchema extends TimestampSchema {
   /** ID */

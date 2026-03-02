@@ -14,16 +14,16 @@ import { operLogPlugin } from '@/modules/system/oper-log/plugin'
 const api = new Elysia()
   .use(authPlugin())
   .use(operLogPlugin())
-  
+
   .post('/users', handler, {
     detail: {
       operLog: {
-        title: '用户管理',    // 操作模块
-        type: 'create',       // 操作类型
+        title: '用户管理', // 操作模块
+        type: 'create', // 操作类型
       },
     },
   })
-  
+
   .put('/users/:id', handler, {
     detail: {
       operLog: {
@@ -32,7 +32,7 @@ const api = new Elysia()
       },
     },
   })
-  
+
   .delete('/users/:id', handler, {
     detail: {
       operLog: {
@@ -45,21 +45,21 @@ const api = new Elysia()
 
 ### 记录内容
 
-| 字段 | 说明 |
-|------|------|
-| title | 操作模块名 |
-| type | 操作类型（create/update/delete/list/...） |
-| method | HTTP 方法 |
-| url | 请求 URL |
-| ip | 请求 IP |
-| params | 请求参数 |
-| result | 响应结果 |
-| status | 执行状态（成功/失败） |
-| errorMsg | 错误信息 |
-| userId | 操作用户 ID |
-| username | 操作用户名 |
-| costTime | 耗时（ms） |
-| operTime | 操作时间 |
+| 字段     | 说明                                      |
+| -------- | ----------------------------------------- |
+| title    | 操作模块名                                |
+| type     | 操作类型（create/update/delete/list/...） |
+| method   | HTTP 方法                                 |
+| url      | 请求 URL                                  |
+| ip       | 请求 IP                                   |
+| params   | 请求参数                                  |
+| result   | 响应结果                                  |
+| status   | 执行状态（成功/失败）                     |
+| errorMsg | 错误信息                                  |
+| userId   | 操作用户 ID                               |
+| username | 操作用户名                                |
+| costTime | 耗时（ms）                                |
+| operTime | 操作时间                                  |
 
 ### 工作原理
 
@@ -72,7 +72,7 @@ const api = new Elysia()
 
 ## 管理端 API
 
-| 方法 | 路径 | 权限 |
-|------|------|------|
-| GET | `/api/admin/oper-log` | `oper-log:admin:list` |
+| 方法   | 路径                      | 权限                    |
+| ------ | ------------------------- | ----------------------- |
+| GET    | `/api/admin/oper-log`     | `oper-log:admin:list`   |
 | DELETE | `/api/admin/oper-log/:id` | `oper-log:admin:delete` |

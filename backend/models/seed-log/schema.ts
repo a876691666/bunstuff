@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'seed_log'
+
 /** Seed日志表 Schema */
 export default class SeedLogSchema extends Schema {
   /** ID */

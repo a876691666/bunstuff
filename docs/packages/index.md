@@ -4,11 +4,11 @@
 
 Bunstuff 包含三个自研工具包，位于 `backend/packages/`：
 
-| 包 | 路径别名 | 说明 |
-|----|---------|------|
-| [ORM](./orm) | `@pkg/orm` | 轻量级类型安全 ORM |
-| [SSQL](./ssql) | `@pkg/ssql` | SQL 条件查询构建器 |
-| [Route Model](./route-model) | `@/packages/route-model` | 路由 Schema 工具 |
+| 包                           | 路径别名                 | 说明               |
+| ---------------------------- | ------------------------ | ------------------ |
+| [ORM](./orm)                 | `@pkg/orm`               | 轻量级类型安全 ORM |
+| [SSQL](./ssql)               | `@pkg/ssql`              | SQL 条件查询构建器 |
+| [Route Model](./route-model) | `@/packages/route-model` | 路由 Schema 工具   |
 
 ## 设计原则
 

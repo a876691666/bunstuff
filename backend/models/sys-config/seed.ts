@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
-import SysConfig from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 export const sysConfigSeed: SeedDefinition = {
   name: 'sys-config-init',
@@ -38,7 +38,7 @@ export const sysConfigSeed: SeedDefinition = {
     ]
 
     for (const config of configs) {
-      await SysConfig.create(config)
+      await model.sys_config.create(config)
     }
   },
 }

@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
+import type { SeedDefinition } from '@/services/seed'
 
 // 登录日志表无需初始化数据
 export const loginLogSeed: SeedDefinition = {

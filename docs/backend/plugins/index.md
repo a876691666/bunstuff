@@ -6,17 +6,17 @@ Bunstuff 后端基于 Elysia 的插件系统构建，所有功能模块都以插
 
 ## 插件清单
 
-| 插件 | 导入路径 | 注入内容 |
-|------|---------|----------|
-| `authPlugin()` | `@/modules/auth/main/plugin` | `session`, `userId`, `roleId`, `rbac` |
-| `rbacPlugin()` | `@/modules/rbac/main/plugin` | `dataScope` |
-| `vipPlugin()` | `@/modules/vip/plugin` | `vipTierId`, `canUseResource`, `incrementResource` 等 |
-| `filePlugin()` | `@/modules/file/plugin` | `getFile`, `uploadLocal`, `getFileUrl` 等 |
-| `noticePlugin()` | `@/modules/notice/plugin` | `publishNotice`, `sendToUser`, `markAsRead` 等 |
-| `dictPlugin()` | `@/modules/system/dict/plugin` | `getDictMap`, `getDictList`, `getDictLabel` |
-| `configPlugin()` | `@/modules/system/config/plugin` | `getConfigValue`, `getConfigValueOrDefault` |
-| `loginLogPlugin()` | `@/modules/system/login-log/plugin` | `logLogin` |
-| `operLogPlugin()` | `@/modules/system/oper-log/plugin` | 自动记录操作日志（基于路由 detail） |
+| 插件               | 导入路径                            | 注入内容                                              |
+| ------------------ | ----------------------------------- | ----------------------------------------------------- |
+| `authPlugin()`     | `@/modules/auth/main/plugin`        | `session`, `userId`, `roleId`, `rbac`                 |
+| `rbacPlugin()`     | `@/modules/rbac/main/plugin`        | `dataScope`                                           |
+| `vipPlugin()`      | `@/modules/vip/plugin`              | `vipTierId`, `canUseResource`, `incrementResource` 等 |
+| `filePlugin()`     | `@/modules/file/plugin`             | `getFile`, `uploadLocal`, `getFileUrl` 等             |
+| `noticePlugin()`   | `@/modules/notice/plugin`           | `publishNotice`, `sendToUser`, `markAsRead` 等        |
+| `dictPlugin()`     | `@/modules/system/dict/plugin`      | `getDictMap`, `getDictList`, `getDictLabel`           |
+| `configPlugin()`   | `@/modules/system/config/plugin`    | `getConfigValue`, `getConfigValueOrDefault`           |
+| `loginLogPlugin()` | `@/modules/system/login-log/plugin` | `logLogin`                                            |
+| `operLogPlugin()`  | `@/modules/system/oper-log/plugin`  | 自动记录操作日志（基于路由 detail）                   |
 
 ## 依赖关系
 
@@ -38,20 +38,20 @@ noticePlugin()   ← 依赖 authPlugin
 
 ```typescript
 const api = new Elysia({ prefix: '/my-module', tags: ['我的模块'] })
-  .use(authPlugin())       // 必须：认证
-  .use(rbacPlugin())       // 必须：权限
-  .use(operLogPlugin())    // 可选：操作日志
-  .use(dictPlugin())       // 可选：字典查询
-  .use(configPlugin())     // 可选：配置查询
+  .use(authPlugin()) // 必须：认证
+  .use(rbacPlugin()) // 必须：权限
+  .use(operLogPlugin()) // 可选：操作日志
+  .use(dictPlugin()) // 可选：字典查询
+  .use(configPlugin()) // 可选：配置查询
 ```
 
 ### 客户端路由
 
 ```typescript
 const api = new Elysia({ prefix: '/public', tags: ['公开接口'] })
-  .use(authPlugin())       // 认证（部分路由可 skipAuth）
-  .use(filePlugin())       // 可选：文件操作
-  .use(noticePlugin())     // 可选：通知
+  .use(authPlugin()) // 认证（部分路由可 skipAuth）
+  .use(filePlugin()) // 可选：文件操作
+  .use(noticePlugin()) // 可选：通知
 ```
 
 ## 声明扩展
@@ -64,7 +64,7 @@ const api = new Elysia({ prefix: '/public', tags: ['公开接口'] })
   detail: {
     // auth 插件
     auth: { skipAuth: false },
-    
+
     // rbac 插件
     rbac: {
       scope: {
@@ -72,7 +72,7 @@ const api = new Elysia({ prefix: '/public', tags: ['公开接口'] })
         roles: ['admin'],
       },
     },
-    
+
     // operLog 插件
     operLog: {
       title: '数据管理',

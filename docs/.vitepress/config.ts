@@ -111,9 +111,7 @@ export default defineConfig({
         },
         {
           text: '客户端',
-          items: [
-            { text: '客户端应用', link: '/frontend/client' },
-          ],
+          items: [{ text: '客户端应用', link: '/frontend/client' }],
         },
       ],
       '/packages/': [
@@ -140,9 +138,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/a876691666/bunstuff' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/a876691666/bunstuff' }],
 
     search: {
       provider: 'local',

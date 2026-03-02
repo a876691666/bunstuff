@@ -51,8 +51,8 @@ const api = new Elysia()
     detail: {
       rbac: {
         scope: {
-          permissions: ['data:admin:list'],  // 需要的权限
-          roles: ['admin'],                  // 需要的角色（可选）
+          permissions: ['data:admin:list'], // 需要的权限
+          roles: ['admin'], // 需要的角色（可选）
         },
       },
     },
@@ -77,7 +77,7 @@ const api = new Elysia()
 
 ```typescript
 // 在 handler 中使用
-ctx.dataScope  // (tableName: string) => string | null
+ctx.dataScope // (tableName: string) => string | null
 ```
 
 `dataScope` 根据当前用户的权限和 `PermissionScope` 表配置，返回针对指定表的 SSQL 过滤条件。
@@ -86,26 +86,26 @@ ctx.dataScope  // (tableName: string) => string | null
 
 ### PermissionScope 模型
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | number | 主键 |
-| permissionId | number | 关联的权限 ID |
-| name | string | 规则名称 |
-| tableName | string | 作用的表名 |
-| ssqlRule | string | SSQL 规则表达式 |
-| description | string | 描述 |
+| 字段         | 类型   | 说明            |
+| ------------ | ------ | --------------- |
+| id           | number | 主键            |
+| permissionId | number | 关联的权限 ID   |
+| name         | string | 规则名称        |
+| tableName    | string | 作用的表名      |
+| ssqlRule     | string | SSQL 规则表达式 |
+| description  | string | 描述            |
 
 ### SSQL 规则模板
 
 规则中可使用 **VelocityJS** 模板变量：
 
-| 变量 | 说明 | 示例值 |
-|------|------|--------|
-| `$auth.userId` | 当前用户 ID | `42` |
-| `$auth.roleId` | 当前角色 ID | `1` |
-| `$auth.username` | 用户名 | `admin` |
-| `$req.method` | 请求方法 | `GET` |
-| `$req.path` | 请求路径 | `/api/admin/users` |
+| 变量             | 说明        | 示例值             |
+| ---------------- | ----------- | ------------------ |
+| `$auth.userId`   | 当前用户 ID | `42`               |
+| `$auth.roleId`   | 当前角色 ID | `1`                |
+| `$auth.username` | 用户名      | `admin`            |
+| `$req.method`    | 请求方法    | `GET`              |
+| `$req.path`      | 请求路径    | `/api/admin/users` |
 
 ### 规则示例
 
@@ -144,14 +144,14 @@ status = 1 && createBy = $auth.userId
 
 ### 缓存内容
 
-| 缓存 | 数据 |
-|------|------|
-| 角色列表 | 所有角色（含树形结构） |
-| 权限列表 | 所有权限编码 |
-| 权限范围 | 所有 PermissionScope |
+| 缓存      | 数据                   |
+| --------- | ---------------------- |
+| 角色列表  | 所有角色（含树形结构） |
+| 权限列表  | 所有权限编码           |
+| 权限范围  | 所有 PermissionScope   |
 | 角色-权限 | 每个角色对应的权限集合 |
 | 角色-菜单 | 每个角色对应的菜单集合 |
-| 菜单列表 | 所有菜单配置 |
+| 菜单列表  | 所有菜单配置           |
 
 ### 权限汇聚规则
 
@@ -172,14 +172,14 @@ status = 1 && createBy = $auth.userId
 
 核心 RBAC 查询服务：
 
-| 方法 | 说明 |
-|------|------|
-| `getUserPermissions(roleId)` | 获取角色的所有权限编码 |
-| `getUserMenus(roleId)` | 获取角色的菜单树 |
-| `hasPermission(roleId, permission)` | 检查是否拥有指定权限 |
-| `hasRole(roleId, roleCode)` | 检查角色匹配 |
-| `getUserPermissionInfo(roleId)` | 获取完整权限信息（权限+菜单+角色） |
-| `getDataScope(roleId, permissions)` | 获取数据权限过滤条件 |
+| 方法                                | 说明                               |
+| ----------------------------------- | ---------------------------------- |
+| `getUserPermissions(roleId)`        | 获取角色的所有权限编码             |
+| `getUserMenus(roleId)`              | 获取角色的菜单树                   |
+| `hasPermission(roleId, permission)` | 检查是否拥有指定权限               |
+| `hasRole(roleId, roleCode)`         | 检查角色匹配                       |
+| `getUserPermissionInfo(roleId)`     | 获取完整权限信息（权限+菜单+角色） |
+| `getDataScope(roleId, permissions)` | 获取数据权限过滤条件               |
 
 ## 声明扩展
 
@@ -202,28 +202,28 @@ declare module 'elysia' {
 
 ### 角色管理
 
-| 方法 | 路径 | 权限 |
-|------|------|------|
-| GET | `/api/admin/role` | `role:admin:list` |
-| GET | `/api/admin/role/:id` | `role:admin:read` |
-| POST | `/api/admin/role` | `role:admin:create` |
-| PUT | `/api/admin/role/:id` | `role:admin:update` |
+| 方法   | 路径                  | 权限                |
+| ------ | --------------------- | ------------------- |
+| GET    | `/api/admin/role`     | `role:admin:list`   |
+| GET    | `/api/admin/role/:id` | `role:admin:read`   |
+| POST   | `/api/admin/role`     | `role:admin:create` |
+| PUT    | `/api/admin/role/:id` | `role:admin:update` |
 | DELETE | `/api/admin/role/:id` | `role:admin:delete` |
 
 ### 菜单管理
 
-| 方法 | 路径 | 权限 |
-|------|------|------|
-| GET | `/api/admin/menu` | `menu:admin:list` |
-| POST | `/api/admin/menu` | `menu:admin:create` |
-| PUT | `/api/admin/menu/:id` | `menu:admin:update` |
+| 方法   | 路径                  | 权限                |
+| ------ | --------------------- | ------------------- |
+| GET    | `/api/admin/menu`     | `menu:admin:list`   |
+| POST   | `/api/admin/menu`     | `menu:admin:create` |
+| PUT    | `/api/admin/menu/:id` | `menu:admin:update` |
 | DELETE | `/api/admin/menu/:id` | `menu:admin:delete` |
 
 ### 权限管理
 
-| 方法 | 路径 | 权限 |
-|------|------|------|
-| GET | `/api/admin/permission` | `permission:admin:list` |
-| POST | `/api/admin/permission` | `permission:admin:create` |
-| PUT | `/api/admin/permission/:id` | `permission:admin:update` |
+| 方法   | 路径                        | 权限                      |
+| ------ | --------------------------- | ------------------------- |
+| GET    | `/api/admin/permission`     | `permission:admin:list`   |
+| POST   | `/api/admin/permission`     | `permission:admin:create` |
+| PUT    | `/api/admin/permission/:id` | `permission:admin:update` |
 | DELETE | `/api/admin/permission/:id` | `permission:admin:delete` |

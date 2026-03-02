@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'job_log'
+
 /** 任务执行日志表 Schema */
 export default class JobLogSchema extends Schema {
   /** ID */

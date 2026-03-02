@@ -13,6 +13,7 @@ import type {
   WhereInput,
   FormatConfig,
   ColumnBuilder,
+  OrderBy,
 } from './types'
 import { escape } from './utils'
 import { Builder, parse, type Dialect, type CompileOptions } from '@pkg/ssql'
@@ -390,6 +391,34 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
       page,
       perPage,
     }
+  }
+
+  /**
+   * 分页查询（简洁版，与 PageResult 兼容）
+   *
+   * @example
+   * ```ts
+   * const result = await User.page({ where: 'status = 1', page: 1, pageSize: 10 })
+   * // => { data: [...], total: 100, page: 1, pageSize: 10 }
+   * ```
+   */
+  async page(options?: {
+    where?: WhereInput
+    page?: number
+    pageSize?: number
+    orderBy?: OrderBy<S>
+  }): Promise<{ data: InferRow<S>[]; total: number; page: number; pageSize: number }> {
+    const page = options?.page ?? 1
+    const pageSize = options?.pageSize ?? 10
+    const offset = (page - 1) * pageSize
+    const data = await this.findMany({
+      where: options?.where,
+      limit: pageSize,
+      offset,
+      orderBy: options?.orderBy,
+    })
+    const total = await this.count(options?.where)
+    return { data, total, page, pageSize }
   }
 
   /** 获取第一条记录 */

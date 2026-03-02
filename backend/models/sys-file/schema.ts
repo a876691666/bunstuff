@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'sys_file'
+
 /** 文件元数据表 Schema */
 export default class SysFileSchema extends TimestampSchema {
   /** ID */

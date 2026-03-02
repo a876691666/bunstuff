@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'job'
+
 /** 定时任务表 Schema */
 export default class JobSchema extends TimestampSchema {
   /** ID */

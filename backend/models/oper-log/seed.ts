@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
+import type { SeedDefinition } from '@/services/seed'
 
 /** 操作日志表 Seed（无初始数据） */
 export const operLogSeed: SeedDefinition = {

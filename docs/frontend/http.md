@@ -69,16 +69,17 @@ await http.delete('/api/admin/users/1')
 
 ```typescript
 interface ApiResponse<T = any> {
-  code: number       // 0=成功，其他=错误
-  message: string    // 提示消息
-  data?: T           // 数据
-  total?: number     // 分页总数
-  page?: number      // 当前页
-  pageSize?: number  // 每页数量
+  code: number // 0=成功，其他=错误
+  message: string // 提示消息
+  data?: T // 数据
+  total?: number // 分页总数
+  page?: number // 当前页
+  pageSize?: number // 每页数量
 }
 ```
 
 HttpClient 自动处理：
+
 - `code === 0` → 返回 `data`
 - `code === 401` → 清除 token，跳转登录页
 - 其他错误 → 弹出错误提示

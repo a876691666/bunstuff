@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'dict_type'
+
 /** 字典类型表 Schema */
 export default class DictTypeSchema extends TimestampSchema {
   /** ID */

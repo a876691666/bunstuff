@@ -1,17 +1,19 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { staticPlugin } from '@elysiajs/static'
-import { createAdminApi, createApi } from './modules'
+import { createApi } from './core'
 import { openapi } from '@elysiajs/openapi'
 import { mkdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
-import { sessionStore } from '@/modules/auth'
-import { rbacService } from '@/modules/rbac'
-import { dictService, configService, rateLimitRuleService } from '@/modules/system'
-import { rateLimitPlugin } from '@/modules/system/rate-limit/plugin'
-import { jobService } from '@/modules/job'
-import { crudRegistry } from '@/modules/crud'
-import { runSeeds } from '@/modules/seed'
+import * as session from '@/services/session'
+import * as rbacService from '@/services/rbac'
+import * as dictService from '@/services/dict'
+import * as configService from '@/services/sys-config'
+import * as rateLimitService from '@/services/rate-limit'
+import { rateLimitPlugin } from '@/plugins/rate-limit'
+import * as jobService from '@/services/job'
+import { crudRegistry } from '@/services/crud-table'
+import { runSeeds } from '@/core/seed'
 
 // 自动创建必要目录
 const uploadsDir = resolve(process.cwd(), 'uploads')
@@ -27,7 +29,7 @@ const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === 'true' || Bun.argv.includes(
 await runSeeds({ autoRun: SEED_AUTO_RUN || true })
 
 // ===== 阶段2: 初始化所有缓存（基于 seed 后的数据） =====
-await sessionStore.init()
+await session.init()
 
 await rbacService.init()
 console.log('✅ RBAC cache initialized')
@@ -38,7 +40,7 @@ console.log('✅ Dict cache initialized')
 await configService.initCache()
 console.log('✅ Config cache initialized')
 
-await rateLimitRuleService.initCache()
+await rateLimitService.initCache()
 console.log('✅ RateLimit cache initialized')
 
 await crudRegistry.initFromDb()
@@ -47,7 +49,6 @@ await crudRegistry.initFromDb()
 await jobService.start()
 
 const api = createApi()
-const adminApi = createAdminApi()
 
 const app = new Elysia()
   .use(cors())
@@ -134,7 +135,6 @@ const app = new Elysia()
   .use(rateLimitPlugin())
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(api)
-  .use(adminApi)
   .listen(3000)
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)

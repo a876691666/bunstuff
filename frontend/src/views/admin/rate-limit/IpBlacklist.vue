@@ -86,10 +86,8 @@ const columns: DataTableColumns<IpBlacklist> = [
     key: 'source',
     width: 80,
     render: (row) =>
-      h(
-        NTag,
-        { type: row.source === 'auto' ? 'warning' : 'info', size: 'small' },
-        () => (row.source === 'auto' ? '自动' : '手动'),
+      h(NTag, { type: row.source === 'auto' ? 'warning' : 'info', size: 'small' }, () =>
+        row.source === 'auto' ? '自动' : '手动',
       ),
   },
   {
@@ -106,10 +104,8 @@ const columns: DataTableColumns<IpBlacklist> = [
       if (!row.expireAt) return h(NTag, { type: 'error', size: 'small' }, () => '永久')
       const expireDate = new Date(row.expireAt)
       const isExpired = expireDate < new Date()
-      return h(
-        NTag,
-        { type: isExpired ? 'default' : 'warning', size: 'small' },
-        () => (isExpired ? '已过期' : expireDate.toLocaleString()),
+      return h(NTag, { type: isExpired ? 'default' : 'warning', size: 'small' }, () =>
+        isExpired ? '已过期' : expireDate.toLocaleString(),
       )
     },
   },
@@ -139,7 +135,12 @@ const columns: DataTableColumns<IpBlacklist> = [
         row.status === 1
           ? h(
               NButton,
-              { size: 'small', quaternary: true, type: 'success', onClick: () => handleUnblock(row.id) },
+              {
+                size: 'small',
+                quaternary: true,
+                type: 'success',
+                onClick: () => handleUnblock(row.id),
+              },
               () => '解封',
             )
           : null,

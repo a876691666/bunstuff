@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'session'
+
 /** 会话表 Schema */
 export default class SessionSchema extends Schema {
   /** 会话 ID (主键) */

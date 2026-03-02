@@ -39,13 +39,11 @@ const modules = import.meta.glob('../views/**/*.vue')
 // 递归生成路由
 function generateRoutes(menuTree: MenuItem[]): RouteRecordRaw[] {
   return menuTree
-    .filter(menu => menu.type !== 3)  // 排除按钮类型
-    .map(menu => ({
+    .filter((menu) => menu.type !== 3) // 排除按钮类型
+    .map((menu) => ({
       path: menu.path,
       name: menu.name,
-      component: menu.component
-        ? modules[`../views/${menu.component}.vue`]
-        : undefined,
+      component: menu.component ? modules[`../views/${menu.component}.vue`] : undefined,
       redirect: menu.redirect,
       meta: {
         title: menu.name,
@@ -59,8 +57,8 @@ function generateRoutes(menuTree: MenuItem[]): RouteRecordRaw[] {
 // 添加动态路由
 export function addDynamicRoutes(menuTree: MenuItem[]) {
   const routes = generateRoutes(menuTree)
-  routes.forEach(route => {
-    router.addRoute('Layout', route)  // 添加到 Layout 路由下
+  routes.forEach((route) => {
+    router.addRoute('Layout', route) // 添加到 Layout 路由下
   })
 }
 ```
@@ -71,16 +69,16 @@ export function addDynamicRoutes(menuTree: MenuItem[]) {
 interface MenuItem {
   id: number
   parentId: number
-  name: string          // 菜单名称
-  path: string          // 路由路径
-  component: string     // 组件路径（相对于 views/）
-  icon: string          // 图标
-  type: number          // 1=目录 2=菜单 3=按钮
-  visible: number       // 是否显示
-  redirect: string      // 重定向
-  sort: number          // 排序
-  permCode: string      // 权限编码
-  children: MenuItem[]  // 子菜单
+  name: string // 菜单名称
+  path: string // 路由路径
+  component: string // 组件路径（相对于 views/）
+  icon: string // 图标
+  type: number // 1=目录 2=菜单 3=按钮
+  visible: number // 是否显示
+  redirect: string // 重定向
+  sort: number // 排序
+  permCode: string // 权限编码
+  children: MenuItem[] // 子菜单
 }
 ```
 
@@ -89,22 +87,22 @@ interface MenuItem {
 ```typescript
 router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
-  
+
   // 1. 登录页直接放行
   if (to.path === '/login') return true
-  
+
   // 2. 无 Token → 跳转登录
   if (!authStore.token) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
-  
+
   // 3. 未初始化 → 加载用户信息和动态路由
   if (!authStore.initialized) {
     await authStore.init()
     // 重新导航（因为动态路由已添加）
     return { ...to, replace: true }
   }
-  
+
   return true
 })
 ```

@@ -215,7 +215,7 @@ describe('Parser', () => {
     expect(expr?.toString()).toBe("(name = 'test' && age > 18)")
   })
 
-  test('parse literal string comparison: \'get\' == \'get\'', () => {
+  test("parse literal string comparison: 'get' == 'get'", () => {
     const [raw, sql, params] = toMySQL("'get' == 'get'")
     expect(sql).toBe("'get' = 'get'")
     expect(params).toEqual([])
@@ -238,7 +238,7 @@ describe('Parser', () => {
 
   test('parse literal mixed with field conditions', () => {
     const [raw, sql, params] = toMySQL("1 = 1 && name = 'test'")
-    expect(sql).toBe("(1 = 1 AND `name` = ?)")
+    expect(sql).toBe('(1 = 1 AND `name` = ?)')
     expect(params).toEqual(['test'])
     expect(raw).toBe("(1 = 1 AND `name` = 'test')")
   })

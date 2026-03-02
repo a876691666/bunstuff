@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '@/modules/seed'
+import type { SeedDefinition } from '@/services/seed'
 
 /** IP黑名单 Seed（初始为空） */
 export const ipBlacklistSeed: SeedDefinition = {

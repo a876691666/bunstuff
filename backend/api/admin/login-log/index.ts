@@ -1,0 +1,106 @@
+/**
+ * 登录日志管理控制器（管理端）
+ * 从 modules/system/login-log/api_admin.ts 迁移
+ */
+
+import { Elysia } from 'elysia'
+import * as loginLogService from '@/services/login-log'
+import { idParams, query } from '@/packages/route-model'
+import {
+  R,
+  PagedResponse,
+  SuccessResponse,
+  MessageResponse,
+  ErrorResponse,
+} from '@/services/response'
+import { authPlugin } from '@/plugins/auth'
+import { rbacPlugin } from '@/plugins/rbac'
+import { vipPlugin } from '@/plugins/vip'
+import { loginLogPlugin } from '@/plugins/login-log'
+import { operLogPlugin } from '@/plugins/oper-log'
+
+export default new Elysia({ tags: ['管理 - 登录日志'] })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(vipPlugin())
+  .use(loginLogPlugin())
+  .use(operLogPlugin())
+  .get(
+    '/',
+    async (ctx) => {
+      const result = await loginLogService.findAll(ctx.query, ctx)
+      return R.page(result)
+    },
+    {
+      query: query(),
+      response: {
+        200: PagedResponse(
+          loginLogService.getSchema({ exclude: [], timestamps: false }),
+          '登录日志列表',
+        ),
+      },
+      detail: {
+        summary: '获取登录日志列表',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['loginLog:admin:list'] } },
+      },
+    },
+  )
+
+  .get(
+    '/:id',
+    async (ctx) => {
+      const data = await loginLogService.findById(ctx.params.id, ctx)
+      if (!data) return R.notFound('登录日志')
+      return R.ok(data)
+    },
+    {
+      params: idParams({ label: '登录日志ID' }),
+      response: {
+        200: SuccessResponse(loginLogService.getSchema({ exclude: [], timestamps: false })),
+        404: ErrorResponse,
+      },
+      detail: {
+        summary: '获取登录日志详情',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['loginLog:admin:read'] } },
+      },
+    },
+  )
+
+  .delete(
+    '/:id',
+    async (ctx) => {
+      const existing = await loginLogService.findById(ctx.params.id, ctx)
+      if (!existing) return R.notFound('登录日志')
+      await loginLogService.remove(ctx.params.id, ctx)
+      return R.success('删除成功')
+    },
+    {
+      params: idParams({ label: '登录日志ID' }),
+      response: { 200: MessageResponse, 404: ErrorResponse },
+      detail: {
+        summary: '删除登录日志',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['loginLog:admin:delete'] } },
+        operLog: { title: '登录日志', type: 'delete' },
+      },
+    },
+  )
+
+  .delete(
+    '/clear',
+    async () => {
+      await loginLogService.clear()
+      return R.success('清空成功')
+    },
+    {
+      response: { 200: MessageResponse },
+      detail: {
+        summary: '清空登录日志',
+        security: [{ bearerAuth: [] }],
+        rbac: { scope: { permissions: ['loginLog:admin:clear'] } },
+        operLog: { title: '登录日志', type: 'other' },
+      },
+    },
+  )

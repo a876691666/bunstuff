@@ -1,7 +1,6 @@
-import type { SeedDefinition } from '@/modules/seed'
+import type { SeedDefinition } from '@/services/seed'
 import { where } from '@pkg/ssql'
-import PermissionScope from './index'
-import Permission from '../permission'
+import { model } from '@/core/model'
 
 /** 数据过滤规则 Seed */
 export const permissionScopeSeed: SeedDefinition = {
@@ -9,7 +8,7 @@ export const permissionScopeSeed: SeedDefinition = {
   description: '初始化数据过滤规则示例数据',
   async run() {
     // 获取用户列表权限
-    const userListPermission = await Permission.findOne({
+    const userListPermission = await model.permission.findOne({
       where: where().eq('code', 'user:admin:list'),
     })
     if (!userListPermission) {
@@ -38,7 +37,7 @@ export const permissionScopeSeed: SeedDefinition = {
     ]
 
     for (const scope of scopes) {
-      await PermissionScope.create(scope)
+      await model.permission_scope.create(scope)
     }
     console.log(`✅ 已创建 ${scopes.length} 个数据过滤规则示例`)
   },

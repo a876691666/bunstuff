@@ -16,10 +16,7 @@ import type { ColumnDef } from '@/types'
  * 校验一行表单数据是否符合列定义
  * @returns 错误信息字符串，null 表示通过
  */
-export function validateRow(
-  data: Record<string, unknown>,
-  columns: ColumnDef[],
-): string | null {
+export function validateRow(data: Record<string, unknown>, columns: ColumnDef[]): string | null {
   for (const col of columns) {
     if (col.primaryKey && col.autoIncrement) continue
     const val = data[col.name]
@@ -66,7 +63,10 @@ export function validateRow(
  * 根据列定义生成表单的默认值
  * @param mode 'create' 时过滤 showInCreate，'update' 时过滤 showInUpdate
  */
-export function buildFormDefaults(columns: ColumnDef[], mode: 'create' | 'update' = 'create'): Record<string, unknown> {
+export function buildFormDefaults(
+  columns: ColumnDef[],
+  mode: 'create' | 'update' = 'create',
+): Record<string, unknown> {
   const data: Record<string, unknown> = {}
   for (const col of columns) {
     if (col.primaryKey && col.autoIncrement) continue
@@ -76,7 +76,7 @@ export function buildFormDefaults(columns: ColumnDef[], mode: 'create' | 'update
     if (col.default !== undefined && col.default !== null) {
       switch (col.type) {
         case 'boolean':
-          data[col.name] = (col.default === 1 || col.default === true || col.default === '1') ? 1 : 0
+          data[col.name] = col.default === 1 || col.default === true || col.default === '1' ? 1 : 0
           break
         case 'number':
           data[col.name] = Number(col.default)

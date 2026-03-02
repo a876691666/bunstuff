@@ -119,8 +119,6 @@ const dynamicSearchFields = computed<SearchField[]>(() => {
     })
 })
 
-
-
 // 动态表格列
 const dynamicTableColumns = computed<DataTableColumns<Record<string, unknown>>>(() => {
   const cols: DataTableColumns<Record<string, unknown>> = []
@@ -133,22 +131,37 @@ const dynamicTableColumns = computed<DataTableColumns<Record<string, unknown>>>(
       key: col.name,
       width: col.primaryKey ? 60 : col.type === 'string' ? 150 : 100,
       ellipsis: col.type === 'string' ? { tooltip: true } : undefined,
-      render: (col.type === 'boolean' || col.type === 'date')
-        ? (row) => {
-            if (colDef.type === 'boolean') {
-              const v = row[colDef.name]
-              return h(NTag, { type: (v === true || v === 1) ? 'success' : 'default', size: 'small' }, () => formatCellValue(v, colDef))
+      render:
+        col.type === 'boolean' || col.type === 'date'
+          ? (row) => {
+              if (colDef.type === 'boolean') {
+                const v = row[colDef.name]
+                return h(
+                  NTag,
+                  { type: v === true || v === 1 ? 'success' : 'default', size: 'small' },
+                  () => formatCellValue(v, colDef),
+                )
+              }
+              return formatCellValue(row[colDef.name], colDef)
             }
-            return formatCellValue(row[colDef.name], colDef)
-          }
-        : undefined,
+          : undefined,
     })
   }
 
   // 时间戳列（使用 date 格式化）
   const tsCol: ColumnDef = { name: '', type: 'date' }
-  cols.push({ title: '创建时间', key: 'createdAt', width: 170, render: (row) => formatCellValue(row.createdAt, tsCol) })
-  cols.push({ title: '更新时间', key: 'updatedAt', width: 170, render: (row) => formatCellValue(row.updatedAt, tsCol) })
+  cols.push({
+    title: '创建时间',
+    key: 'createdAt',
+    width: 170,
+    render: (row) => formatCellValue(row.createdAt, tsCol),
+  })
+  cols.push({
+    title: '更新时间',
+    key: 'updatedAt',
+    width: 170,
+    render: (row) => formatCellValue(row.updatedAt, tsCol),
+  })
 
   // 操作列
   cols.push({
@@ -280,7 +293,9 @@ function handleEdit(row: Record<string, unknown>) {
   for (const col of currentColumns.value) {
     if (col.primaryKey && col.autoIncrement) continue
     if (col.showInUpdate === false) continue
-    data[col.name] = row[col.name] ?? (col.type === 'boolean' ? 0 : col.type === 'number' ? 0 : col.type === 'date' ? null : '')
+    data[col.name] =
+      row[col.name] ??
+      (col.type === 'boolean' ? 0 : col.type === 'number' ? 0 : col.type === 'date' ? null : '')
   }
   formData.value = data
   modalVisible.value = true
@@ -394,14 +409,14 @@ async function handleDelete(id: number) {
             <!-- 数字类型 -->
             <NInputNumber
               v-if="col.type === 'number'"
-              v-model:value="(formData[col.name] as number)"
+              v-model:value="formData[col.name] as number"
               :placeholder="`请输入${col.description || col.name}`"
               style="width: 100%"
             />
             <!-- 布尔类型（后端存储为 0/1） -->
             <NSelect
               v-else-if="col.type === 'boolean'"
-              v-model:value="(formData[col.name] as number)"
+              v-model:value="formData[col.name] as number"
               :options="[
                 { label: '是', value: 1 },
                 { label: '否', value: 0 },
@@ -415,12 +430,16 @@ async function handleDelete(id: number) {
               :placeholder="`请选择${col.description || col.name}`"
               style="width: 100%"
               clearable
-              @update:value="(v: number | null) => { formData[col.name] = tsToDateStr(v) }"
+              @update:value="
+                (v: number | null) => {
+                  formData[col.name] = tsToDateStr(v)
+                }
+              "
             />
             <!-- 字符串 / 默认 -->
             <NInput
               v-else
-              v-model:value="(formData[col.name] as string)"
+              v-model:value="formData[col.name] as string"
               :placeholder="`请输入${col.description || col.name}`"
             />
           </NFormItem>

@@ -20,15 +20,15 @@ const useAuthStore = defineStore('auth', {
 
 ### 核心方法
 
-| 方法 | 说明 |
-|------|------|
-| `login(username, password)` | 登录，保存 token |
-| `logout()` | 登出，清除状态 |
-| `register(data)` | 注册 |
-| `init()` | 初始化（加载用户信息+权限+菜单+动态路由） |
-| `fetchUserInfo()` | 获取当前用户信息 |
-| `fetchPermissions()` | 获取权限列表 |
-| `fetchMenuTree()` | 获取菜单树 |
+| 方法                        | 说明                                      |
+| --------------------------- | ----------------------------------------- |
+| `login(username, password)` | 登录，保存 token                          |
+| `logout()`                  | 登出，清除状态                            |
+| `register(data)`            | 注册                                      |
+| `init()`                    | 初始化（加载用户信息+权限+菜单+动态路由） |
+| `fetchUserInfo()`           | 获取当前用户信息                          |
+| `fetchPermissions()`        | 获取权限列表                              |
+| `fetchMenuTree()`           | 获取菜单树                                |
 
 ### 权限检查
 
@@ -72,8 +72,6 @@ const isAdmin = computed(() => authStore.hasPermission('admin'))
 
 <template>
   <span>{{ authStore.userInfo?.nickname }}</span>
-  <button v-if="authStore.hasPermission('user:admin:create')">
-    新增用户
-  </button>
+  <button v-if="authStore.hasPermission('user:admin:create')">新增用户</button>
 </template>
 ```

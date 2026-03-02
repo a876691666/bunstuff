@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'crud_table'
+
 /** CRUD 表配置 Schema */
 export default class CrudTableSchema extends TimestampSchema {
   /** ID */

@@ -16,49 +16,49 @@
 
 ### 比较运算符
 
-| SSQL | SQL | 示例 |
-|------|-----|------|
-| `=` | `=` | `status = 1` |
-| `!=` | `!=` | `status != 0` |
-| `>` | `>` | `age > 18` |
-| `>=` | `>=` | `age >= 18` |
-| `<` | `<` | `price < 100` |
+| SSQL | SQL  | 示例           |
+| ---- | ---- | -------------- |
+| `=`  | `=`  | `status = 1`   |
+| `!=` | `!=` | `status != 0`  |
+| `>`  | `>`  | `age > 18`     |
+| `>=` | `>=` | `age >= 18`    |
+| `<`  | `<`  | `price < 100`  |
 | `<=` | `<=` | `price <= 100` |
 
 ### 模糊匹配
 
-| SSQL | SQL | 示例 |
-|------|-----|------|
-| `~` | `LIKE` | `name ~ 'test'` |
+| SSQL | SQL        | 示例              |
+| ---- | ---------- | ----------------- |
+| `~`  | `LIKE`     | `name ~ 'test'`   |
 | `!~` | `NOT LIKE` | `name !~ 'admin'` |
 
 ### 集合运算
 
-| SSQL | SQL | 示例 |
-|------|-----|------|
-| `?=` | `IN` | `id ?= [1,2,3]` |
+| SSQL  | SQL      | 示例             |
+| ----- | -------- | ---------------- |
+| `?=`  | `IN`     | `id ?= [1,2,3]`  |
 | `!?=` | `NOT IN` | `id !?= [4,5,6]` |
 
 ### 空值判断
 
-| SSQL | SQL | 示例 |
-|------|-----|------|
-| `?null` | `IS NULL` | `email ?null` |
+| SSQL     | SQL           | 示例           |
+| -------- | ------------- | -------------- |
+| `?null`  | `IS NULL`     | `email ?null`  |
 | `!?null` | `IS NOT NULL` | `email !?null` |
 
 ### 范围
 
-| SSQL | SQL | 示例 |
-|------|-----|------|
+| SSQL | SQL       | 示例             |
+| ---- | --------- | ---------------- |
 | `><` | `BETWEEN` | `age >< [18,60]` |
 
 ### 逻辑运算
 
-| SSQL | SQL | 示例 |
-|------|-----|------|
-| `&&` | `AND` | `a = 1 && b = 2` |
-| `\|\|` | `OR` | `a = 1 \|\| b = 2` |
-| `()` | 分组 | `(a = 1 \|\| b = 2) && c = 3` |
+| SSQL   | SQL   | 示例                          |
+| ------ | ----- | ----------------------------- |
+| `&&`   | `AND` | `a = 1 && b = 2`              |
+| `\|\|` | `OR`  | `a = 1 \|\| b = 2`            |
+| `()`   | 分组  | `(a = 1 \|\| b = 2) && c = 3` |
 
 ## 后端使用
 
@@ -118,12 +118,12 @@ const result = await User.findMany(`username = 'admin'`)
 import { SSQLBuilder } from '@/utils/ssql'
 
 const filter = new SSQLBuilder()
-  .eq('status', 1)           // status = 1
-  .like('name', 'test')      // name ~ 'test'
-  .gt('age', 18)             // age > 18
-  .in('roleId', [1, 2])      // roleId ?= [1,2]
+  .eq('status', 1) // status = 1
+  .like('name', 'test') // name ~ 'test'
+  .gt('age', 18) // age > 18
+  .in('roleId', [1, 2]) // roleId ?= [1,2]
   .between('price', 10, 100) // price >< [10,100]
-  .isNull('deletedAt')       // deletedAt ?null
+  .isNull('deletedAt') // deletedAt ?null
   .build()
 
 // 结果: "status = 1 && name ~ 'test' && age > 18 && roleId ?= [1,2] && price >< [10,100] && deletedAt ?null"
@@ -135,8 +135,8 @@ const filter = new SSQLBuilder()
 
 ```typescript
 handleSearch({
-  username: 'admin',   // → username ~ 'admin'
-  status: 1,           // → status = 1
+  username: 'admin', // → username ~ 'admin'
+  status: 1, // → status = 1
 })
 // 自动构建: username ~ 'admin' && status = 1
 ```
@@ -158,11 +158,11 @@ LogicExpr {
 
 ### 节点类型
 
-| 类型 | 说明 |
-|------|------|
-| `FieldExpr` | 字段比较表达式 |
-| `LogicExpr` | 逻辑运算（AND/OR） |
-| `GroupExpr` | 括号分组 |
+| 类型          | 说明                 |
+| ------------- | -------------------- |
+| `FieldExpr`   | 字段比较表达式       |
+| `LogicExpr`   | 逻辑运算（AND/OR）   |
+| `GroupExpr`   | 括号分组             |
 | `LiteralExpr` | 字面量（true/false） |
 
 ## 编译流程

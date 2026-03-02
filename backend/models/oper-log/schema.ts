@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'oper_log'
+
 /** 操作日志表 Schema */
 export default class OperLogSchema extends Schema {
   /** ID */

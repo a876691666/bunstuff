@@ -236,25 +236,39 @@ export class LiteralExpr {
 
   private opStr(): string {
     switch (this.op) {
-      case Op.Eq: return '='
-      case Op.Neq: return '!='
-      case Op.Gt: return '>'
-      case Op.Gte: return '>='
-      case Op.Lt: return '<'
-      case Op.Lte: return '<='
-      default: return '='
+      case Op.Eq:
+        return '='
+      case Op.Neq:
+        return '!='
+      case Op.Gt:
+        return '>'
+      case Op.Gte:
+        return '>='
+      case Op.Lt:
+        return '<'
+      case Op.Lte:
+        return '<='
+      default:
+        return '='
     }
   }
 
   private opToSQL(): string {
     switch (this.op) {
-      case Op.Eq: return '='
-      case Op.Neq: return '!='
-      case Op.Gt: return '>'
-      case Op.Gte: return '>='
-      case Op.Lt: return '<'
-      case Op.Lte: return '<='
-      default: return '='
+      case Op.Eq:
+        return '='
+      case Op.Neq:
+        return '!='
+      case Op.Gt:
+        return '>'
+      case Op.Gte:
+        return '>='
+      case Op.Lt:
+        return '<'
+      case Op.Lte:
+        return '<='
+      default:
+        return '='
     }
   }
 }

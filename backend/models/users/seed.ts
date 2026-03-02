@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed'
-import User from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 /** 默认用户数据 */
 const defaultUsers = [
@@ -41,7 +41,7 @@ export const userSeed: SeedDefinition = {
   description: '初始化默认用户数据',
   async run() {
     for (const user of defaultUsers) {
-      await User.create(user)
+      await model.users.create(user)
     }
     console.log(`✅ 已创建 ${defaultUsers.length} 个默认用户`)
   },

@@ -1,8 +1,6 @@
-import type { SeedDefinition } from '@/modules/seed'
+import type { SeedDefinition } from '@/services/seed'
 import { where } from '@pkg/ssql'
-import RolePermission from './index'
-import Role from '../role'
-import Permission from '../permission'
+import { model } from '@/core/model'
 
 /** 角色权限关联 Seed */
 export const rolePermissionSeed: SeedDefinition = {
@@ -10,30 +8,30 @@ export const rolePermissionSeed: SeedDefinition = {
   description: '初始化角色权限关联数据（超级管理员拥有所有权限）',
   async run() {
     // 获取超级管理员角色
-    const superAdminRole = await Role.findOne({ where: where().eq('code', 'super-admin') })
+    const superAdminRole = await model.role.findOne({ where: where().eq('code', 'super-admin') })
     if (!superAdminRole) {
       throw new Error('超级管理员角色不存在，请先执行 role-default seed')
     }
 
     // 获取管理员角色
-    const adminRole = await Role.findOne({ where: where().eq('code', 'admin') })
+    const adminRole = await model.role.findOne({ where: where().eq('code', 'admin') })
     if (!adminRole) {
       throw new Error('管理员角色不存在，请先执行 role-default seed')
     }
 
     // 获取普通用户角色
-    const userRole = await Role.findOne({ where: where().eq('code', 'user') })
+    const userRole = await model.role.findOne({ where: where().eq('code', 'user') })
     if (!userRole) {
       throw new Error('普通用户角色不存在，请先执行 role-default seed')
     }
 
     // 获取所有权限
-    const allPermissions = await Permission.findMany({})
+    const allPermissions = await model.permission.findMany({})
 
     // 超级管理员拥有所有权限
     let count = 0
     for (const permission of allPermissions) {
-      await RolePermission.create({
+      await model.role_permission.create({
         roleId: superAdminRole.id,
         permissionId: permission.id,
       })
@@ -45,7 +43,7 @@ export const rolePermissionSeed: SeedDefinition = {
     const adminPermissions = allPermissions.filter((p) => !p.code.startsWith('seed:'))
     count = 0
     for (const permission of adminPermissions) {
-      await RolePermission.create({
+      await model.role_permission.create({
         roleId: adminRole.id,
         permissionId: permission.id,
       })
@@ -59,7 +57,7 @@ export const rolePermissionSeed: SeedDefinition = {
     )
     count = 0
     for (const permission of userPermissions) {
-      await RolePermission.create({
+      await model.role_permission.create({
         roleId: userRole.id,
         permissionId: permission.id,
       })

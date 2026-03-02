@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'menu'
+
 /** 菜单表 Schema (树形结构) */
 export default class MenuSchema extends TimestampSchema {
   /** 菜单 ID */

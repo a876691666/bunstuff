@@ -124,7 +124,9 @@ async function testLoginRateLimit() {
             ? `${colors.red}${r.status}${colors.reset}`
             : `${colors.dim}${r.status}${colors.reset}`
 
-    log(`  [${String(i).padStart(2)}] ${statusIcon} ${r.ms}ms ${colors.dim}${r.message || ''}${colors.reset}`)
+    log(
+      `  [${String(i).padStart(2)}] ${statusIcon} ${r.ms}ms ${colors.dim}${r.message || ''}${colors.reset}`,
+    )
   }
 
   const s = summarize(results, '登录限流')
@@ -160,7 +162,9 @@ async function testRegisterRateLimit() {
           ? `${colors.red}${r.status}${colors.reset}`
           : `${colors.green}${r.status}${colors.reset}`
 
-    log(`  [${String(i).padStart(2)}] ${statusIcon} ${r.ms}ms ${colors.dim}${r.message || ''}${colors.reset}`)
+    log(
+      `  [${String(i).padStart(2)}] ${statusIcon} ${r.ms}ms ${colors.dim}${r.message || ''}${colors.reset}`,
+    )
   }
 
   const s = summarize(results, '注册限流')
@@ -181,9 +185,7 @@ async function testAdminConcurrent() {
   info('同时发送30个GET /api/admin/rate-limit-rule, 应有部分被限流')
 
   // 并发发送30个请求
-  const promises = Array.from({ length: 30 }, (_, i) =>
-    req('GET', '/api/admin/rate-limit-rule'),
-  )
+  const promises = Array.from({ length: 30 }, (_, i) => req('GET', '/api/admin/rate-limit-rule'))
 
   const results = await Promise.all(promises)
 

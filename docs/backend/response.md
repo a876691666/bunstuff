@@ -43,19 +43,19 @@
 ### 成功类
 
 ```typescript
-R.ok(data)              // { code: 0, message: '操作成功', data }
-R.success('创建成功')    // { code: 0, message: '创建成功' }
-R.page(pagedResult)     // { code: 0, message: '操作成功', data, total, page, pageSize }
+R.ok(data) // { code: 0, message: '操作成功', data }
+R.success('创建成功') // { code: 0, message: '创建成功' }
+R.page(pagedResult) // { code: 0, message: '操作成功', data, total, page, pageSize }
 ```
 
 ### 错误类
 
 ```typescript
-R.badRequest('参数错误')  // { code: 400, message: '参数错误' }
-R.unauthorized()         // { code: 401, message: '未认证' }
-R.forbidden()            // { code: 403, message: '无权限' }
-R.notFound('用户')       // { code: 404, message: '用户不存在' }
-R.serverError()          // { code: 500, message: '服务器错误' }
+R.badRequest('参数错误') // { code: 400, message: '参数错误' }
+R.unauthorized() // { code: 401, message: '未认证' }
+R.forbidden() // { code: 403, message: '无权限' }
+R.notFound('用户') // { code: 404, message: '用户不存在' }
+R.serverError() // { code: 500, message: '服务器错误' }
 ```
 
 ## Schema 类型

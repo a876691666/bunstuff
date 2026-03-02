@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'role_permission'
+
 /** 角色权限关联表 Schema */
 export default class RolePermissionSchema extends Schema {
   /** 关联 ID */

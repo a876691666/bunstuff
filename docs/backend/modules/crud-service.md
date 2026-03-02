@@ -19,7 +19,7 @@ class MyService extends CrudService<typeof MyModel.schemaInstance> {
   constructor() {
     super(MyModel)
   }
-  
+
   // 可添加自定义方法
   async findByName(name: string) {
     return this.model.findOne({ name })
@@ -38,11 +38,14 @@ export const myService = new MyService()
 分页查询，支持 SSQL 过滤和数据权限：
 
 ```typescript
-const result = await service.findAll({
-  page: 1,
-  pageSize: 10,
-  filter: 'status = 1 && name ~ "test"',
-}, ctx)
+const result = await service.findAll(
+  {
+    page: 1,
+    pageSize: 10,
+    filter: 'status = 1 && name ~ "test"',
+  },
+  ctx,
+)
 
 // 返回: { data: Row[], total: number, page: number, pageSize: number }
 ```
@@ -95,10 +98,13 @@ const found = await service.exists({ username: 'admin' }, ctx)
 创建记录：
 
 ```typescript
-const row = await service.create({
-  username: 'test',
-  email: 'test@example.com',
-}, ctx)
+const row = await service.create(
+  {
+    username: 'test',
+    email: 'test@example.com',
+  },
+  ctx,
+)
 // 返回: Row | null（创建后的完整记录）
 ```
 
@@ -107,9 +113,13 @@ const row = await service.create({
 更新单条记录：
 
 ```typescript
-const row = await service.update(1, {
-  nickname: '新昵称',
-}, ctx)
+const row = await service.update(
+  1,
+  {
+    nickname: '新昵称',
+  },
+  ctx,
+)
 // 返回: Row | null
 ```
 
@@ -119,9 +129,9 @@ const row = await service.update(1, {
 
 ```typescript
 const count = await service.updateMany(
-  { status: 0 },    // 条件
-  { status: 1 },    // 更新数据
-  ctx
+  { status: 0 }, // 条件
+  { status: 1 }, // 更新数据
+  ctx,
 )
 // 返回: number（更新行数）
 ```
@@ -196,7 +206,13 @@ import { authPlugin } from '@/modules/auth/main/plugin'
 import { rbacPlugin } from '@/modules/rbac/main/plugin'
 import { operLogPlugin } from '@/modules/system/oper-log/plugin'
 import { query, idParams } from '@/packages/route-model'
-import { R, PagedResponse, SuccessResponse, ErrorResponse, MessageResponse } from '@/modules/response'
+import {
+  R,
+  PagedResponse,
+  SuccessResponse,
+  ErrorResponse,
+  MessageResponse,
+} from '@/modules/response'
 import Model from '@/models/my-model'
 import { myService } from './service'
 
@@ -213,14 +229,18 @@ export const myAdminApi = new Elysia({ prefix: '/my-model', tags: ['我的模块
   })
 
   // 详情
-  .get('/:id', async (ctx) => {
-    const data = await myService.findById(ctx.params.id, ctx)
-    return data ? R.ok(data) : R.notFound('数据')
-  }, {
-    params: idParams(),
-    response: { 200: SuccessResponse(Model.getSchema()), 404: ErrorResponse },
-    detail: { rbac: { scope: { permissions: ['my-model:admin:read'] } } },
-  })
+  .get(
+    '/:id',
+    async (ctx) => {
+      const data = await myService.findById(ctx.params.id, ctx)
+      return data ? R.ok(data) : R.notFound('数据')
+    },
+    {
+      params: idParams(),
+      response: { 200: SuccessResponse(Model.getSchema()), 404: ErrorResponse },
+      detail: { rbac: { scope: { permissions: ['my-model:admin:read'] } } },
+    },
+  )
 
   // 创建
   .post('/', async (ctx) => R.ok(await myService.create(ctx.body, ctx)), {
@@ -233,29 +253,38 @@ export const myAdminApi = new Elysia({ prefix: '/my-model', tags: ['我的模块
   })
 
   // 更新
-  .put('/:id', async (ctx) => {
-    const r = await myService.update(ctx.params.id, ctx.body, ctx)
-    return r ? R.ok(r) : R.notFound('数据')
-  }, {
-    params: idParams(),
-    body: Model.getSchema({ exclude: ['id'], partial: true }),
-    response: { 200: SuccessResponse(Model.getSchema()), 404: ErrorResponse },
-    detail: {
-      rbac: { scope: { permissions: ['my-model:admin:update'] } },
-      operLog: { title: '我的模块', type: 'update' },
+  .put(
+    '/:id',
+    async (ctx) => {
+      const r = await myService.update(ctx.params.id, ctx.body, ctx)
+      return r ? R.ok(r) : R.notFound('数据')
     },
-  })
+    {
+      params: idParams(),
+      body: Model.getSchema({ exclude: ['id'], partial: true }),
+      response: { 200: SuccessResponse(Model.getSchema()), 404: ErrorResponse },
+      detail: {
+        rbac: { scope: { permissions: ['my-model:admin:update'] } },
+        operLog: { title: '我的模块', type: 'update' },
+      },
+    },
+  )
 
   // 删除
-  .delete('/:id', async (ctx) => {
-    return (await myService.delete(ctx.params.id, ctx))
-      ? R.success('删除成功') : R.notFound('数据')
-  }, {
-    params: idParams(),
-    response: { 200: MessageResponse, 404: ErrorResponse },
-    detail: {
-      rbac: { scope: { permissions: ['my-model:admin:delete'] } },
-      operLog: { title: '我的模块', type: 'delete' },
+  .delete(
+    '/:id',
+    async (ctx) => {
+      return (await myService.delete(ctx.params.id, ctx))
+        ? R.success('删除成功')
+        : R.notFound('数据')
     },
-  })
+    {
+      params: idParams(),
+      response: { 200: MessageResponse, 404: ErrorResponse },
+      detail: {
+        rbac: { scope: { permissions: ['my-model:admin:delete'] } },
+        operLog: { title: '我的模块', type: 'delete' },
+      },
+    },
+  )
 ```

@@ -23,28 +23,28 @@ const api = new Elysia()
 
 ### 注入方法
 
-| 方法 | 说明 |
-|------|------|
-| `getFile(id)` | 获取文件信息 |
-| `getFileContent(id)` | 获取文件内容 |
-| `getFileStream(id)` | 获取文件流 |
-| `getFileUrl(id)` | 获取文件访问 URL |
-| `uploadLocal(file)` | 上传到本地存储 |
+| 方法                 | 说明             |
+| -------------------- | ---------------- |
+| `getFile(id)`        | 获取文件信息     |
+| `getFileContent(id)` | 获取文件内容     |
+| `getFileStream(id)`  | 获取文件流       |
+| `getFileUrl(id)`     | 获取文件访问 URL |
+| `uploadLocal(file)`  | 上传到本地存储   |
 
 ## SysFile 模型
 
-| 字段 | 说明 |
-|------|------|
-| originalName | 原始文件名 |
-| storageName | 存储文件名 |
-| storagePath | 存储路径 |
-| size | 文件大小 |
-| mimeType | MIME 类型 |
-| extension | 文件扩展名 |
-| storageType | 存储类型（local/s3） |
-| s3Bucket | S3 桶名 |
-| uploadBy | 上传者 ID |
-| md5 | 文件 MD5 |
+| 字段         | 说明                 |
+| ------------ | -------------------- |
+| originalName | 原始文件名           |
+| storageName  | 存储文件名           |
+| storagePath  | 存储路径             |
+| size         | 文件大小             |
+| mimeType     | MIME 类型            |
+| extension    | 文件扩展名           |
+| storageType  | 存储类型（local/s3） |
+| s3Bucket     | S3 桶名              |
+| uploadBy     | 上传者 ID            |
+| md5          | 文件 MD5             |
 
 ## 存储策略
 
@@ -68,14 +68,14 @@ uploads/
 
 ### 客户端
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
+| 方法 | 路径               | 说明     |
+| ---- | ------------------ | -------- |
 | POST | `/api/file/upload` | 上传文件 |
-| GET | `/api/file/:id` | 下载文件 |
+| GET  | `/api/file/:id`    | 下载文件 |
 
 ### 管理端
 
-| 方法 | 路径 | 权限 | 说明 |
-|------|------|------|------|
-| GET | `/api/admin/file` | `file:admin:list` | 文件列表 |
+| 方法   | 路径                  | 权限                | 说明     |
+| ------ | --------------------- | ------------------- | -------- |
+| GET    | `/api/admin/file`     | `file:admin:list`   | 文件列表 |
 | DELETE | `/api/admin/file/:id` | `file:admin:delete` | 删除文件 |

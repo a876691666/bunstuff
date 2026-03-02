@@ -24,7 +24,7 @@ jobService.registerCron({
   name: '数据清理',
   group: 'system',
   handler: 'myHandler',
-  cron: '0 2 * * *',      // 每天凌晨2点
+  cron: '0 2 * * *', // 每天凌晨2点
   params: { days: 30 },
 })
 ```
@@ -43,14 +43,14 @@ jobService.registerCron({
 
 ### Job（任务）
 
-| 字段 | 说明 |
-|------|------|
-| name | 任务名称 |
-| group | 任务分组 |
-| handler | 处理函数名 |
-| cron | Cron 表达式 |
-| params | 参数（JSON） |
-| status | 状态：1=运行 0=停止 |
+| 字段    | 说明                |
+| ------- | ------------------- |
+| name    | 任务名称            |
+| group   | 任务分组            |
+| handler | 处理函数名          |
+| cron    | Cron 表达式         |
+| params  | 参数（JSON）        |
+| status  | 状态：1=运行 0=停止 |
 
 ### JobLog（任务日志）
 
@@ -71,24 +71,24 @@ jobService.registerCron({
 
 常用示例：
 
-| 表达式 | 说明 |
-|--------|------|
-| `* * * * *` | 每分钟 |
-| `0 * * * *` | 每小时 |
-| `0 0 * * *` | 每天午夜 |
+| 表达式      | 说明        |
+| ----------- | ----------- |
+| `* * * * *` | 每分钟      |
+| `0 * * * *` | 每小时      |
+| `0 0 * * *` | 每天午夜    |
 | `0 2 * * *` | 每天凌晨2点 |
-| `0 0 * * 1` | 每周一午夜 |
+| `0 0 * * 1` | 每周一午夜  |
 | `0 0 1 * *` | 每月1日午夜 |
 
 ## 管理端 API
 
-| 方法 | 路径 | 权限 | 说明 |
-|------|------|------|------|
-| GET | `/api/admin/job` | `job:admin:list` | 任务列表 |
-| POST | `/api/admin/job` | `job:admin:create` | 创建任务 |
-| PUT | `/api/admin/job/:id` | `job:admin:update` | 更新任务 |
-| DELETE | `/api/admin/job/:id` | `job:admin:delete` | 删除任务 |
-| POST | `/api/admin/job/:id/run` | `job:admin:run` | 立即执行 |
-| POST | `/api/admin/job/:id/pause` | `job:admin:pause` | 暂停任务 |
-| POST | `/api/admin/job/:id/resume` | `job:admin:resume` | 恢复任务 |
-| GET | `/api/admin/job-log` | `job-log:admin:list` | 执行日志 |
+| 方法   | 路径                        | 权限                 | 说明     |
+| ------ | --------------------------- | -------------------- | -------- |
+| GET    | `/api/admin/job`            | `job:admin:list`     | 任务列表 |
+| POST   | `/api/admin/job`            | `job:admin:create`   | 创建任务 |
+| PUT    | `/api/admin/job/:id`        | `job:admin:update`   | 更新任务 |
+| DELETE | `/api/admin/job/:id`        | `job:admin:delete`   | 删除任务 |
+| POST   | `/api/admin/job/:id/run`    | `job:admin:run`      | 立即执行 |
+| POST   | `/api/admin/job/:id/pause`  | `job:admin:pause`    | 暂停任务 |
+| POST   | `/api/admin/job/:id/resume` | `job:admin:resume`   | 恢复任务 |
+| GET    | `/api/admin/job-log`        | `job-log:admin:list` | 执行日志 |

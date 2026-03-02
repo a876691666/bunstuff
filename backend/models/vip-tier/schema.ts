@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'vip_tier'
+
 /** VIP 等级表 Schema */
 export default class VipTierSchema extends TimestampSchema {
   /** VIP 等级 ID */

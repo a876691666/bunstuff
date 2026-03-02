@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'permission_scope'
+
 /** 数据过滤规则表 Schema */
 export default class PermissionScopeSchema extends TimestampSchema {
   /** 规则 ID */

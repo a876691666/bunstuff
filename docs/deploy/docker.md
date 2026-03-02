@@ -15,6 +15,7 @@ bun run build-docker.ts
 ```
 
 脚本会自动：
+
 1. 编译前端（frontend + client）
 2. 构建 Docker 镜像
 3. 导出镜像 tar 文件
@@ -65,14 +66,14 @@ services:
   app:
     image: bunstuff:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
-      - ./frontend:/app/frontend:ro    # 管理端静态文件
-      - ./client:/app/client:ro        # 客户端静态文件
-      - ./data:/app/data               # SQLite 数据库
-      - ./uploads:/app/uploads         # 上传文件
+      - ./frontend:/app/frontend:ro # 管理端静态文件
+      - ./client:/app/client:ro # 客户端静态文件
+      - ./data:/app/data # SQLite 数据库
+      - ./uploads:/app/uploads # 上传文件
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -126,12 +127,12 @@ docker compose up -d
 
 ## 卷挂载说明
 
-| 卷路径 | 容器路径 | 模式 | 说明 |
-|--------|---------|------|------|
-| `./frontend` | `/app/frontend` | 只读 | 管理端 SPA |
-| `./client` | `/app/client` | 只读 | 客户端 SPA |
-| `./data` | `/app/data` | 读写 | SQLite 数据库 |
-| `./uploads` | `/app/uploads` | 读写 | 上传文件 |
+| 卷路径       | 容器路径        | 模式 | 说明          |
+| ------------ | --------------- | ---- | ------------- |
+| `./frontend` | `/app/frontend` | 只读 | 管理端 SPA    |
+| `./client`   | `/app/client`   | 只读 | 客户端 SPA    |
+| `./data`     | `/app/data`     | 读写 | SQLite 数据库 |
+| `./uploads`  | `/app/uploads`  | 读写 | 上传文件      |
 
 ## 反向代理（Nginx）
 
@@ -146,7 +147,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # SSE 支持
         proxy_set_header Connection '';
         proxy_http_version 1.1;

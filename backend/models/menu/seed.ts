@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed'
-import Menu from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 /** 默认菜单数据 - ID 硬编码确保父子关系正确 */
 const defaultMenus = [
@@ -545,7 +545,7 @@ export const menuSeed: SeedDefinition = {
   description: '初始化默认菜单数据',
   async run() {
     for (const menu of defaultMenus) {
-      await Menu.create(menu)
+      await model.menu.create(menu)
     }
     console.log(`✅ 已创建 ${defaultMenus.length} 个默认菜单`)
   },

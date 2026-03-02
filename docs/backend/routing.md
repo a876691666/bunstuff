@@ -8,37 +8,37 @@
 // 客户端路由 — /api
 export function createApi() {
   return new Elysia({ prefix: '/api' })
-    .use(authClientApi)      // /api/login, /api/register, /api/logout, /api/me
-    .use(rbacClientApi)      // /api/rbac/permissions, /api/rbac/menus
-    .use(dictClientApi)      // /api/dict/*
-    .use(configClientApi)    // /api/config/*
-    .use(noticeClientApi)    // /api/notice/*
-    .use(fileClientApi)      // /api/file/*
-    .use(crudClientApi)      // /api/crud/:tableName
+    .use(authClientApi) // /api/login, /api/register, /api/logout, /api/me
+    .use(rbacClientApi) // /api/rbac/permissions, /api/rbac/menus
+    .use(dictClientApi) // /api/dict/*
+    .use(configClientApi) // /api/config/*
+    .use(noticeClientApi) // /api/notice/*
+    .use(fileClientApi) // /api/file/*
+    .use(crudClientApi) // /api/crud/:tableName
 }
 
 // 管理端路由 — /api/admin
 export function createAdminApi() {
   return new Elysia({ prefix: '/api/admin' })
-    .use(authAdminApi)       // /api/admin/stats, sessions, kick
-    .use(userAdminApi)       // /api/admin/users
-    .use(roleAdminApi)       // /api/admin/role
-    .use(menuAdminApi)       // /api/admin/menu
+    .use(authAdminApi) // /api/admin/stats, sessions, kick
+    .use(userAdminApi) // /api/admin/users
+    .use(roleAdminApi) // /api/admin/role
+    .use(menuAdminApi) // /api/admin/menu
     .use(permissionAdminApi) // /api/admin/permission
-    .use(permScopeAdminApi)  // /api/admin/permission-scope
-    .use(rolePermAdminApi)   // /api/admin/role-permission
-    .use(roleMenuAdminApi)   // /api/admin/role-menu
-    .use(dictAdminApi)       // /api/admin/dict-type, dict-data
-    .use(configAdminApi)     // /api/admin/config
-    .use(fileAdminApi)       // /api/admin/file
-    .use(noticeAdminApi)     // /api/admin/notice
-    .use(jobAdminApi)        // /api/admin/job
-    .use(loginLogAdminApi)   // /api/admin/login-log
-    .use(operLogAdminApi)    // /api/admin/oper-log
-    .use(rateLimitAdminApi)  // /api/admin/rate-limit
-    .use(crudAdminApi)       // /api/admin/crud-table
-    .use(seedAdminApi)       // /api/admin/seed
-    .use(vipAdminApi)        // /api/admin/vip
+    .use(permScopeAdminApi) // /api/admin/permission-scope
+    .use(rolePermAdminApi) // /api/admin/role-permission
+    .use(roleMenuAdminApi) // /api/admin/role-menu
+    .use(dictAdminApi) // /api/admin/dict-type, dict-data
+    .use(configAdminApi) // /api/admin/config
+    .use(fileAdminApi) // /api/admin/file
+    .use(noticeAdminApi) // /api/admin/notice
+    .use(jobAdminApi) // /api/admin/job
+    .use(loginLogAdminApi) // /api/admin/login-log
+    .use(operLogAdminApi) // /api/admin/oper-log
+    .use(rateLimitAdminApi) // /api/admin/rate-limit
+    .use(crudAdminApi) // /api/admin/crud-table
+    .use(seedAdminApi) // /api/admin/seed
+    .use(vipAdminApi) // /api/admin/vip
 }
 ```
 
@@ -93,11 +93,11 @@ export function createAdminApi() {
 
 除 API 路由外，后端还提供静态文件服务：
 
-| 路径 | 文件源 | 说明 |
-|------|--------|------|
-| `/` | `client/` 或 `frontend/client/` | 客户端 SPA |
-| `/_admin` | `frontend/` 或 `frontend/frontend/` | 管理端 SPA |
-| `/uploads/*` | `uploads/` | 上传文件 |
+| 路径         | 文件源                              | 说明       |
+| ------------ | ----------------------------------- | ---------- |
+| `/`          | `client/` 或 `frontend/client/`     | 客户端 SPA |
+| `/_admin`    | `frontend/` 或 `frontend/frontend/` | 管理端 SPA |
+| `/uploads/*` | `uploads/`                          | 上传文件   |
 
 ::: tip SPA 路由回退
 所有未匹配的路径（除 `/api` 外）都会回退到对应 SPA 的 `index.html`，交由前端路由处理。

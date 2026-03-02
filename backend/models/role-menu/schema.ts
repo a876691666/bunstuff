@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'role_menu'
+
 /** 角色菜单关联表 Schema */
 export default class RoleMenuSchema extends Schema {
   /** 关联 ID */

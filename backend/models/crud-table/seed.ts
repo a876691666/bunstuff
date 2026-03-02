@@ -1,14 +1,14 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
-import CrudTable from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 export const crudTableSeed: SeedDefinition = {
   name: 'crud-table-init',
   description: '初始化示例 CRUD 表配置',
   async run() {
-    const existing = await CrudTable.findOne({ where: `tableName = 'example'` })
+    const existing = await model.crud_table.findOne({ where: `tableName = 'example'` })
     if (existing) return
 
-    await CrudTable.create({
+    await model.crud_table.create({
       tableName: 'example',
       displayName: '示例表',
       columns: JSON.stringify([

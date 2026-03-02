@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'login_log'
+
 /** 登录日志表 Schema */
 export default class LoginLogSchema extends Schema {
   /** ID */

@@ -30,15 +30,14 @@
 - **端到端类型安全**：从路由定义到响应类型完全推导
 
 ```typescript
-new Elysia()
-  .get('/users', () => userService.findAll(), {
-    query: t.Object({ page: t.Number() }),
-    response: { 200: PagedResponse(UserSchema) },
-    detail: {
-      tags: ['用户管理'],
-      rbac: { scope: { permissions: ['user:list'] } },
-    },
-  })
+new Elysia().get('/users', () => userService.findAll(), {
+  query: t.Object({ page: t.Number() }),
+  response: { 200: PagedResponse(UserSchema) },
+  detail: {
+    tags: ['用户管理'],
+    rbac: { scope: { permissions: ['user:list'] } },
+  },
+})
 ```
 
 ### 自研 ORM（@pkg/orm）

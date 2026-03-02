@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'user_vip'
+
 /** 用户 VIP 表 Schema */
 export default class UserVipSchema extends TimestampSchema {
   /** ID */

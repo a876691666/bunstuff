@@ -1,5 +1,4 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
-import Job from './index'
+import type { SeedDefinition } from '@/services/seed'
 
 /** 定时任务表 Seed */
 export const jobSeed: SeedDefinition = {

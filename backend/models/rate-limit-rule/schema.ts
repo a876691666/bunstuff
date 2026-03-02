@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'rate_limit_rule'
+
 /**
  * 限流规则表 Schema
  *
@@ -16,7 +18,10 @@ export default class RateLimitRuleSchema extends TimestampSchema {
   /** 规则编码（唯一标识） */
   code = column.string().unique().default('').description('规则编码')
   /** 限流模式: time_window-时间窗口 concurrent-并发限流 sliding_window-滑动窗口 */
-  mode = column.string().default('time_window').description('限流模式：time_window/concurrent/sliding_window')
+  mode = column
+    .string()
+    .default('time_window')
+    .description('限流模式：time_window/concurrent/sliding_window')
   /** 匹配路径（支持通配符，如 /api/admin/* 或精确匹配 /api/auth/login） */
   pathPattern = column.string().default('/**').description('匹配路径模式')
   /** 请求方法（*表示全部，或GET,POST等逗号分隔） */

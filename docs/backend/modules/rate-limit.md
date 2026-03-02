@@ -32,22 +32,22 @@
 
 ## RateLimitRule 模型
 
-| 字段 | 说明 |
-|------|------|
-| name | 规则名称 |
-| code | 规则编码（unique） |
-| mode | 限流模式（window/concurrent/sliding） |
-| pathPattern | 匹配路径模式（支持通配符） |
-| method | HTTP 方法（* 表示全部） |
-| dimension | 限流维度（ip/user/global） |
-| windowSeconds | 时间窗口（秒） |
-| maxRequests | 窗口内最大请求数 |
-| maxConcurrent | 最大并发数 |
-| blacklistThreshold | 黑名单阈值（超过自动封禁） |
-| responseCode | 限流响应码 |
-| responseMessage | 限流响应消息 |
-| priority | 优先级（越小越优先） |
-| status | 状态 |
+| 字段               | 说明                                  |
+| ------------------ | ------------------------------------- |
+| name               | 规则名称                              |
+| code               | 规则编码（unique）                    |
+| mode               | 限流模式（window/concurrent/sliding） |
+| pathPattern        | 匹配路径模式（支持通配符）            |
+| method             | HTTP 方法（\* 表示全部）              |
+| dimension          | 限流维度（ip/user/global）            |
+| windowSeconds      | 时间窗口（秒）                        |
+| maxRequests        | 窗口内最大请求数                      |
+| maxConcurrent      | 最大并发数                            |
+| blacklistThreshold | 黑名单阈值（超过自动封禁）            |
+| responseCode       | 限流响应码                            |
+| responseMessage    | 限流响应消息                          |
+| priority           | 优先级（越小越优先）                  |
+| status             | 状态                                  |
 
 ## IP 黑名单
 
@@ -57,12 +57,12 @@
 
 ### IpBlacklist 模型
 
-| 字段 | 说明 |
-|------|------|
-| ip | IP 地址 |
-| reason | 封禁原因 |
+| 字段     | 说明                  |
+| -------- | --------------------- |
+| ip       | IP 地址               |
+| reason   | 封禁原因              |
 | expireAt | 过期时间（null=永久） |
-| status | 状态 |
+| status   | 状态                  |
 
 ## 工作流程
 
@@ -89,17 +89,17 @@
 
 ### 限流规则
 
-| 方法 | 路径 | 权限 |
-|------|------|------|
-| GET | `/api/admin/rate-limit` | `rate-limit:admin:list` |
-| POST | `/api/admin/rate-limit` | `rate-limit:admin:create` |
-| PUT | `/api/admin/rate-limit/:id` | `rate-limit:admin:update` |
+| 方法   | 路径                        | 权限                      |
+| ------ | --------------------------- | ------------------------- |
+| GET    | `/api/admin/rate-limit`     | `rate-limit:admin:list`   |
+| POST   | `/api/admin/rate-limit`     | `rate-limit:admin:create` |
+| PUT    | `/api/admin/rate-limit/:id` | `rate-limit:admin:update` |
 | DELETE | `/api/admin/rate-limit/:id` | `rate-limit:admin:delete` |
 
 ### IP 黑名单
 
-| 方法 | 路径 | 权限 |
-|------|------|------|
-| GET | `/api/admin/ip-blacklist` | `ip-blacklist:admin:list` |
-| POST | `/api/admin/ip-blacklist` | `ip-blacklist:admin:create` |
+| 方法   | 路径                          | 权限                        |
+| ------ | ----------------------------- | --------------------------- |
+| GET    | `/api/admin/ip-blacklist`     | `ip-blacklist:admin:list`   |
+| POST   | `/api/admin/ip-blacklist`     | `ip-blacklist:admin:create` |
 | DELETE | `/api/admin/ip-blacklist/:id` | `ip-blacklist:admin:delete` |

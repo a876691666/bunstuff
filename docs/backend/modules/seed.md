@@ -41,19 +41,19 @@ Seed 模块负责数据库初始化数据，确保系统首次启动时拥有必
 
 ## SeedLog 模型
 
-| 字段 | 说明 |
-|------|------|
-| name | 种子名称 |
-| status | 执行状态（success/failed） |
-| message | 执行消息/错误信息 |
-| executedAt | 执行时间 |
+| 字段       | 说明                       |
+| ---------- | -------------------------- |
+| name       | 种子名称                   |
+| status     | 执行状态（success/failed） |
+| message    | 执行消息/错误信息          |
+| executedAt | 执行时间                   |
 
 ## 管理端 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/admin/seed` | 查看种子执行日志 |
-| POST | `/api/admin/seed/:name/run` | 手动执行指定种子 |
+| 方法 | 路径                          | 说明                     |
+| ---- | ----------------------------- | ------------------------ |
+| GET  | `/api/admin/seed`             | 查看种子执行日志         |
+| POST | `/api/admin/seed/:name/run`   | 手动执行指定种子         |
 | POST | `/api/admin/seed/:name/rerun` | 重新执行种子（重置标记） |
 
 ## 自定义种子
@@ -61,7 +61,11 @@ Seed 模块负责数据库初始化数据，确保系统首次启动时拥有必
 在 `modules/seed/main/register.ts` 中注册新种子：
 
 ```typescript
-seedRunner.register('my-data', async () => {
-  await myService.create({ name: '默认数据' })
-}, { after: 'user' })  // 在 user 种子之后执行
+seedRunner.register(
+  'my-data',
+  async () => {
+    await myService.create({ name: '默认数据' })
+  },
+  { after: 'user' },
+) // 在 user 种子之后执行
 ```

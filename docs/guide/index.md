@@ -6,16 +6,16 @@
 
 ## 技术选型
 
-| 层级 | 技术 | 说明 |
-|------|------|------|
-| **运行时** | [Bun](https://bun.sh) | 高性能 JavaScript 运行时，内置包管理器与打包器 |
-| **后端框架** | [Elysia](https://elysiajs.com) | TypeBox 端到端类型安全，自动生成 OpenAPI 文档 |
-| **前端框架** | Vue 3 + Naive UI | Composition API + 企业级 UI 组件库 |
-| **状态管理** | Pinia | Vue 官方推荐状态管理 |
-| **路由** | Vue Router | 动态路由，基于后端菜单自动生成 |
-| **数据库** | SQLite / MySQL / PostgreSQL | 默认 SQLite 零配置，生产可切换 |
-| **ORM** | `@pkg/orm`（自研） | 轻量级、类型安全的 ORM |
-| **查询构建** | `@pkg/ssql`（自研） | SQL 条件构建器，支持前后端共用 |
+| 层级         | 技术                           | 说明                                           |
+| ------------ | ------------------------------ | ---------------------------------------------- |
+| **运行时**   | [Bun](https://bun.sh)          | 高性能 JavaScript 运行时，内置包管理器与打包器 |
+| **后端框架** | [Elysia](https://elysiajs.com) | TypeBox 端到端类型安全，自动生成 OpenAPI 文档  |
+| **前端框架** | Vue 3 + Naive UI               | Composition API + 企业级 UI 组件库             |
+| **状态管理** | Pinia                          | Vue 官方推荐状态管理                           |
+| **路由**     | Vue Router                     | 动态路由，基于后端菜单自动生成                 |
+| **数据库**   | SQLite / MySQL / PostgreSQL    | 默认 SQLite 零配置，生产可切换                 |
+| **ORM**      | `@pkg/orm`（自研）             | 轻量级、类型安全的 ORM                         |
+| **查询构建** | `@pkg/ssql`（自研）            | SQL 条件构建器，支持前后端共用                 |
 
 ## 核心特性
 

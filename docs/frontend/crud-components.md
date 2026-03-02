@@ -24,11 +24,7 @@
 CRUD 搜索组件，根据列配置自动生成搜索表单：
 
 ```vue
-<CrudSearch
-  :columns="columns"
-  @search="handleSearch"
-  @reset="handleReset"
-/>
+<CrudSearch :columns="columns" @search="handleSearch" @reset="handleReset" />
 ```
 
 ## CrudModal
@@ -50,11 +46,7 @@ CRUD 表单弹窗，根据列配置自动生成表单字段：
 CRUD 操作确认组件：
 
 ```vue
-<CrudConfirm
-  title="确认删除"
-  content="删除后数据无法恢复，是否继续？"
-  @confirm="handleDelete"
-/>
+<CrudConfirm title="确认删除" content="删除后数据无法恢复，是否继续？" @confirm="handleDelete" />
 ```
 
 ## 动态 CRUD 页面

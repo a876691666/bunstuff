@@ -30,10 +30,10 @@ const api = new Elysia()
   .use(authPlugin())
   // handler 中可直接访问：
   .get('/me', (ctx) => {
-    ctx.session     // 当前 Session 对象
-    ctx.userId      // 当前用户 ID
-    ctx.roleId      // 当前角色 ID
-    ctx.rbac        // RBAC 信息（permissions, menus 等）
+    ctx.session // 当前 Session 对象
+    ctx.userId // 当前用户 ID
+    ctx.roleId // 当前角色 ID
+    ctx.rbac // RBAC 信息（permissions, menus 等）
   })
 ```
 
@@ -64,15 +64,15 @@ const api = new Elysia()
 
 核心认证服务：
 
-| 方法 | 说明 |
-|------|------|
-| `login(username, password)` | 用户名密码登录，返回 token |
-| `register(data)` | 用户注册 |
-| `logout(token)` | 注销会话 |
-| `verifyToken(token)` | 验证 token 有效性 |
-| `changePassword(userId, oldPwd, newPwd)` | 修改密码 |
-| `getOnlineStats()` | 获取在线统计 |
-| `kickUser(userId)` | 踢出指定用户所有会话 |
+| 方法                                     | 说明                       |
+| ---------------------------------------- | -------------------------- |
+| `login(username, password)`              | 用户名密码登录，返回 token |
+| `register(data)`                         | 用户注册                   |
+| `logout(token)`                          | 注销会话                   |
+| `verifyToken(token)`                     | 验证 token 有效性          |
+| `changePassword(userId, oldPwd, newPwd)` | 修改密码                   |
+| `getOnlineStats()`                       | 获取在线统计               |
+| `kickUser(userId)`                       | 踢出指定用户所有会话       |
 
 ### 密码处理
 
@@ -99,32 +99,32 @@ const valid = await Bun.password.verify(password, hash)
 
 ### 方法
 
-| 方法 | 说明 |
-|------|------|
-| `init()` | 启动时从数据库加载 Session 到内存 |
-| `create(userId, info)` | 创建新 Session |
-| `getByToken(token)` | 根据 token 查找 Session |
-| `delete(token)` | 删除指定 Session |
-| `deleteByUserId(userId)` | 删除用户所有 Session |
-| `getAll()` | 获取所有在线 Session |
+| 方法                     | 说明                              |
+| ------------------------ | --------------------------------- |
+| `init()`                 | 启动时从数据库加载 Session 到内存 |
+| `create(userId, info)`   | 创建新 Session                    |
+| `getByToken(token)`      | 根据 token 查找 Session           |
+| `delete(token)`          | 删除指定 Session                  |
+| `deleteByUserId(userId)` | 删除用户所有 Session              |
+| `getAll()`               | 获取所有在线 Session              |
 
 ## 客户端 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/api/login` | 登录 |
-| POST | `/api/register` | 注册 |
-| POST | `/api/logout` | 登出 |
-| GET | `/api/me` | 获取当前用户信息 |
-| POST | `/api/change-password` | 修改密码 |
+| 方法 | 路径                   | 说明             |
+| ---- | ---------------------- | ---------------- |
+| POST | `/api/login`           | 登录             |
+| POST | `/api/register`        | 注册             |
+| POST | `/api/logout`          | 登出             |
+| GET  | `/api/me`              | 获取当前用户信息 |
+| POST | `/api/change-password` | 修改密码         |
 
 ## 管理端 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/admin/stats` | 在线用户统计 |
-| GET | `/api/admin/sessions` | 在线会话列表 |
-| POST | `/api/admin/kick-user` | 踢出指定用户 |
+| 方法 | 路径                      | 说明         |
+| ---- | ------------------------- | ------------ |
+| GET  | `/api/admin/stats`        | 在线用户统计 |
+| GET  | `/api/admin/sessions`     | 在线会话列表 |
+| POST | `/api/admin/kick-user`    | 踢出指定用户 |
 | POST | `/api/admin/kick-session` | 踢出指定会话 |
 
 ## 用户管理
@@ -134,7 +134,7 @@ const valid = await Bun.password.verify(password, hash)
 ```typescript
 class UserService extends CrudService<typeof User.schemaInstance> {
   constructor() { super(User) }
-  
+
   // 额外方法
   async findByUsername(username: string) { ... }
 }
@@ -142,10 +142,10 @@ class UserService extends CrudService<typeof User.schemaInstance> {
 
 ### 管理端用户 API
 
-| 方法 | 路径 | 权限 | 说明 |
-|------|------|------|------|
-| GET | `/api/admin/users` | `user:admin:list` | 用户列表 |
-| GET | `/api/admin/users/:id` | `user:admin:read` | 用户详情 |
-| POST | `/api/admin/users` | `user:admin:create` | 创建用户 |
-| PUT | `/api/admin/users/:id` | `user:admin:update` | 更新用户 |
+| 方法   | 路径                   | 权限                | 说明     |
+| ------ | ---------------------- | ------------------- | -------- |
+| GET    | `/api/admin/users`     | `user:admin:list`   | 用户列表 |
+| GET    | `/api/admin/users/:id` | `user:admin:read`   | 用户详情 |
+| POST   | `/api/admin/users`     | `user:admin:create` | 创建用户 |
+| PUT    | `/api/admin/users/:id` | `user:admin:update` | 更新用户 |
 | DELETE | `/api/admin/users/:id` | `user:admin:delete` | 删除用户 |

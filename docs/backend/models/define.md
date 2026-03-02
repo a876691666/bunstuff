@@ -15,27 +15,29 @@ import { TimestampSchema, column } from '@pkg/orm'
 export default class ArticleSchema extends TimestampSchema {
   // 主键 — 自增 ID
   id = column.number().primaryKey().autoIncrement().description('文章ID')
-  
+
   // 字符串字段
   title = column.string().default('').description('标题')
   content = column.string().default('').description('内容')
   slug = column.string().default('').unique().description('URL 别名')
-  
+
   // 数字字段
   viewCount = column.number().default(0).description('浏览量')
   authorId = column.number().default(0).description('作者ID')
-  
+
   // 状态字段（1=正常 0=禁用）
   status = column.number().default(1).description('状态：1正常 0禁用')
-  
+
   // 排序字段
   sort = column.number().default(0).description('排序')
-  
+
   // 可空字段
   publishedAt = column.string().nullable().description('发布时间')
-  
+
   // JSON 字段（序列化/反序列化）
-  tags = column.string().default('[]')
+  tags = column
+    .string()
+    .default('[]')
     .serialize((v: string[]) => JSON.stringify(v))
     .deserialize((v: string) => JSON.parse(v))
     .description('标签')
@@ -63,34 +65,34 @@ export default Article
 
 ### 类型方法
 
-| 方法 | SQL 类型 | TS 类型 |
-|------|---------|---------|
-| `column.string()` | TEXT / VARCHAR | `string` |
-| `column.number()` | INTEGER / INT | `number` |
-| `column.boolean()` | BOOLEAN | `boolean` |
-| `column.date()` | DATETIME / TIMESTAMP | `string` |
-| `column.blob()` | BLOB | `Buffer` |
+| 方法               | SQL 类型             | TS 类型   |
+| ------------------ | -------------------- | --------- |
+| `column.string()`  | TEXT / VARCHAR       | `string`  |
+| `column.number()`  | INTEGER / INT        | `number`  |
+| `column.boolean()` | BOOLEAN              | `boolean` |
+| `column.date()`    | DATETIME / TIMESTAMP | `string`  |
+| `column.blob()`    | BLOB                 | `Buffer`  |
 
 ### 修饰方法
 
-| 方法 | 说明 |
-|------|------|
-| `.primaryKey()` | 设为主键 |
-| `.autoIncrement()` | 自增 |
-| `.unique()` | 唯一约束 |
-| `.nullable()` | 允许 NULL |
-| `.default(value)` | 默认值 |
+| 方法                 | 说明                     |
+| -------------------- | ------------------------ |
+| `.primaryKey()`      | 设为主键                 |
+| `.autoIncrement()`   | 自增                     |
+| `.unique()`          | 唯一约束                 |
+| `.nullable()`        | 允许 NULL                |
+| `.default(value)`    | 默认值                   |
 | `.description(text)` | 字段描述（用于 OpenAPI） |
-| `.serialize(fn)` | 写入时转换 |
-| `.deserialize(fn)` | 读取时转换 |
+| `.serialize(fn)`     | 写入时转换               |
+| `.deserialize(fn)`   | 读取时转换               |
 
 ## Schema 基类选择
 
-| 基类 | 包含字段 | 适用场景 |
-|------|---------|----------|
-| `Schema` | 无额外字段 | 关联表、日志表 |
-| `TimestampSchema` | `createdAt`, `updatedAt` | 大多数业务表 |
-| `BaseSchema` | `createdAt`, `updatedAt`, `remark` | 需要备注的业务表 |
+| 基类              | 包含字段                           | 适用场景         |
+| ----------------- | ---------------------------------- | ---------------- |
+| `Schema`          | 无额外字段                         | 关联表、日志表   |
+| `TimestampSchema` | `createdAt`, `updatedAt`           | 大多数业务表     |
+| `BaseSchema`      | `createdAt`, `updatedAt`, `remark` | 需要备注的业务表 |
 
 ## getSchema() 用法
 
@@ -110,10 +112,7 @@ Article.getSchema({ exclude: ['id'], partial: true })
 Article.getSchema({ exclude: ['id'], required: ['title', 'content'] })
 
 // 添加额外字段
-Article.getSchema(
-  { exclude: ['id'] },
-  { categoryName: t.String() }
-)
+Article.getSchema({ exclude: ['id'] }, { categoryName: t.String() })
 ```
 
 ## 数据库同步

@@ -143,8 +143,8 @@ client/
 
 在 `backend/tsconfig.json` 中定义了以下路径别名：
 
-| 别名 | 路径 | 说明 |
-|------|------|------|
-| `@/*` | `backend/*` | 后端根目录 |
-| `@pkg/ssql` | `backend/packages/ssql` | SSQL 包 |
-| `@pkg/orm` | `backend/packages/orm` | ORM 包 |
+| 别名        | 路径                    | 说明       |
+| ----------- | ----------------------- | ---------- |
+| `@/*`       | `backend/*`             | 后端根目录 |
+| `@pkg/ssql` | `backend/packages/ssql` | SSQL 包    |
+| `@pkg/orm`  | `backend/packages/orm`  | ORM 包     |

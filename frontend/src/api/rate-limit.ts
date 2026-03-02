@@ -43,7 +43,8 @@ export const rateLimitRuleApi = {
   delete: (id: number) => http.delete(`/admin/rate-limit-rule/${id}`),
 
   /** 获取统计信息 */
-  getStats: () => http.get<{ rules: number; counters: Record<string, number> }>('/admin/rate-limit-rule/stats'),
+  getStats: () =>
+    http.get<{ rules: number; counters: Record<string, number> }>('/admin/rate-limit-rule/stats'),
 
   /** 重载缓存 */
   reload: () => http.post('/admin/rate-limit-rule/reload'),
@@ -59,8 +60,7 @@ export const ipBlacklistApi = {
   get: (id: number) => http.get<IpBlacklist>(`/admin/ip-blacklist/${id}`),
 
   /** 手动添加 */
-  create: (data: CreateIpBlacklistRequest) =>
-    http.post<IpBlacklist>('/admin/ip-blacklist', data),
+  create: (data: CreateIpBlacklistRequest) => http.post<IpBlacklist>('/admin/ip-blacklist', data),
 
   /** 更新 */
   update: (id: number, data: UpdateIpBlacklistRequest) =>

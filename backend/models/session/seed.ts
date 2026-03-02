@@ -1,4 +1,4 @@
-import type { SeedDefinition } from '@/modules/seed'
+import type { SeedDefinition } from '@/services/seed'
 
 /** Session 种子数据（启动时清空过期会话） */
 const seed: SeedDefinition = {

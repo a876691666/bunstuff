@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
-import DictData from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 export const dictDataSeed: SeedDefinition = {
   name: 'dict-data-init',
@@ -53,7 +53,7 @@ export const dictDataSeed: SeedDefinition = {
     ]
 
     for (const data of dataList) {
-      await DictData.create(data)
+      await model.dict_data.create(data)
     }
   },
 }

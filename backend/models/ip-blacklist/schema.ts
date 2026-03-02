@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'ip_blacklist'
+
 /**
  * IP黑名单表 Schema
  *

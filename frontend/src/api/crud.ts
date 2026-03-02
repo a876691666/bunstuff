@@ -50,6 +50,5 @@ export const crudApi = {
     http.put<Record<string, unknown>>(`/crud/${tableName}/${id}`, data),
 
   /** 通用删除 */
-  delete: (tableName: string, id: number) =>
-    http.delete(`/crud/${tableName}/${id}`),
+  delete: (tableName: string, id: number) => http.delete(`/crud/${tableName}/${id}`),
 }

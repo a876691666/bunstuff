@@ -175,10 +175,8 @@ const columns: DataTableColumns<CrudTableType> = [
     key: 'status',
     width: 80,
     render: (row) =>
-      h(
-        NTag,
-        { type: row.status === 1 ? 'success' : 'error', size: 'small' },
-        () => (row.status === 1 ? '启用' : '禁用'),
+      h(NTag, { type: row.status === 1 ? 'success' : 'error', size: 'small' }, () =>
+        row.status === 1 ? '启用' : '禁用',
       ),
   },
   { title: '创建时间', key: 'createdAt', width: 170 },
@@ -341,10 +339,17 @@ async function handleDelete(id: number) {
               <div class="col-field">
                 <label class="col-label">默认值</label>
                 <NInput
-                  :value="col.default !== undefined && col.default !== null ? String(col.default) : ''"
+                  :value="
+                    col.default !== undefined && col.default !== null ? String(col.default) : ''
+                  "
                   placeholder="无"
                   size="small"
-                  @update:value="(v: string) => { col.default = v === '' ? undefined : (col.type === 'number' ? Number(v) : v); onColumnChange() }"
+                  @update:value="
+                    (v: string) => {
+                      col.default = v === '' ? undefined : col.type === 'number' ? Number(v) : v
+                      onColumnChange()
+                    }
+                  "
                 />
               </div>
               <div class="col-switch-group">
@@ -374,11 +379,7 @@ async function handleDelete(id: number) {
                   <span>可空</span>
                 </label>
                 <label class="col-switch-item">
-                  <NSwitch
-                    v-model:value="col.unique"
-                    size="small"
-                    @update:value="onColumnChange"
-                  />
+                  <NSwitch v-model:value="col.unique" size="small" @update:value="onColumnChange" />
                   <span>唯一</span>
                 </label>
               </div>
@@ -424,9 +425,7 @@ async function handleDelete(id: number) {
             </div>
           </NCard>
 
-          <NButton size="small" dashed style="width: 100%" @click="addColumn">
-            + 添加列
-          </NButton>
+          <NButton size="small" dashed style="width: 100%" @click="addColumn"> + 添加列 </NButton>
         </div>
 
         <NDivider style="margin: 12px 0 8px" />
@@ -441,11 +440,7 @@ async function handleDelete(id: number) {
           />
         </NFormItem>
         <NFormItem label="备注">
-          <NInput
-            v-model:value="modal.formData.remark"
-            type="textarea"
-            placeholder="请输入备注"
-          />
+          <NInput v-model:value="modal.formData.remark" type="textarea" placeholder="请输入备注" />
         </NFormItem>
       </NForm>
     </CrudModal>

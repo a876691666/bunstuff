@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed'
-import RateLimitRule from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 /** 默认限流规则数据 */
 const defaultRules = [
@@ -79,7 +79,7 @@ export const rateLimitRuleSeed: SeedDefinition = {
   description: '初始化默认限流规则',
   async run() {
     for (const rule of defaultRules) {
-      await RateLimitRule.create(rule)
+      await model.rate_limit_rule.create(rule)
     }
     console.log(`✅ 已创建 ${defaultRules.length} 条默认限流规则`)
   },

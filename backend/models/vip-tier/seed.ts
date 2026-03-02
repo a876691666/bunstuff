@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed'
-import VipTier from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 /** 默认 VIP 等级数据 */
 const defaultVipTiers = [
@@ -38,7 +38,7 @@ export const vipTierSeed: SeedDefinition = {
   description: '初始化默认 VIP 等级数据',
   async run() {
     for (const tier of defaultVipTiers) {
-      await VipTier.create(tier)
+      await model.vip_tier.create(tier)
     }
     console.log(`✅ 已创建 ${defaultVipTiers.length} 个默认 VIP 等级`)
   },

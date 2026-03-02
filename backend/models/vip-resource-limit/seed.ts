@@ -1,6 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed'
-import VipResourceLimit from './index'
-import VipTier from '../vip-tier'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 import { where } from '@pkg/ssql'
 
 /** VIP 资源限制 Seed */
@@ -10,9 +9,9 @@ export const vipResourceLimitSeed: SeedDefinition = {
   dependencies: ['vip-tier-default'],
   async run() {
     // 获取 VIP 等级
-    const freeTier = await VipTier.findOne({ where: where().eq('code', 'free') })
-    const proTier = await VipTier.findOne({ where: where().eq('code', 'pro') })
-    const enterpriseTier = await VipTier.findOne({ where: where().eq('code', 'enterprise') })
+    const freeTier = await model.vip_tier.findOne({ where: where().eq('code', 'free') })
+    const proTier = await model.vip_tier.findOne({ where: where().eq('code', 'pro') })
+    const enterpriseTier = await model.vip_tier.findOne({ where: where().eq('code', 'enterprise') })
 
     if (!freeTier || !proTier || !enterpriseTier) {
       console.log('⚠️ 未找到 VIP 等级，跳过资源限制初始化')
@@ -80,7 +79,7 @@ export const vipResourceLimitSeed: SeedDefinition = {
     ]
 
     for (const limit of defaultLimits) {
-      await VipResourceLimit.create(limit)
+      await model.vip_resource_limit.create(limit)
     }
     console.log(`✅ 已创建 ${defaultLimits.length} 个默认 VIP 资源限制`)
   },

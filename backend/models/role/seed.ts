@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed'
-import Role from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 /** 默认角色数据 */
 const defaultRoles = [
@@ -35,7 +35,7 @@ export const roleSeed: SeedDefinition = {
   description: '初始化默认角色数据',
   async run() {
     for (const role of defaultRoles) {
-      await Role.create(role)
+      await model.role.create(role)
     }
     console.log(`✅ 已创建 ${defaultRoles.length} 个默认角色`)
   },

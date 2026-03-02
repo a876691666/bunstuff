@@ -1,5 +1,7 @@
 import { Schema, column } from '../../packages/orm'
 
+export const tableName = 'notice_read'
+
 /** 通知已读记录表 Schema */
 export default class NoticeReadSchema extends Schema {
   /** ID */

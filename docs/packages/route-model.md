@@ -116,7 +116,7 @@ import { merge } from '@/packages/route-model'
 
 const Combined = merge(
   { id: t.Number(), name: t.String() },
-  { status: t.Number(), remark: t.String() }
+  { status: t.Number(), remark: t.String() },
 )
 ```
 
@@ -155,13 +155,13 @@ const typeboxSchema = fromModel(ArticleSchema)
 
 `Model.getSchema()` 内部也生成 TypeBox Schema，但更强大：
 
-| 特性 | Route Model | Model.getSchema() |
-|------|-------------|-------------------|
-| 来源 | 手动定义 | 从 ORM Schema 自动生成 |
-| 排除字段 | `omit()` | `{ exclude: [...] }` |
-| 可选字段 | `updateBody()` | `{ partial: true }` |
-| 必填字段 | 手动标注 | `{ required: [...] }` |
-| 额外字段 | `merge()` | 第二参数 |
+| 特性     | Route Model    | Model.getSchema()      |
+| -------- | -------------- | ---------------------- |
+| 来源     | 手动定义       | 从 ORM Schema 自动生成 |
+| 排除字段 | `omit()`       | `{ exclude: [...] }`   |
+| 可选字段 | `updateBody()` | `{ partial: true }`    |
+| 必填字段 | 手动标注       | `{ required: [...] }`  |
+| 额外字段 | `merge()`      | 第二参数               |
 
 ::: tip 推荐
 优先使用 `Model.getSchema()` 生成 Schema，它能确保 Schema 与数据库模型始终同步。Route Model 中的工具函数作为补充使用。

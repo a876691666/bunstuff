@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'sys_config'
+
 /** 系统参数配置表 Schema */
 export default class SysConfigSchema extends TimestampSchema {
   /** ID */

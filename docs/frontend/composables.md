@@ -13,18 +13,18 @@ import { useTable } from '@/composables/useTable'
 import { articleApi } from '@/api/article'
 
 const {
-  tableData,       // Ref<any[]>     — 表格数据
-  loading,         // Ref<boolean>   — 加载状态
-  pagination,      // Reactive       — 分页信息 { page, pageSize, total }
-  
-  refresh,         // () => void     — 刷新当前页
-  handlePageChange,// (page) => void — 翻页
-  handleSearch,    // (conditions) => void — 搜索
-  handleReset,     // () => void     — 重置搜索
+  tableData, // Ref<any[]>     — 表格数据
+  loading, // Ref<boolean>   — 加载状态
+  pagination, // Reactive       — 分页信息 { page, pageSize, total }
+
+  refresh, // () => void     — 刷新当前页
+  handlePageChange, // (page) => void — 翻页
+  handleSearch, // (conditions) => void — 搜索
+  handleReset, // () => void     — 重置搜索
 } = useTable({
   fetchApi: articleApi.list,
   defaultPageSize: 10,
-  immediate: true,        // 是否立即加载
+  immediate: true, // 是否立即加载
 })
 ```
 
@@ -35,8 +35,8 @@ const {
 ```typescript
 // 搜索时
 handleSearch({
-  username: 'admin',    // → username ~ 'admin'
-  status: 1,            // → status = 1
+  username: 'admin', // → username ~ 'admin'
+  status: 1, // → status = 1
 })
 
 // 自动构建 SSQL: username ~ 'admin' && status = 1
@@ -52,21 +52,22 @@ import { useModal } from '@/composables/useModal'
 import { articleApi } from '@/api/article'
 
 const {
-  modalVisible,   // Ref<boolean>    — 弹窗显示状态
-  modalTitle,     // Computed<string> — 弹窗标题（新增/编辑）
-  formData,       // Ref<any>        — 表单数据
-  saving,         // Ref<boolean>    — 保存中状态
-  isEdit,         // Ref<boolean>    — 是否编辑模式
-  
-  openCreate,     // () => void      — 打开新增弹窗
-  openEdit,       // (row) => void   — 打开编辑弹窗
-  close,          // () => void      — 关闭弹窗
-  handleSave,     // () => void      — 保存（自动判断新增/编辑）
+  modalVisible, // Ref<boolean>    — 弹窗显示状态
+  modalTitle, // Computed<string> — 弹窗标题（新增/编辑）
+  formData, // Ref<any>        — 表单数据
+  saving, // Ref<boolean>    — 保存中状态
+  isEdit, // Ref<boolean>    — 是否编辑模式
+
+  openCreate, // () => void      — 打开新增弹窗
+  openEdit, // (row) => void   — 打开编辑弹窗
+  close, // () => void      — 关闭弹窗
+  handleSave, // () => void      — 保存（自动判断新增/编辑）
 } = useModal({
   createApi: articleApi.create,
   updateApi: articleApi.update,
-  onSuccess: () => refresh(),        // 保存成功回调
-  defaultFormData: {                 // 默认表单数据
+  onSuccess: () => refresh(), // 保存成功回调
+  defaultFormData: {
+    // 默认表单数据
     title: '',
     content: '',
     status: 1,
@@ -96,7 +97,7 @@ const handleEdit = (row: any) => {
 <template>
   <n-button @click="handleCreate">新增</n-button>
   <n-button @click="handleEdit(row)">编辑</n-button>
-  
+
   <FormModal
     v-model:visible="modalVisible"
     :title="modalTitle"
@@ -118,10 +119,10 @@ const handleEdit = (row: any) => {
 import { useDict } from '@/composables/useDict'
 
 const {
-  options,     // Ref<{ label, value }[]>  — 选项列表
-  dictMap,     // Ref<Record<string, string>> — value → label 映射
-  getLabel,    // (value) => string — 获取标签
-  loading,     // Ref<boolean>
+  options, // Ref<{ label, value }[]>  — 选项列表
+  dictMap, // Ref<Record<string, string>> — value → label 映射
+  getLabel, // (value) => string — 获取标签
+  loading, // Ref<boolean>
 } = useDict('sys_status')
 
 // 在模板中使用
@@ -136,7 +137,7 @@ const {
 ```typescript
 // 多处使用同一字典类型，只会发送一次请求
 const { options: statusOptions } = useDict('sys_status')
-const { options: statusOptions2 } = useDict('sys_status')  // 命中缓存
+const { options: statusOptions2 } = useDict('sys_status') // 命中缓存
 ```
 
 ## 完整页面示例
@@ -151,9 +152,10 @@ import { articleApi } from '@/api/article'
 const { options: statusOptions, getLabel: getStatusLabel } = useDict('sys_status')
 
 // 表格
-const { tableData, loading, pagination, handlePageChange, handleSearch, handleReset, refresh } = useTable({
-  fetchApi: articleApi.list,
-})
+const { tableData, loading, pagination, handlePageChange, handleSearch, handleReset, refresh } =
+  useTable({
+    fetchApi: articleApi.list,
+  })
 
 // 弹窗
 const { modalVisible, modalTitle, formData, saving, openCreate, openEdit, handleSave } = useModal({
@@ -174,12 +176,15 @@ const columns = [
   { title: 'ID', key: 'id', width: 80 },
   { title: '标题', key: 'title' },
   {
-    title: '状态', key: 'status',
+    title: '状态',
+    key: 'status',
     render: (row) => getStatusLabel(row.status),
   },
   { title: '创建时间', key: 'createdAt', width: 180 },
   {
-    title: '操作', key: 'actions', width: 200,
+    title: '操作',
+    key: 'actions',
+    width: 200,
     render: (row) => [
       h(NButton, { size: 'small', onClick: () => openEdit(row) }, '编辑'),
       h(ConfirmButton, { size: 'small', onConfirm: () => handleDelete(row.id) }, '删除'),
@@ -189,8 +194,13 @@ const columns = [
 </script>
 
 <template>
-  <PageTable :columns="columns" :data="tableData" :loading="loading"
-    :pagination="pagination" @page-change="handlePageChange">
+  <PageTable
+    :columns="columns"
+    :data="tableData"
+    :loading="loading"
+    :pagination="pagination"
+    @page-change="handlePageChange"
+  >
     <template #header>
       <n-button type="primary" @click="openCreate">新增</n-button>
     </template>
@@ -206,7 +216,12 @@ const columns = [
     </template>
   </PageTable>
 
-  <FormModal v-model:visible="modalVisible" :title="modalTitle" :loading="saving" @confirm="handleSave">
+  <FormModal
+    v-model:visible="modalVisible"
+    :title="modalTitle"
+    :loading="saving"
+    @confirm="handleSave"
+  >
     <FormField label="标题" required>
       <n-input v-model:value="formData.title" />
     </FormField>

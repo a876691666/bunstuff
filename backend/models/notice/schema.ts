@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'notice'
+
 /** 通知公告表 Schema */
 export default class NoticeSchema extends TimestampSchema {
   /** ID */

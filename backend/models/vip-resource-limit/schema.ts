@@ -1,5 +1,7 @@
 import { TimestampSchema, column } from '../../packages/orm'
 
+export const tableName = 'vip_resource_limit'
+
 /** VIP 资源限制表 Schema */
 export default class VipResourceLimitSchema extends TimestampSchema {
   /** ID */

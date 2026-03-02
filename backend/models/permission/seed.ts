@@ -1,6 +1,6 @@
 import { where } from '@/packages/ssql'
-import Permission from './index'
-import type { SeedDefinition } from '@/modules/seed'
+import { model } from '@/core/model'
+import type { SeedDefinition } from '@/services/seed'
 
 /** 默认权限数据 - 基于 scopes.json 生成 */
 const defaultPermissions = [
@@ -244,11 +244,31 @@ const defaultPermissions = [
   { code: 'rateLimit:admin:rule:update', name: '更新限流规则', description: '更新限流规则' },
   { code: 'rateLimit:admin:rule:delete', name: '删除限流规则', description: '删除限流规则' },
   // IP黑名单
-  { code: 'rateLimit:admin:blacklist:list', name: '查看IP黑名单列表', description: '获取IP黑名单列表' },
-  { code: 'rateLimit:admin:blacklist:read', name: '查看IP黑名单详情', description: '获取IP黑名单详情' },
-  { code: 'rateLimit:admin:blacklist:create', name: '添加IP黑名单', description: '手动添加IP到黑名单' },
-  { code: 'rateLimit:admin:blacklist:update', name: '更新IP黑名单', description: '更新IP黑名单/解封' },
-  { code: 'rateLimit:admin:blacklist:delete', name: '删除IP黑名单', description: '删除IP黑名单记录' },
+  {
+    code: 'rateLimit:admin:blacklist:list',
+    name: '查看IP黑名单列表',
+    description: '获取IP黑名单列表',
+  },
+  {
+    code: 'rateLimit:admin:blacklist:read',
+    name: '查看IP黑名单详情',
+    description: '获取IP黑名单详情',
+  },
+  {
+    code: 'rateLimit:admin:blacklist:create',
+    name: '添加IP黑名单',
+    description: '手动添加IP到黑名单',
+  },
+  {
+    code: 'rateLimit:admin:blacklist:update',
+    name: '更新IP黑名单',
+    description: '更新IP黑名单/解封',
+  },
+  {
+    code: 'rateLimit:admin:blacklist:delete',
+    name: '删除IP黑名单',
+    description: '删除IP黑名单记录',
+  },
 
   // ========== CRUD 通用管理权限 (crud) ==========
   { code: 'crud:admin:list', name: '查看CRUD数据列表', description: '通用CRUD列表查询' },
@@ -268,12 +288,14 @@ export const permissionSeed: SeedDefinition = {
 
     for (const permission of defaultPermissions) {
       // 检查是否已存在
-      const existing = await Permission.findOne({ where: where().eq('code', permission.code) })
+      const existing = await model.permission.findOne({
+        where: where().eq('code', permission.code),
+      })
       if (existing) {
         skipped++
         continue
       }
-      await Permission.create(permission)
+      await model.permission.create(permission)
       created++
     }
 

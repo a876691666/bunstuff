@@ -1,5 +1,5 @@
-import type { SeedDefinition } from '@/modules/seed/main/service'
-import DictType from './index'
+import type { SeedDefinition } from '@/services/seed'
+import { model } from '@/core/model'
 
 export const dictTypeSeed: SeedDefinition = {
   name: 'dict-type-init',
@@ -14,7 +14,7 @@ export const dictTypeSeed: SeedDefinition = {
     ]
 
     for (const type of types) {
-      await DictType.create(type)
+      await model.dict_type.create(type)
     }
   },
 }

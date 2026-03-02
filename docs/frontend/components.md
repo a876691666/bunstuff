@@ -21,7 +21,7 @@
     <template #header>
       <n-button type="primary" @click="openCreate">新增</n-button>
     </template>
-    
+
     <!-- 搜索区域 -->
     <template #search>
       <SearchForm :fields="searchFields" @search="handleSearch" />
@@ -60,11 +60,11 @@ const columns = [
     <FormField label="名称" required>
       <n-input v-model:value="formData.name" />
     </FormField>
-    
+
     <FormField label="状态">
       <n-select v-model:value="formData.status" :options="statusOptions" />
     </FormField>
-    
+
     <FormField label="备注">
       <n-input v-model:value="formData.remark" type="textarea" />
     </FormField>
@@ -112,20 +112,12 @@ const columns = [
 
 ```vue
 <!-- 删除确认 -->
-<ConfirmButton
-  type="error"
-  content="确定要删除吗？"
-  @confirm="handleDelete(row.id)"
->
+<ConfirmButton type="error" content="确定要删除吗？" @confirm="handleDelete(row.id)">
   删除
 </ConfirmButton>
 
 <!-- 自定义确认文案 -->
-<ConfirmButton
-  type="warning"
-  content="确定要禁用该用户吗？"
-  @confirm="handleDisable(row.id)"
->
+<ConfirmButton type="warning" content="确定要禁用该用户吗？" @confirm="handleDisable(row.id)">
   禁用
 </ConfirmButton>
 ```

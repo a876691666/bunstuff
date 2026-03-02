@@ -6,13 +6,13 @@
 
 ## 核心组件
 
-| 文件 | 导出 | 说明 |
-|------|------|------|
-| `column.ts` | `column` | 链式列构建器 |
-| `schema.ts` | `Schema`, `TimestampSchema`, `BaseSchema` | Schema 基类 |
-| `model.ts` | `Model` | 模型类（CRUD + getSchema） |
-| `db.ts` | `DB` | 数据库连接 + 模型工厂 |
-| `types.ts` | `Row`, `Insert`, `Update` | 类型推导工具 |
+| 文件        | 导出                                      | 说明                       |
+| ----------- | ----------------------------------------- | -------------------------- |
+| `column.ts` | `column`                                  | 链式列构建器               |
+| `schema.ts` | `Schema`, `TimestampSchema`, `BaseSchema` | Schema 基类                |
+| `model.ts`  | `Model`                                   | 模型类（CRUD + getSchema） |
+| `db.ts`     | `DB`                                      | 数据库连接 + 模型工厂      |
+| `types.ts`  | `Row`, `Insert`, `Update`                 | 类型推导工具               |
 
 ## DB 类
 
@@ -49,31 +49,34 @@ const User = await db.model({
 ```typescript
 import { column } from '@pkg/orm'
 
-column.string()   // TEXT / VARCHAR   → string
-column.number()   // INTEGER / INT    → number
-column.boolean()  // BOOLEAN          → boolean
-column.date()     // DATETIME         → string
-column.blob()     // BLOB             → Buffer
+column.string() // TEXT / VARCHAR   → string
+column.number() // INTEGER / INT    → number
+column.boolean() // BOOLEAN          → boolean
+column.date() // DATETIME         → string
+column.blob() // BLOB             → Buffer
 ```
 
 ### 链式修饰
 
 ```typescript
-column.number()
-  .primaryKey()           // 设为主键
-  .autoIncrement()        // 自增
-  .description('用户ID')  // OpenAPI 描述
+column
+  .number()
+  .primaryKey() // 设为主键
+  .autoIncrement() // 自增
+  .description('用户ID') // OpenAPI 描述
 
-column.string()
-  .default('')            // 默认值
-  .unique()               // 唯一约束
-  .nullable()             // 允许 NULL
+column
+  .string()
+  .default('') // 默认值
+  .unique() // 唯一约束
+  .nullable() // 允许 NULL
   .description('用户名')
 
-column.string()
+column
+  .string()
   .default('[]')
-  .serialize((v: string[]) => JSON.stringify(v))     // 写入时序列化
-  .deserialize((v: string) => JSON.parse(v) as string[])  // 读取时反序列化
+  .serialize((v: string[]) => JSON.stringify(v)) // 写入时序列化
+  .deserialize((v: string) => JSON.parse(v) as string[]) // 读取时反序列化
   .description('标签列表')
 ```
 
@@ -165,10 +168,7 @@ Article.getSchema({
 })
 
 // 添加额外字段
-Article.getSchema(
-  { exclude: ['id'] },
-  { categoryName: t.String({ description: '分类名' }) }
-)
+Article.getSchema({ exclude: ['id'] }, { categoryName: t.String({ description: '分类名' }) })
 ```
 
 ### 在路由中使用
@@ -205,9 +205,9 @@ type ArticleUpdate2 = UpdateData<ArticleSchema>
 
 `db.model()` 调用时自动同步表结构：
 
-| 场景 | 行为 |
-|------|------|
-| 表不存在 | 自动 `CREATE TABLE` |
+| 场景     | 行为                          |
+| -------- | ----------------------------- |
+| 表不存在 | 自动 `CREATE TABLE`           |
 | 新增字段 | 自动 `ALTER TABLE ADD COLUMN` |
-| 删除字段 | **不操作**（安全考虑） |
-| 类型变更 | **不操作**（需手动迁移） |
+| 删除字段 | **不操作**（安全考虑）        |
+| 类型变更 | **不操作**（需手动迁移）      |
