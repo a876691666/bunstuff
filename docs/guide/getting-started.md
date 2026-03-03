@@ -81,10 +81,10 @@ bun run dev:client     # 客户端前端（端口 5174）
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| **后端 API** | http://localhost:3000 | Elysia API 服务 |
-| **管理端** | http://localhost:5173 | Vue 3 + Naive UI 管理后台 |
-| **客户端** | http://localhost:5174 | Vue 3 轻量客户端 |
-| **OpenAPI 文档** | http://localhost:3000/openapi | 自动生成的 API 文档 |
+| **后端 API** | `http://localhost:3000` | Elysia API 服务 |
+| **管理端** | `http://localhost:5173` | Vue 3 + Naive UI 管理后台 |
+| **客户端** | `http://localhost:5174` | Vue 3 轻量客户端 |
+| **OpenAPI 文档** | `http://localhost:3000/openapi` | 自动生成的 API 文档 |
 
 ### 步骤 5：登录系统
 
