@@ -115,6 +115,7 @@ export async function generateRegistry(backendDir?: string) {
 
   for await (const file of seedGlob.scan({ cwd: modelsDir })) {
     const folder = file.replace(/\\/g, '/').split('/')[0]!
+
     seeds.push({ folder, varName: 'seed_' + kebabToCamel(folder) })
   }
   seeds.sort((a, b) => a.folder.localeCompare(b.folder))
@@ -125,6 +126,9 @@ export async function generateRegistry(backendDir?: string) {
 
   for await (const file of apiGlob.scan({ cwd: apiDir })) {
     const normalFile = file.replace(/\\/g, '/')
+    // 跳过策略文件（不是路由）
+    if (normalFile.endsWith('/policy.ts') || normalFile === 'policy.ts') continue
+
     apiFiles.push({
       file: normalFile,
       prefix: fileToPrefix(normalFile),
@@ -226,6 +230,45 @@ export async function generateRegistry(backendDir?: string) {
     lines.push('')
     await Bun.write(join(generatedDir, 'seeds.generated.ts'), lines.join('\n'))
     console.log(`✅ Generated seed registry → _generated/seeds.generated.ts (${seeds.length} seeds)`)
+  }
+
+  // ===== 生成 _generated/policies.generated.ts（策略导入注册表） =====
+  {
+    const policyGlob = new Glob('**/policy.ts')
+    const policyFiles: { file: string; varName: string }[] = []
+
+    for await (const file of policyGlob.scan({ cwd: apiDir })) {
+      const normalFile = file.replace(/\\/g, '/')
+      const varName =
+        'policy_' +
+        normalFile
+          .replace(/\/policy\.ts$/, '')
+          .split('/')
+          .map((seg) => (seg === '_' ? '$' : kebabToCamel(seg)))
+          .join('_')
+      policyFiles.push({ file: normalFile, varName })
+    }
+    policyFiles.sort((a, b) => a.file.localeCompare(b.file))
+
+    const lines = header()
+    lines.push("import type { PolicyDefinition } from '@/core/policy'")
+    lines.push('')
+    for (const { file, varName } of policyFiles) {
+      const importPath = file.replace(/\.ts$/, '')
+      lines.push(`import ${varName} from '@/api/${importPath}'`)
+    }
+    lines.push('')
+    lines.push('// 策略注册表 — 自动生成自 api{/}**/policy.ts')
+    lines.push('export const allPolicies: PolicyDefinition[] = [')
+    for (const { varName } of policyFiles) {
+      lines.push(`  ${varName},`)
+    }
+    lines.push(']')
+    lines.push('')
+    await Bun.write(join(generatedDir, 'policies.generated.ts'), lines.join('\n'))
+    console.log(
+      `✅ Generated policy registry → _generated/policies.generated.ts (${policyFiles.length} policies)`,
+    )
   }
 }
 

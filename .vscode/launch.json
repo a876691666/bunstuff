@@ -9,8 +9,8 @@
 			"internalConsoleOptions": "neverOpen",
 			"request": "launch",
 			"name": "dev",
-			"program": "backend/index.ts",
-			"cwd": "${workspaceFolder}",
+			"program": "index.ts",
+			"cwd": "${workspaceFolder}/backend",
 			"stopOnEntry": false,
 			"watchMode": true,
 			"preLaunchTask": "generate"

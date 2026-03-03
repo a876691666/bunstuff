@@ -18,7 +18,6 @@
  */
 
 import type { DataScope } from '@/plugins/rbac'
-import type { UserPermissionInfo } from '@/services/rbac'
 import { render } from 'velocityjs'
 import {
   parse as parseSsql,
@@ -61,9 +60,9 @@ export interface CrudContext {
   cookie?: Record<string, any>
   userId?: number | null
   roleId?: number | null
+  roleCode?: string | null
   session?: any
   dataScope?: DataScope | null
-  rbac?: UserPermissionInfo | null
   [key: string]: any
 }
 
@@ -85,8 +84,8 @@ const ELYSIA_INTERNAL_KEYS = new Set([
   'error',
   'userId',
   'roleId',
+  'roleCode',
   'session',
-  'rbac',
   'dataScope',
   'vip',
   'file',
@@ -140,7 +139,7 @@ export function buildVelocityContext(ctx?: CrudContext): Record<string, any> {
     auth: {
       userId: ctx.userId ?? null,
       roleId: ctx.roleId ?? null,
-      role: ctx.rbac?.role ?? null,
+      roleCode: ctx.roleCode ?? null,
       username: ctx.session?.username ?? null,
       session: ctx.session ?? null,
     },

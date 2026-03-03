@@ -1,6 +1,5 @@
 /**
- * 角色服务
- * 从 modules/rbac/role/service.ts 迁移
+ * 角色服务（简化版：无继承）
  */
 
 import type { Insert, Update } from '@/packages/orm'
@@ -9,8 +8,6 @@ import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '
 import { reload } from '@/services/rbac-cache'
 
 const Role = model.role
-const RolePermission = model.role_permission
-const RoleMenu = model.role_menu
 const User = model.users
 
 export async function findAll(query: PageQuery, ctx?: CrudContext) {
@@ -51,12 +48,6 @@ export async function remove(id: number, ctx?: CrudContext) {
   if (usersWithRole.length > 0) {
     throw new Error(`无法删除角色：有 ${usersWithRole.length} 个用户正在使用该角色`)
   }
-  const childRoles = await Role.findMany({ where: `parentId = ${id}` })
-  if (childRoles.length > 0) {
-    throw new Error(`无法删除角色：存在 ${childRoles.length} 个子角色`)
-  }
-  await RolePermission.deleteMany(`roleId = ${id}`)
-  await RoleMenu.deleteMany(`roleId = ${id}`)
   const w = buildWhere(Role.tableName, `id = ${id}`, ctx)
   if (!w) return false
   const ok = (await Role.deleteMany(w)) > 0
@@ -64,21 +55,11 @@ export async function remove(id: number, ctx?: CrudContext) {
   return ok
 }
 
-export async function getTree() {
-  const roles = await Role.findMany({
-    orderBy: [{ column: 'sort', order: 'ASC' }],
-  })
-  return buildTree(roles)
-}
-
-function buildTree(items: any[], parentId: number | null = null): any[] {
-  return items
-    .filter((item) => item.parentId === parentId)
-    .map((item) => ({
-      ...item,
-      children: buildTree(items, item.id),
-    }))
-}
-
 /** Schema 代理 */
 export const getSchema: (typeof Role)['getSchema'] = Role.getSchema.bind(Role)
+
+/** 获取角色列表（扁平，无树结构） */
+export async function getTree() {
+  const roles = await Role.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] })
+  return roles.map((r) => ({ ...r, children: [] }))
+}

@@ -1,0 +1,21 @@
+import { definePolicy } from '@/core/policy'
+
+export default definePolicy({
+  module: 'rate-limit-rule',
+  permissions: [
+    { code: 'rateLimit:admin:rule:list', name: '查看限流规则列表', description: '获取限流规则列表' },
+    { code: 'rateLimit:admin:rule:read', name: '查看限流规则详情', description: '获取限流规则详情' },
+    { code: 'rateLimit:admin:rule:create', name: '创建限流规则', description: '创建新限流规则' },
+    { code: 'rateLimit:admin:rule:update', name: '更新限流规则', description: '更新限流规则' },
+    { code: 'rateLimit:admin:rule:delete', name: '删除限流规则', description: '删除限流规则' },
+  ],
+  roles: {
+    'super-admin': '*',
+    'admin': '*',
+    'user': ['rateLimit:admin:rule:list', 'rateLimit:admin:rule:read'],
+  },
+  scopes: [
+    { role: 'user', table: 'rate_limit_rule', permission: 'rateLimit:admin:rule:list', rule: 'status = 1', description: '仅查看启用限流规则' },
+    { role: 'user', table: 'rate_limit_rule', permission: 'rateLimit:admin:rule:read', rule: 'status = 1', description: '仅查看启用限流规则' },
+  ],
+})

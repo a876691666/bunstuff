@@ -1,0 +1,23 @@
+import { definePolicy } from '@/core/policy'
+
+export default definePolicy({
+  module: 'notice',
+  permissions: [
+    { code: 'notice:admin:list', name: '查看通知列表', description: '获取通知列表' },
+    { code: 'notice:admin:read', name: '查看通知详情', description: '获取通知详情' },
+    { code: 'notice:admin:create', name: '创建通知', description: '创建新通知' },
+    { code: 'notice:admin:update', name: '更新通知', description: '更新通知内容' },
+    { code: 'notice:admin:delete', name: '删除通知', description: '删除通知' },
+  ],
+  roles: {
+    'super-admin': '*',
+    'admin': '*',
+    'user': ['notice:admin:list', 'notice:admin:read'],
+  },
+  scopes: [
+    { role: 'admin', table: 'notice', permission: 'notice:admin:update', rule: 'createBy = $auth.userId', description: '管理员只能修改自己的通知' },
+    { role: 'admin', table: 'notice', permission: 'notice:admin:delete', rule: 'createBy = $auth.userId', description: '管理员只能删除自己的通知' },
+    { role: 'user', table: 'notice', permission: 'notice:admin:list', rule: 'status = 1', description: '仅查看已发布通知' },
+    { role: 'user', table: 'notice', permission: 'notice:admin:read', rule: 'status = 1', description: '仅查看已发布通知' },
+  ],
+})

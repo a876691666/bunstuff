@@ -1,30 +1,28 @@
 /**
- * RBAC 服务 - 基于缓存的高性能权限查询
- * 从 modules/rbac/main/service.ts 迁移
+ * RBAC 服务 - 基于 Casbin 的权限查询（无角色继承）
+ *
+ * 权限检查通过 Casbin enforcer，角色/菜单对象从 rbac-cache 获取。
  */
 
 import type { Row } from '@/packages/orm'
 import { model } from '@/core/model'
+import * as casbin from '@/services/casbin'
 import * as rbacCache from '@/services/rbac-cache'
-import type { CachedRole, CachedPermission } from '@/services/rbac-cache'
+import type { CachedRole } from '@/services/rbac-cache'
 
 const User = model.users
 const Menu = model.menu
-const PermissionScope = model.permission_scope
 
 type MenuRow = Row<typeof Menu>
-type PermissionScopeRow = Row<typeof PermissionScope>
 
-/** 用户权限信息 */
+/** 用户权限信息（简化版，无继承） */
 export interface UserPermissionInfo {
   userId: number
   role: CachedRole | null
-  roleChain: CachedRole[]
-  permissions: CachedPermission[]
-  permissionCodes: Set<string>
-  menus: Row<typeof Menu>[]
+  permissionCodes: string[]
+  menus: MenuRow[]
   menuTree: MenuTreeNode[]
-  scopes: Map<string, Row<typeof PermissionScope>[]>
+  scopes: Array<{ table: string; permission: string; rule: string }>
 }
 
 /** 菜单树节点 */
@@ -48,86 +46,53 @@ export function getRoleByCode(code: string): CachedRole | undefined {
   return rbacCache.getRoleByCode(code)
 }
 
-export function getRoleChain(roleId: number): CachedRole[] {
-  const role = rbacCache.getRole(roleId)
-  if (!role) return []
-  return [role, ...rbacCache.getRoleAncestors(roleId)]
+export function getAllRoles(): CachedRole[] {
+  return rbacCache.getAllRoles()
 }
 
-export function getChildRoleIds(roleId: number): number[] {
-  const role = rbacCache.getRole(roleId)
-  return role?.descendantIds || []
+// ============ 权限相关 (委托 Casbin) ============
+
+export async function hasPermission(roleCode: string, permissionCode: string): Promise<boolean> {
+  return casbin.enforce(roleCode, permissionCode)
 }
 
-export function getRoleTree(): (CachedRole & { children: any[] })[] {
-  const roles = rbacCache.getAllRoles()
-  return buildTree(roles)
+export async function hasAnyPermission(
+  roleCode: string,
+  permissionCodes: string[],
+): Promise<boolean> {
+  return casbin.hasAnyPermission(roleCode, permissionCodes)
 }
 
-// ============ 权限相关 ============
-
-export function getRolePermissionIds(roleId: number): number[] {
-  const role = rbacCache.getRole(roleId)
-  return role?.allPermissionIds || []
+export async function hasAllPermissions(
+  roleCode: string,
+  permissionCodes: string[],
+): Promise<boolean> {
+  return casbin.hasAllPermissions(roleCode, permissionCodes)
 }
 
-export function getRolePermissions(roleId: number): CachedPermission[] {
-  return rbacCache.getRolePermissions(roleId)
-}
-
-export function hasPermission(roleId: number, permissionCode: string): boolean {
-  return rbacCache.roleHasPermission(roleId, permissionCode)
-}
-
-export function hasAnyPermission(roleId: number, permissionCodes: string[]): boolean {
-  return rbacCache.roleHasAnyPermission(roleId, permissionCodes)
-}
-
-export function hasAllPermissions(roleId: number, permissionCodes: string[]): boolean {
-  return rbacCache.roleHasAllPermissions(roleId, permissionCodes)
+export async function getRolePermissionCodes(roleCode: string): Promise<string[]> {
+  return casbin.getRolePermissionCodes(roleCode)
 }
 
 // ============ 菜单相关 ============
 
-export function getRoleMenuIds(roleId: number): number[] {
-  const role = rbacCache.getRole(roleId)
-  return role?.allMenuIds || []
+export async function getRoleMenus(roleCode: string): Promise<MenuRow[]> {
+  return rbacCache.getRoleMenus(roleCode)
 }
 
-export function getRoleMenus(roleId: number): MenuRow[] {
-  return rbacCache.getRoleMenus(roleId)
-}
-
-export function getRoleMenuTree(roleId: number): MenuTreeNode[] {
-  const menus = getRoleMenus(roleId)
+export async function getRoleMenuTree(roleCode: string): Promise<MenuTreeNode[]> {
+  const menus = await getRoleMenus(roleCode)
   return buildMenuTree(menus)
 }
 
-// ============ 数据权限相关 ============
+// ============ 数据权限相关 (委托 Casbin) ============
 
-export function getPermissionScopes(permissionId: number): PermissionScopeRow[] {
-  const perm = rbacCache.getPermission(permissionId)
-  return perm?.scopes || []
+export async function getRoleScopes(roleCode: string): Promise<Array<{ table: string; permission: string; rule: string }>> {
+  return casbin.getRoleScopes(roleCode)
 }
 
-export function getRoleScopes(roleId: number): Map<string, PermissionScopeRow[]> {
-  return rbacCache.getRoleScopes(roleId)
-}
-
-export function getRoleScopesByPermissions(
-  roleId: number,
-  permissionCodes: string[],
-): Map<string, PermissionScopeRow[]> {
-  return rbacCache.getRoleScopesByPermissions(roleId, permissionCodes)
-}
-
-export function getRoleScopesForTable(roleId: number, tableName: string): PermissionScopeRow[] {
-  const scopes = getRoleScopes(roleId)
-  return scopes.get(tableName) || []
-}
-
-export function getRoleSsqlRules(roleId: number, tableName: string): string[] {
-  return rbacCache.getRoleSsqlRules(roleId, tableName)
+export async function getRoleSsqlRules(roleCode: string, tableName: string, permCode?: string): Promise<string[]> {
+  return casbin.getRoleSsqlRules(roleCode, tableName, permCode)
 }
 
 // ============ 用户相关 ============
@@ -136,31 +101,23 @@ export async function getUserPermissionInfo(userId: number): Promise<UserPermiss
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return null
 
-  const roleId = user.roleId
-  const role = rbacCache.getRole(roleId) || null
-  const roleChain = getRoleChain(roleId)
-  const permissions = getRolePermissions(roleId)
-  const permissionCodes = new Set(permissions.map((p) => p.code))
-  const menus = getRoleMenus(roleId)
-  const menuTree = buildMenuTree(menus)
-  const scopes = getRoleScopes(roleId)
+  const role = rbacCache.getRole(user.roleId) || null
+  if (!role) return { userId, role: null, permissionCodes: [], menus: [], menuTree: [], scopes: [] }
 
-  return {
-    userId,
-    role,
-    roleChain,
-    permissions,
-    permissionCodes,
-    menus,
-    menuTree,
-    scopes,
-  }
+  const permissionCodes = await casbin.getRolePermissionCodes(role.code)
+  const menus = await rbacCache.getRoleMenus(role.code)
+  const menuTree = buildMenuTree(menus)
+  const scopes = await casbin.getRoleScopes(role.code)
+
+  return { userId, role, permissionCodes, menus, menuTree, scopes }
 }
 
 export async function userHasPermission(userId: number, permissionCode: string): Promise<boolean> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return false
-  return hasPermission(user.roleId, permissionCode)
+  const role = rbacCache.getRole(user.roleId)
+  if (!role) return false
+  return casbin.enforce(role.code, permissionCode)
 }
 
 export async function userHasAnyPermission(
@@ -169,27 +126,34 @@ export async function userHasAnyPermission(
 ): Promise<boolean> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return false
-  return hasAnyPermission(user.roleId, permissionCodes)
+  const role = rbacCache.getRole(user.roleId)
+  if (!role) return false
+  return casbin.hasAnyPermission(role.code, permissionCodes)
 }
 
 export async function getUserMenuTree(userId: number): Promise<MenuTreeNode[]> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return []
-  return getRoleMenuTree(user.roleId)
+  const role = rbacCache.getRole(user.roleId)
+  if (!role) return []
+  return getRoleMenuTree(role.code)
 }
 
 export async function getUserScopesForTable(
   userId: number,
   tableName: string,
-): Promise<PermissionScopeRow[]> {
+  permCode?: string,
+): Promise<string[]> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return []
-  return getRoleScopesForTable(user.roleId, tableName)
+  const role = rbacCache.getRole(user.roleId)
+  if (!role) return []
+  return casbin.getRoleSsqlRules(role.code, tableName, permCode)
 }
 
 // ============ 缓存管理 ============
 
-export function getCacheStatus() {
+export async function getCacheStatus() {
   return rbacCache.getStatus()
 }
 
@@ -198,18 +162,6 @@ export async function reloadCache(): Promise<void> {
 }
 
 // ============ 工具方法 ============
-
-function buildTree<T extends Record<string, any>>(
-  items: T[],
-  parentId: number | null = null,
-): (T & { children: any[] })[] {
-  return items
-    .filter((item) => item.parentId === parentId)
-    .map((item) => ({
-      ...item,
-      children: buildTree(items, item.id),
-    }))
-}
 
 function buildMenuTree(menus: MenuRow[]): MenuTreeNode[] {
   const menuMap = new Map<number, MenuTreeNode>()

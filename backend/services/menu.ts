@@ -9,7 +9,6 @@ import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '
 import { reload } from '@/services/rbac-cache'
 
 const Menu = model.menu
-const RoleMenu = model.role_menu
 
 export async function findAll(query: PageQuery, ctx?: CrudContext) {
   return Menu.page({
@@ -45,7 +44,6 @@ export async function remove(id: number, ctx?: CrudContext) {
   if (childMenus.length > 0) {
     throw new Error(`无法删除菜单：存在 ${childMenus.length} 个子菜单`)
   }
-  await RoleMenu.deleteMany(`menuId = ${id}`)
   const w = buildWhere(Menu.tableName, `id = ${id}`, ctx)
   if (!w) return false
   const ok = (await Menu.deleteMany(w)) > 0

@@ -1,11 +1,12 @@
 import { Elysia, t } from 'elysia'
 import * as rbacService from '@/services/rbac'
+import * as rbacCache from '@/services/rbac-cache'
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/services/response'
 import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 
-/** RBAC 管理模块控制器（管理端） */
+/** RBAC 管理模块控制器（管理端） - Casbin 版 */
 export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .use(authPlugin())
   .use(rbacPlugin())
@@ -14,47 +15,12 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   // ============ 角色相关 ============
 
   .get(
-    '/roles/tree',
+    '/roles',
     async (ctx) => {
-      const data = await rbacService.getRoleTree()
+      const data = rbacService.getAllRoles()
       return R.ok(data)
     },
     {
-      response: {
-        200: SuccessResponse(
-          t.Array(
-            t.Recursive((Self) =>
-              t.Object({
-                id: t.Number({ description: '角色ID' }),
-                name: t.String({ description: '角色名称' }),
-                code: t.String({ description: '角色编码' }),
-                parentId: t.Nullable(t.Number({ description: '父角色ID' })),
-                permissions: t.Array(t.String({ description: '权限编码' })),
-                children: t.Optional(t.Array(Self)),
-              }),
-            ),
-          ),
-          '角色权限树结构',
-        ),
-      },
-      detail: {
-        summary: '获取角色树',
-        description:
-          '获取角色的树形结构，每个节点包含汇聚的权限信息\n\n🔐 **所需权限**: `rbac:admin:roles-tree`',
-        security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['rbac:admin:roles-tree'] } },
-      },
-    },
-  )
-
-  .get(
-    '/roles/:roleId/chain',
-    async (ctx) => {
-      const data = await rbacService.getRoleChain(ctx.params.roleId)
-      return R.ok(data)
-    },
-    {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
       response: {
         200: SuccessResponse(
           t.Array(
@@ -62,39 +28,19 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
               id: t.Number({ description: '角色ID' }),
               name: t.String({ description: '角色名称' }),
               code: t.String({ description: '角色编码' }),
-              parentId: t.Nullable(t.Number({ description: '父角色ID' })),
+              status: t.Number({ description: '状态' }),
+              sort: t.Number({ description: '排序' }),
+              description: t.Nullable(t.String({ description: '描述' })),
             }),
           ),
-          '从当前角色到根角色的链路',
+          '角色列表',
         ),
       },
       detail: {
-        summary: '获取角色父级链',
-        description:
-          '获取从当前角色到根角色的完整继承链路\n\n🔐 **所需权限**: `rbac:admin:role-chain`',
+        summary: '获取角色列表',
+        description: '获取所有角色（扁平列表，无继承）\n\n🔐 **所需权限**: `rbac:admin:roles-tree`',
         security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['rbac:admin:role-chain'] } },
-      },
-    },
-  )
-
-  .get(
-    '/roles/:roleId/children',
-    async (ctx) => {
-      const data = await rbacService.getChildRoleIds(ctx.params.roleId)
-      return R.ok(data)
-    },
-    {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
-      response: {
-        200: SuccessResponse(t.Array(t.Number({ description: '子角色ID' })), '所有后代角色ID列表'),
-      },
-      detail: {
-        summary: '获取子角色ID列表',
-        description:
-          '获取角色的所有后代角色ID（递归查询）\n\n🔐 **所需权限**: `rbac:admin:role-children`',
-        security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['rbac:admin:role-children'] } },
+        rbac: { scope: { permissions: ['rbac:admin:roles-tree'] } },
       },
     },
   )
@@ -104,28 +50,24 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .get(
     '/roles/:roleId/permissions',
     async (ctx) => {
-      const data = await rbacService.getRolePermissions(ctx.params.roleId)
-      return R.ok(data)
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const codes = await rbacService.getRolePermissionCodes(role.code)
+      return R.ok(codes)
     },
     {
       params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
       response: {
         200: SuccessResponse(
-          t.Array(
-            t.Object({
-              id: t.Number({ description: '权限ID' }),
-              name: t.String({ description: '权限名称' }),
-              code: t.String({ description: '权限编码' }),
-              resource: t.Nullable(t.String({ description: '资源标识' })),
-            }),
-          ),
-          '角色权限列表（含继承）',
+          t.Array(t.String({ description: '权限编码' })),
+          '角色权限编码列表',
         ),
+        404: ErrorResponse,
       },
       detail: {
         summary: '获取角色权限列表',
         description:
-          '获取角色的所有权限，包含从子角色汇聚的权限\n\n🔐 **所需权限**: `rbac:admin:role-permissions`',
+          '获取角色的所有权限编码\n\n🔐 **所需权限**: `rbac:admin:role-permissions`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:role-permissions'] } },
       },
@@ -135,10 +77,9 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .post(
     '/roles/:roleId/permissions/check',
     async (ctx) => {
-      const hasPermission = await rbacService.hasPermission(
-        ctx.params.roleId,
-        ctx.body.permissionCode,
-      )
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const hasPermission = await rbacService.hasPermission(role.code, ctx.body.permissionCode)
       return R.ok({ hasPermission })
     },
     {
@@ -149,11 +90,12 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
           t.Object({ hasPermission: t.Boolean({ description: '是否拥有权限' }) }),
           '权限检查结果',
         ),
+        404: ErrorResponse,
       },
       detail: {
         summary: '检查角色权限',
         description:
-          '检查角色是否拥有指定的单个权限\n\n🔐 **所需权限**: `rbac:admin:permission-check`',
+          '检查角色是否拥有指定权限\n\n🔐 **所需权限**: `rbac:admin:permission-check`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:permission-check'] } },
       },
@@ -163,10 +105,9 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .post(
     '/roles/:roleId/permissions/check-any',
     async (ctx) => {
-      const hasPermission = await rbacService.hasAnyPermission(
-        ctx.params.roleId,
-        ctx.body.permissionCodes,
-      )
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const hasPermission = await rbacService.hasAnyPermission(role.code, ctx.body.permissionCodes)
       return R.ok({ hasPermission })
     },
     {
@@ -181,7 +122,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       detail: {
         summary: '检查任一权限',
         description:
-          '检查角色是否拥有给定权限列表中的任意一个\n\n🔐 **所需权限**: `rbac:admin:permission-check-any`',
+          '检查角色是否拥有任意一个权限\n\n🔐 **所需权限**: `rbac:admin:permission-check-any`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:permission-check-any'] } },
       },
@@ -191,10 +132,9 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .post(
     '/roles/:roleId/permissions/check-all',
     async (ctx) => {
-      const hasPermission = await rbacService.hasAllPermissions(
-        ctx.params.roleId,
-        ctx.body.permissionCodes,
-      )
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const hasPermission = await rbacService.hasAllPermissions(role.code, ctx.body.permissionCodes)
       return R.ok({ hasPermission })
     },
     {
@@ -209,7 +149,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       detail: {
         summary: '检查所有权限',
         description:
-          '检查角色是否同时拥有给定的所有权限\n\n🔐 **所需权限**: `rbac:admin:permission-check-all`',
+          '检查角色是否同时拥有所有权限\n\n🔐 **所需权限**: `rbac:admin:permission-check-all`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:permission-check-all'] } },
       },
@@ -221,16 +161,21 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .get(
     '/roles/:roleId/menus',
     async (ctx) => {
-      const data = await rbacService.getRoleMenus(ctx.params.roleId)
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const data = await rbacService.getRoleMenus(role.code)
       return R.ok(data)
     },
     {
       params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
-      response: { 200: SuccessResponse(t.Array(t.Any()), '角色菜单平铺列表') },
+      response: {
+        200: SuccessResponse(t.Array(t.Any()), '角色菜单平铺列表'),
+        404: ErrorResponse,
+      },
       detail: {
         summary: '获取角色菜单列表',
         description:
-          '获取角色的所有菜单（包含从子角色汇聚的菜单）\n\n🔐 **所需权限**: `rbac:admin:role-menus`',
+          '获取角色的所有菜单\n\n🔐 **所需权限**: `rbac:admin:role-menus`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:role-menus'] } },
       },
@@ -240,7 +185,9 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .get(
     '/roles/:roleId/menus/tree',
     async (ctx) => {
-      const data = await rbacService.getRoleMenuTree(ctx.params.roleId)
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const data = await rbacService.getRoleMenuTree(role.code)
       return R.ok(data)
     },
     {
@@ -266,11 +213,12 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
           ),
           '角色菜单树结构',
         ),
+        404: ErrorResponse,
       },
       detail: {
         summary: '获取角色菜单树',
         description:
-          '获取角色的菜单树形结构，用于前端渲染导航\n\n🔐 **所需权限**: `rbac:admin:role-menus-tree`',
+          '获取角色菜单树形结构\n\n🔐 **所需权限**: `rbac:admin:role-menus-tree`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:role-menus-tree'] } },
       },
@@ -282,36 +230,28 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .get(
     '/roles/:roleId/scopes',
     async (ctx) => {
-      const scopeMap = await rbacService.getRoleScopes(ctx.params.roleId)
-      const data: Record<string, any[]> = {}
-      for (const [key, value] of scopeMap) {
-        data[key] = value
-      }
-      return R.ok(data)
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const scopes = await rbacService.getRoleScopes(role.code)
+      return R.ok(scopes)
     },
     {
       params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
       response: {
         200: SuccessResponse(
-          t.Record(
-            t.String(),
-            t.Array(
-              t.Object({
-                id: t.Number({ description: '规则ID' }),
-                tableName: t.String({ description: '表名' }),
-                ruleName: t.String({ description: '规则名称' }),
-                ssql: t.String({ description: 'SSQL表达式' }),
-                description: t.Nullable(t.String({ description: '规则描述' })),
-              }),
-            ),
-          ),
-          '按表名分组的数据权限规则',
+          t.Array(t.Object({
+            table: t.String({ description: '表名' }),
+            permission: t.String({ description: '权限编码' }),
+            rule: t.String({ description: 'SSQL规则表达式' }),
+          })),
+          '角色数据权限规则列表',
         ),
+        404: ErrorResponse,
       },
       detail: {
         summary: '获取角色数据权限',
         description:
-          '获取角色的所有数据过滤规则，按表名分组\n\n🔐 **所需权限**: `rbac:admin:role-scopes`',
+          '获取角色的所有数据过滤规则（SSQL），按表名分组\n\n🔐 **所需权限**: `rbac:admin:role-scopes`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:role-scopes'] } },
       },
@@ -319,42 +259,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
   )
 
   .get(
-    '/roles/:roleId/scopes/table',
-    async (ctx) => {
-      const data = await rbacService.getRoleScopesForTable(ctx.params.roleId, ctx.query.tableName)
-      return R.ok(data)
-    },
-    {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
-      query: t.Object({ tableName: t.String({ description: '目标表名' }) }),
-      response: {
-        200: SuccessResponse(
-          t.Array(
-            t.Object({
-              id: t.Number({ description: '规则ID' }),
-              tableName: t.String({ description: '表名' }),
-              ruleName: t.String({ description: '规则名称' }),
-              ssql: t.String({ description: 'SSQL表达式' }),
-              description: t.Nullable(t.String({ description: '规则描述' })),
-            }),
-          ),
-          '指定表的数据权限规则列表',
-        ),
-      },
-      detail: {
-        summary: '获取表数据权限',
-        description:
-          '获取角色对指定表的数据过滤规则\n\n🔐 **所需权限**: `rbac:admin:role-scopes-table`',
-        security: [{ bearerAuth: [] }],
-        rbac: { scope: { permissions: ['rbac:admin:role-scopes-table'] } },
-      },
-    },
-  )
-
-  .get(
     '/roles/:roleId/scopes/ssql',
     async (ctx) => {
-      const data = await rbacService.getRoleSsqlRules(ctx.params.roleId, ctx.query.tableName)
+      const role = rbacCache.getRole(ctx.params.roleId)
+      if (!role) return R.notFound('角色')
+      const data = await rbacService.getRoleSsqlRules(role.code, ctx.query.tableName)
       return R.ok(data)
     },
     {
@@ -362,6 +271,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       query: t.Object({ tableName: t.String({ description: '目标表名' }) }),
       response: {
         200: SuccessResponse(t.Array(t.String({ description: 'SSQL规则表达式' })), 'SSQL规则列表'),
+        404: ErrorResponse,
       },
       detail: {
         summary: '获取SSQL过滤规则',
@@ -380,12 +290,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const info = await rbacService.getUserPermissionInfo(ctx.params.userId)
       if (!info) return R.notFound('用户')
-      const data = {
-        ...info,
-        permissionCodes: Array.from(info.permissionCodes),
-        scopes: Object.fromEntries(info.scopes),
-      }
-      return R.ok(data)
+      return R.ok(info)
     },
     {
       params: t.Object({ userId: t.Numeric({ description: '用户ID' }) }),
@@ -393,12 +298,13 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
         200: SuccessResponse(
           t.Object({
             userId: t.Number({ description: '用户ID' }),
-            roleId: t.Number({ description: '角色ID' }),
-            roleName: t.String({ description: '角色名称' }),
-            roleCode: t.String({ description: '角色编码' }),
             permissionCodes: t.Array(t.String()),
             menus: t.Array(t.Any()),
-            scopes: t.Record(t.String(), t.Array(t.Any())),
+            scopes: t.Array(t.Object({
+              table: t.String({ description: '表名' }),
+              permission: t.String({ description: '权限编码' }),
+              rule: t.String({ description: 'SSQL规则' }),
+            })),
           }),
           '用户完整权限信息',
         ),
@@ -434,7 +340,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       detail: {
         summary: '检查用户权限',
         description:
-          '检查用户是否拥有指定的单个权限\n\n🔐 **所需权限**: `rbac:admin:user-permission-check`',
+          '检查用户是否拥有指定权限\n\n🔐 **所需权限**: `rbac:admin:user-permission-check`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:user-permission-check'] } },
       },
@@ -462,7 +368,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       detail: {
         summary: '检查用户任一权限',
         description:
-          '检查用户是否拥有给定权限列表中的任意一个\n\n🔐 **所需权限**: `rbac:admin:user-permission-check-any`',
+          '检查用户是否拥有任意一个权限\n\n🔐 **所需权限**: `rbac:admin:user-permission-check-any`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:user-permission-check-any'] } },
       },
@@ -519,44 +425,40 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       query: t.Object({ tableName: t.String({ description: '目标表名' }) }),
       response: {
         200: SuccessResponse(
-          t.Array(
-            t.Object({
-              id: t.Number({ description: '规则ID' }),
-              tableName: t.String({ description: '表名' }),
-              ruleName: t.String({ description: '规则名称' }),
-              ssql: t.String({ description: 'SSQL表达式' }),
-              description: t.Nullable(t.String({ description: '规则描述' })),
-            }),
-          ),
-          '用户表数据权限规则',
+          t.Array(t.String({ description: 'SSQL规则表达式' })),
+          '用户表数据权限SSQL规则',
         ),
       },
       detail: {
         summary: '获取用户表数据权限',
         description:
-          '获取用户对指定表的数据过滤规则\n\n🔐 **所需权限**: `rbac:admin:user-scopes-table`',
+          '获取用户对指定表的SSQL过滤规则\n\n🔐 **所需权限**: `rbac:admin:user-scopes-table`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:user-scopes-table'] } },
       },
     },
   )
 
-  // ============ 缓存管理 ============
+  // ============ Casbin 缓存管理 ============
 
   .get(
     '/cache/status',
-    (ctx) => {
-      const data = rbacService.getCacheStatus()
+    async (ctx) => {
+      const data = await rbacService.getCacheStatus()
       return R.ok(data)
     },
     {
       response: {
         200: SuccessResponse(
           t.Object({
+            initialized: t.Boolean({ description: '是否已初始化' }),
             roleCount: t.Number({ description: '角色缓存数量' }),
-            permissionCount: t.Number({ description: '权限缓存数量' }),
-            menuCount: t.Number({ description: '菜单缓存数量' }),
-            scopeCount: t.Number({ description: '数据权限缓存数量' }),
+            localMenuCount: t.Number({ description: '菜单缓存数量' }),
+            policyCount: t.Number({ description: 'Casbin策略总数' }),
+            permCount: t.Number({ description: '权限策略数量' }),
+            scopeCount: t.Number({ description: '数据域策略数量' }),
+            moduleCount: t.Number({ description: '策略模块数量' }),
+            permissionDefCount: t.Number({ description: '权限定义总数' }),
             lastUpdated: t.String({ description: '最后更新时间' }),
           }),
           'RBAC缓存状态信息',
@@ -564,7 +466,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       },
       detail: {
         summary: '获取缓存状态',
-        description: '获取RBAC缓存的当前状态\n\n🔐 **所需权限**: `rbac:admin:cache-status`',
+        description: '获取RBAC/Casbin缓存的当前状态\n\n🔐 **所需权限**: `rbac:admin:cache-status`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:cache-status'] } },
       },
@@ -581,7 +483,7 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
       response: { 200: MessageResponse },
       detail: {
         summary: '刷新缓存',
-        description: '手动刷新RBAC缓存\n\n🔐 **所需权限**: `rbac:admin:cache-reload`',
+        description: '手动刷新RBAC/Casbin缓存\n\n🔐 **所需权限**: `rbac:admin:cache-reload`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['rbac:admin:cache-reload'] } },
       },

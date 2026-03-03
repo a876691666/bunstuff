@@ -1,58 +1,39 @@
 /**
- * RBAC 缓存管理器
- * 从 modules/rbac/main/cache.ts 迁移
+ * RBAC 缓存层
+ *
+ * 委托 Casbin 服务处理权限/数据域策略，
+ * 本地缓存角色对象和菜单对象。
+ * 菜单可见性从角色权限编码自动派生（无需 role_menu 表）。
  */
 
 import type { Row } from '@/packages/orm'
 import { model } from '@/core/model'
+import * as casbin from '@/services/casbin'
 
 const Role = model.role
-const Permission = model.permission
-const PermissionScope = model.permission_scope
-const RolePermission = model.role_permission
-const RoleMenu = model.role_menu
 const Menu = model.menu
 
-type PermissionScopeRow = Row<typeof PermissionScope>
+type MenuRow = Row<typeof Menu>
 
 // ============ 缓存数据结构 ============
 
 export interface CachedRole extends Row<typeof Role> {
-  childIds: number[]
-  descendantIds: number[]
-  ancestorIds: number[]
-  permissionIds: number[]
-  allPermissionIds: number[]
-  menuIds: number[]
-  allMenuIds: number[]
-}
-
-export interface CachedPermission extends Row<typeof Permission> {
-  scopes: Row<typeof PermissionScope>[]
+  /** 该角色拥有的权限编码列表 (来自 Casbin) */
+  permissionCodes: string[]
 }
 
 interface CacheState {
   initialized: boolean
-  lastUpdated: Date | null
   roles: Map<number, CachedRole>
   roleCodeIndex: Map<string, number>
-  permissions: Map<number, CachedPermission>
-  permissionCodeIndex: Map<string, number>
-  menus: Map<number, Row<typeof Menu>>
-  scopesByTable: Map<string, Row<typeof PermissionScope>[]>
+  menus: Map<number, MenuRow>
 }
-
-// ============ 内部状态 ============
 
 const state: CacheState = {
   initialized: false,
-  lastUpdated: null,
   roles: new Map(),
   roleCodeIndex: new Map(),
-  permissions: new Map(),
-  permissionCodeIndex: new Map(),
   menus: new Map(),
-  scopesByTable: new Map(),
 }
 
 function ensureInitialized(): void {
@@ -64,164 +45,40 @@ function ensureInitialized(): void {
 // ============ 初始化 ============
 
 export async function init(): Promise<void> {
-  await reload()
+  await casbin.init()
+  await loadLocalCache()
 }
 
 export async function reload(): Promise<void> {
-  console.log('[RbacCache] 开始加载缓存...')
-  const startTime = Date.now()
+  await casbin.reload()
+  await loadLocalCache()
+}
 
-  const [roles, permissions, scopes, rolePermissions, roleMenus, menus] = await Promise.all([
+async function loadLocalCache(): Promise<void> {
+  const [roles, menus] = await Promise.all([
     Role.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] }),
-    Permission.findMany({}),
-    PermissionScope.findMany({}),
-    RolePermission.findMany({}),
-    RoleMenu.findMany({}),
     Menu.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] }),
   ])
 
-  const rolePermissionMap = new Map<number, number[]>()
-  const roleMenuMap = new Map<number, number[]>()
-  const permissionScopeMap = new Map<number, PermissionScopeRow[]>()
-
-  for (const rp of rolePermissions) {
-    const ids = rolePermissionMap.get(rp.roleId) || []
-    ids.push(rp.permissionId)
-    rolePermissionMap.set(rp.roleId, ids)
-  }
-
-  for (const rm of roleMenus) {
-    const ids = roleMenuMap.get(rm.roleId) || []
-    ids.push(rm.menuId)
-    roleMenuMap.set(rm.roleId, ids)
-  }
-
-  for (const scope of scopes) {
-    const list = permissionScopeMap.get(scope.permissionId) || []
-    list.push(scope)
-    permissionScopeMap.set(scope.permissionId, list)
-  }
-
-  const roleMap = new Map<number, Row<typeof Role>>()
-  const childrenMap = new Map<number, number[]>()
-
-  for (const role of roles) {
-    roleMap.set(role.id, role)
-    if (role.parentId !== null) {
-      const children = childrenMap.get(role.parentId) || []
-      children.push(role.id)
-      childrenMap.set(role.parentId, children)
-    }
-  }
-
-  const getAncestorIds = (roleId: number): number[] => {
-    const ancestors: number[] = []
-    let current = roleMap.get(roleId)
-    while (current?.parentId !== null && current?.parentId !== undefined) {
-      ancestors.push(current.parentId)
-      current = roleMap.get(current.parentId)
-    }
-    return ancestors
-  }
-
-  const getDescendantIds = (roleId: number): number[] => {
-    const descendants: number[] = []
-    const queue = childrenMap.get(roleId) || []
-    const visited = new Set<number>()
-    while (queue.length > 0) {
-      const id = queue.shift()!
-      if (visited.has(id)) continue
-      visited.add(id)
-      descendants.push(id)
-      const children = childrenMap.get(id) || []
-      queue.push(...children)
-    }
-    return descendants
-  }
-
   state.roles.clear()
   state.roleCodeIndex.clear()
-  state.permissions.clear()
-  state.permissionCodeIndex.clear()
   state.menus.clear()
-  state.scopesByTable.clear()
-
-  const getDescendantPermissionIds = (roleId: number): number[] => {
-    const result = new Set<number>()
-    const selfPermIds = rolePermissionMap.get(roleId) || []
-    selfPermIds.forEach((id) => result.add(id))
-    const descendants = getDescendantIds(roleId)
-    for (const descId of descendants) {
-      const descPermIds = rolePermissionMap.get(descId) || []
-      descPermIds.forEach((id) => result.add(id))
-    }
-    return Array.from(result)
-  }
-
-  const getDescendantMenuIds = (roleId: number): number[] => {
-    const result = new Set<number>()
-    const selfMenuIds = roleMenuMap.get(roleId) || []
-    selfMenuIds.forEach((id) => result.add(id))
-    const descendants = getDescendantIds(roleId)
-    for (const descId of descendants) {
-      const descMenuIds = roleMenuMap.get(descId) || []
-      descMenuIds.forEach((id) => result.add(id))
-    }
-    return Array.from(result)
-  }
 
   for (const role of roles) {
-    const ancestorIds = getAncestorIds(role.id)
-    const permissionIds = rolePermissionMap.get(role.id) || []
-    const menuIds = roleMenuMap.get(role.id) || []
-    const allPermissionIds = getDescendantPermissionIds(role.id)
-    const allMenuIds = getDescendantMenuIds(role.id)
-
-    const cachedRole: CachedRole = {
-      ...role,
-      childIds: childrenMap.get(role.id) || [],
-      descendantIds: getDescendantIds(role.id),
-      ancestorIds,
-      permissionIds,
-      allPermissionIds,
-      menuIds,
-      allMenuIds,
-    }
-
-    state.roles.set(role.id, cachedRole)
+    const permissionCodes = await casbin.getRolePermissionCodes(role.code)
+    const cached: CachedRole = { ...role, permissionCodes }
+    state.roles.set(role.id, cached)
     state.roleCodeIndex.set(role.code, role.id)
-  }
-
-  for (const perm of permissions) {
-    const cachedPerm: CachedPermission = {
-      ...perm,
-      scopes: permissionScopeMap.get(perm.id) || [],
-    }
-    state.permissions.set(perm.id, cachedPerm)
-    state.permissionCodeIndex.set(perm.code, perm.id)
   }
 
   for (const menu of menus) {
     state.menus.set(menu.id, menu)
   }
 
-  for (const scope of scopes) {
-    const list = state.scopesByTable.get(scope.tableName) || []
-    list.push(scope)
-    state.scopesByTable.set(scope.tableName, list)
-  }
-
   state.initialized = true
-  state.lastUpdated = new Date()
-
-  const elapsed = Date.now() - startTime
-  console.log(`[RbacCache] 缓存加载完成，耗时 ${elapsed}ms`)
-  console.log(
-    `[RbacCache] 角色: ${roles.length}, 权限: ${permissions.length}, 菜单: ${menus.length}`,
-  )
 }
 
-// ============ 查询 API ============
+// ============ 角色查询 ============
 
 export function getRole(roleId: number): CachedRole | undefined {
   ensureInitialized()
@@ -239,126 +96,61 @@ export function getAllRoles(): CachedRole[] {
   return Array.from(state.roles.values())
 }
 
-export function getPermission(permissionId: number): CachedPermission | undefined {
-  ensureInitialized()
-  return state.permissions.get(permissionId)
-}
+// ============ 菜单查询 ============
 
-export function getPermissionByCode(code: string): CachedPermission | undefined {
-  ensureInitialized()
-  const permId = state.permissionCodeIndex.get(code)
-  return permId !== undefined ? state.permissions.get(permId) : undefined
-}
-
-export function getAllPermissions(): CachedPermission[] {
-  ensureInitialized()
-  return Array.from(state.permissions.values())
-}
-
-export function getMenu(menuId: number): Row<typeof Menu> | undefined {
+export function getMenu(menuId: number): MenuRow | undefined {
   ensureInitialized()
   return state.menus.get(menuId)
 }
 
-export function getAllMenus(): Row<typeof Menu>[] {
+export function getAllMenus(): MenuRow[] {
   ensureInitialized()
   return Array.from(state.menus.values())
 }
 
-export function getScopesByTable(tableName: string): Row<typeof PermissionScope>[] {
+/**
+ * 获取角色可见的菜单列表。
+ * 菜单可见性由角色权限编码自动派生：
+ *   - 叶子菜单：permCode 为空或在角色权限中
+ *   - 目录菜单：至少有一个可见的子菜单
+ */
+export async function getRoleMenus(roleCode: string): Promise<MenuRow[]> {
   ensureInitialized()
-  return state.scopesByTable.get(tableName) || []
-}
+  const permCodes = new Set(await casbin.getRolePermissionCodes(roleCode))
+  const allMenus = getAllMenus().filter((m) => m.status === 1)
 
-// ============ 角色相关查询 ============
-
-export function getRoleAncestors(roleId: number): CachedRole[] {
-  const role = getRole(roleId)
-  if (!role) return []
-  return role.ancestorIds.map((id) => state.roles.get(id)!).filter(Boolean)
-}
-
-export function getRolePermissions(roleId: number): CachedPermission[] {
-  const role = getRole(roleId)
-  if (!role) return []
-  return role.allPermissionIds.map((id) => state.permissions.get(id)!).filter(Boolean)
-}
-
-export function getRolePermissionCodes(roleId: number): Set<string> {
-  const permissions = getRolePermissions(roleId)
-  return new Set(permissions.map((p) => p.code))
-}
-
-export function roleHasPermission(roleId: number, permissionCode: string): boolean {
-  const codes = getRolePermissionCodes(roleId)
-  return codes.has(permissionCode)
-}
-
-export function roleHasAnyPermission(roleId: number, permissionCodes: string[]): boolean {
-  const codes = getRolePermissionCodes(roleId)
-  return permissionCodes.some((code) => codes.has(code))
-}
-
-export function roleHasAllPermissions(roleId: number, permissionCodes: string[]): boolean {
-  const codes = getRolePermissionCodes(roleId)
-  return permissionCodes.every((code) => codes.has(code))
-}
-
-export function getRoleMenus(roleId: number): Row<typeof Menu>[] {
-  const role = getRole(roleId)
-  if (!role) return []
-  return role.allMenuIds
-    .map((id) => state.menus.get(id)!)
-    .filter((m) => m && m.status === 1)
-    .sort((a, b) => a.sort - b.sort)
-}
-
-export function getRoleScopes(roleId: number): Map<string, Row<typeof PermissionScope>[]> {
-  const permissions = getRolePermissions(roleId)
-  const scopeMap = new Map<string, Row<typeof PermissionScope>[]>()
-  for (const perm of permissions) {
-    for (const scope of perm.scopes) {
-      const list = scopeMap.get(scope.tableName) || []
-      list.push(scope)
-      scopeMap.set(scope.tableName, list)
+  // Step 1: 标记叶子菜单（页面/按钮且有 permCode 且角色拥有该权限，或无 permCode 的页面）
+  const visibleIds = new Set<number>()
+  for (const menu of allMenus) {
+    if (menu.permCode && permCodes.has(menu.permCode)) {
+      visibleIds.add(menu.id)
+    } else if (!menu.permCode && menu.type === 2) {
+      // 无权限要求的页面（如控制台），登录即可见
+      visibleIds.add(menu.id)
     }
   }
-  return scopeMap
-}
 
-export function getRoleScopesByPermissions(
-  roleId: number,
-  permissionCodes: string[],
-): Map<string, Row<typeof PermissionScope>[]> {
-  const permissions = getRolePermissions(roleId)
-  const codeSet = new Set(permissionCodes)
-  const scopeMap = new Map<string, Row<typeof PermissionScope>[]>()
-  for (const perm of permissions) {
-    if (!codeSet.has(perm.code)) continue
-    for (const scope of perm.scopes) {
-      const list = scopeMap.get(scope.tableName) || []
-      list.push(scope)
-      scopeMap.set(scope.tableName, list)
+  // Step 2: 向上传播 — 如果子菜单可见，其父目录也可见
+  const menuById = new Map(allMenus.map((m) => [m.id, m]))
+  for (const id of visibleIds) {
+    let menu = menuById.get(id)
+    while (menu?.parentId) {
+      if (visibleIds.has(menu.parentId)) break
+      visibleIds.add(menu.parentId)
+      menu = menuById.get(menu.parentId)
     }
   }
-  return scopeMap
+
+  return allMenus.filter((m) => visibleIds.has(m.id)).sort((a, b) => a.sort - b.sort)
 }
 
-export function getRoleSsqlRules(roleId: number, tableName: string): string[] {
-  const scopes = getRoleScopes(roleId)
-  const tableScopes = scopes.get(tableName) || []
-  return tableScopes.map((s) => s.ssqlRule)
-}
+// ============ 状态 ============
 
-// ============ 状态查询 ============
-
-export function getStatus() {
+export async function getStatus() {
+  const casbinStatus = await casbin.getStatus()
   return {
-    initialized: state.initialized,
-    lastUpdated: state.lastUpdated?.toISOString() ?? '',
+    ...casbinStatus,
     roleCount: state.roles.size,
-    permissionCount: state.permissions.size,
-    menuCount: state.menus.size,
-    scopeCount: state.scopesByTable.size,
+    localMenuCount: state.menus.size,
   }
 }

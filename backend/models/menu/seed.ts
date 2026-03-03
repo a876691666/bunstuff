@@ -64,39 +64,9 @@ const defaultMenus = [
     sort: 2,
     permCode: 'role:admin:list',
   },
-  // 权限管理页面
-  {
-    id: 5,
-    parentId: 2,
-    name: '权限管理',
-    path: '/system/permissions',
-    component: 'admin/system/Permissions',
-    icon: 'lock',
-    type: 2,
-    visible: 1,
-    status: 1,
-    redirect: null,
-    sort: 3,
-    permCode: 'permission:admin:list',
-  },
-  // 数据权限页面
-  {
-    id: 6,
-    parentId: 2,
-    name: '数据权限',
-    path: '/system/permission-scopes',
-    component: 'admin/system/PermissionScopes',
-    icon: 'database',
-    type: 2,
-    visible: 1,
-    status: 1,
-    redirect: null,
-    sort: 4,
-    permCode: 'permission-scope:admin:list',
-  },
   // 菜单管理页面
   {
-    id: 7,
+    id: 5,
     parentId: 2,
     name: '菜单管理',
     path: '/system/menus',
@@ -106,12 +76,12 @@ const defaultMenus = [
     visible: 1,
     status: 1,
     redirect: null,
-    sort: 5,
+    sort: 3,
     permCode: 'menu:admin:list',
   },
   // 字典类型页面
   {
-    id: 8,
+    id: 6,
     parentId: 2,
     name: '字典类型',
     path: '/system/dict-types',
@@ -126,7 +96,7 @@ const defaultMenus = [
   },
   // 字典数据页面
   {
-    id: 9,
+    id: 7,
     parentId: 2,
     name: '字典数据',
     path: '/system/dict-data',
@@ -141,7 +111,7 @@ const defaultMenus = [
   },
   // 参数配置页面
   {
-    id: 10,
+    id: 8,
     parentId: 2,
     name: '参数配置',
     path: '/system/configs',
@@ -157,7 +127,7 @@ const defaultMenus = [
 
   // ========== 2. 权限配置目录 ==========
   {
-    id: 12,
+    id: 10,
     parentId: null,
     name: '权限配置',
     path: '/rbac',
@@ -166,44 +136,14 @@ const defaultMenus = [
     type: 1,
     visible: 1,
     status: 1,
-    redirect: '/rbac/role-menus',
+    redirect: '/rbac/sessions',
     sort: 2,
     permCode: null,
   },
-  // 角色菜单页面
-  {
-    id: 13,
-    parentId: 12,
-    name: '角色菜单',
-    path: '/rbac/role-menus',
-    component: 'admin/rbac/RoleMenus',
-    icon: 'tree',
-    type: 2,
-    visible: 1,
-    status: 1,
-    redirect: null,
-    sort: 1,
-    permCode: 'role-menu:admin:list',
-  },
-  // 角色权限页面
-  {
-    id: 14,
-    parentId: 12,
-    name: '角色权限',
-    path: '/rbac/role-permissions',
-    component: 'admin/rbac/RolePermissions',
-    icon: 'permission',
-    type: 2,
-    visible: 1,
-    status: 1,
-    redirect: null,
-    sort: 2,
-    permCode: 'role-permission:admin:list',
-  },
   // 会话管理页面
   {
-    id: 15,
-    parentId: 12,
+    id: 11,
+    parentId: 10,
     name: '会话管理',
     path: '/rbac/sessions',
     component: 'admin/rbac/Sessions',
@@ -212,13 +152,13 @@ const defaultMenus = [
     visible: 1,
     status: 1,
     redirect: null,
-    sort: 3,
+    sort: 1,
     permCode: 'auth:admin:sessions',
   },
   // 缓存管理页面
   {
-    id: 16,
-    parentId: 12,
+    id: 12,
+    parentId: 10,
     name: '缓存管理',
     path: '/rbac/cache',
     component: 'admin/rbac/Cache',
@@ -227,7 +167,7 @@ const defaultMenus = [
     visible: 1,
     status: 1,
     redirect: null,
-    sort: 4,
+    sort: 2,
     permCode: 'rbac:admin:cache-status',
   },
 
@@ -412,7 +352,7 @@ const defaultMenus = [
     status: 1,
     redirect: null,
     sort: 3,
-    permCode: 'job:admin:log:list',
+    permCode: 'jobLog:admin:list',
   },
 
   // ========== 7. 定时任务目录 ==========

@@ -1,13 +1,13 @@
 /**
  * Auth 插件 - 全局认证中间件
  *
- * 默认启用，可通过路由配置禁用
+ * 默认启用，可通过路由配置禁用。
+ * 简化版：仅提供 session/userId/roleId/roleCode，不再加载完整权限信息。
  */
 
 import { Elysia } from 'elysia'
 import * as session from '../services/session'
-import * as rbacService from '@/services/rbac'
-import type { UserPermissionInfo } from '@/services/rbac'
+import * as rbacCache from '@/services/rbac-cache'
 
 /** Auth 配置选项 */
 export interface AuthPluginOptions {
@@ -64,7 +64,7 @@ function isPathExcluded(path: string, excludePaths: string[]): boolean {
  * app
  *   .use(authPlugin())
  *   .get("/public", () => "public", { detail: { auth: { skipAuth: true } } })
- *   .get("/private", ({ store }) => `user: ${store.userId}`)
+ *   .get("/private", ({ userId }) => `user: ${userId}`)
  * ```
  */
 export function authPlugin(options: AuthPluginOptions = {}) {
@@ -84,17 +84,18 @@ export function authPlugin(options: AuthPluginOptions = {}) {
       const token = extractToken(request)
       const sess = token ? session.verify(token) : null
 
-      // 获取完整的 RBAC 信息
-      let rbac: UserPermissionInfo | null = null
-      if (sess?.userId) {
-        rbac = await rbacService.getUserPermissionInfo(sess.userId)
+      // 获取角色编码（轻量查询，无需加载完整权限树）
+      let roleCode: string | null = null
+      if (sess?.roleId) {
+        const role = rbacCache.getRole(sess.roleId)
+        roleCode = role?.code ?? null
       }
 
       return {
         session: sess,
         userId: sess?.userId ?? null,
         roleId: sess?.roleId ?? null,
-        rbac,
+        roleCode,
       }
     })
     .onBeforeHandle({ as: 'global' }, (arg) => {

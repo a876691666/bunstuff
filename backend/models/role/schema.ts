@@ -2,12 +2,10 @@ import { TimestampSchema, column } from '../../packages/orm'
 
 export const tableName = 'role'
 
-/** 角色表 Schema (树形结构) */
+/** 角色表 Schema (扁平结构, 无继承) */
 export default class RoleSchema extends TimestampSchema {
   /** 角色 ID */
   id = column.number().primaryKey().autoIncrement().description('角色ID')
-  /** 父角色ID (自引用，用于树形结构) */
-  parentId = column.number().nullable().default(null).description('父角色ID')
   /** 角色名称 */
   name = column.string().default('').description('角色名称')
   /** 角色编码 */
