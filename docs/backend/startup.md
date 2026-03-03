@@ -15,7 +15,6 @@
 │  dictService.init()   → 全量加载字典数据              │
 │  configService.init() → 全量加载系统配置              │
 │  rateLimitService()   → 加载限流规则和 IP 黑名单      │
-│  crudRegistry.init()  → 加载动态 CRUD 表注册          │
 ├─────────────────────────────────────────────────────┤
 │          阶段 3: 服务启动                             │
 │  jobService.start()   → 启动定时任务调度              │
@@ -33,9 +32,8 @@
 | 4 | `dictService.initCache()` | ~10ms | 加载所有字典类型和字典数据 |
 | 5 | `configService.initCache()` | ~10ms | 加载所有系统配置 |
 | 6 | `rateLimitService.initCache()` | ~10ms | 加载限流规则 + IP 黑名单 |
-| 7 | `crudRegistry.initFromDb()` | ~10ms | 加载动态建表的注册信息 |
-| 8 | `jobService.start()` | ~10ms | 根据 job 表注册 Cron 定时任务 |
-| 9 | `app.listen(3000)` | ~5ms | 构建 Elysia 应用并开始监听 |
+| 7 | `jobService.start()` | ~10ms | 根据 job 表注册 Cron 定时任务 |
+| 8 | `app.listen(3000)` | ~5ms | 构建 Elysia 应用并开始监听 |
 
 > ⚠️ **注意**: 各步骤有严格的依赖关系。例如 RBAC 缓存依赖 Seed 创建的基础角色数据，字典缓存依赖 Seed 创建的基础字典数据。
 
@@ -62,9 +60,8 @@
 | 15 | `rate-limit-rule` | 限流规则初始化 |
 | 16 | `ip-blacklist` | IP 黑名单初始化 |
 | 17 | `seed-log` | Seed 日志初始化 |
-| 18 | `crud-table` | CRUD 注册表初始化 |
-| 19 | `vip-tier` | VIP 等级初始化 |
-| 20 | `vip-resource-limit` | VIP 资源限制初始化 |
+| 18 | `vip-tier` | VIP 等级初始化 |
+| 19 | `vip-resource-limit` | VIP 资源限制初始化 |
 
 ::: tip Seed 机制
 每个 Seed 执行后会写入 `seed_log` 表记录，下次启动时跳过已成功执行的 Seed，避免重复执行。管理端可手动触发重新执行。
@@ -79,7 +76,6 @@
 | **Dict** | `Map<type, data[]>` | 字典变更时自动刷新 | 查询零 DB 访问 |
 | **Config** | `Map<key, value>` | 配置变更时自动刷新 | 查询零 DB 访问 |
 | **RateLimit** | 内存计数器 | 规则变更时重新加载 | 滑动窗口算法 |
-| **CrudRegistry** | `Map<table, service>` | 动态表变更时刷新 | 运行时动态注册 |
 
 ## 🔧 入口文件说明
 
@@ -95,7 +91,6 @@ await rbacService.init()
 await dictService.initCache()
 await configService.initCache()
 await rateLimitService.initCache()
-await crudRegistry.initFromDb()
 
 // 阶段 3: 启动
 await jobService.start()

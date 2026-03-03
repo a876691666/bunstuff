@@ -235,9 +235,8 @@ API 层 (api/)
 | 4 | `dictService.initCache()` | 全量加载字典数据到内存 |
 | 5 | `configService.initCache()` | 全量加载系统配置到内存 |
 | 6 | `rateLimitService.initCache()` | 加载限流规则和 IP 黑名单 |
-| 7 | `crudRegistry.initFromDb()` | 加载动态 CRUD 表注册 |
-| 8 | `jobService.start()` | 启动定时任务调度 |
-| 9 | `app.listen(3000)` | 启动 HTTP 服务 |
+| 7 | `jobService.start()` | 启动定时任务调度 |
+| 8 | `app.listen(3000)` | 启动 HTTP 服务 |
 
 > ⚠️ **注意**: 各步骤有严格的依赖关系，不可调整顺序。例如 RBAC 缓存依赖 Seed 创建的基础角色数据。
 

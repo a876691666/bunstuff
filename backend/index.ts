@@ -12,7 +12,6 @@ import * as configService from '@/services/sys-config'
 import * as rateLimitService from '@/services/rate-limit'
 import { rateLimitPlugin } from '@/plugins/rate-limit'
 import * as jobService from '@/services/job'
-import { crudRegistry } from '@/services/crud-table'
 import { runSeeds } from '@/core/seed'
 
 // 自动创建必要目录
@@ -42,8 +41,6 @@ console.log('✅ Config cache initialized')
 
 await rateLimitService.initCache()
 console.log('✅ RateLimit cache initialized')
-
-await crudRegistry.initFromDb()
 
 // ===== 阶段3: 构建 Elysia 应用并启动 =====
 await jobService.start()

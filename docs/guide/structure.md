@@ -23,7 +23,6 @@ Bunstuff 采用 **Monorepo** 架构，在一个仓库中管理后端、前端、
 │   │   ├── 📁 _/                        // 客户端 API（7 条路由）
 │   │   │   ├── 📄 auth/                 // 认证（登录/注册/登出）
 │   │   │   ├── 📄 config/               // 配置查询
-│   │   │   ├── 📄 crud/                 // 动态 CRUD
 │   │   │   ├── 📄 dict/                 // 字典查询
 │   │   │   ├── 📄 file/                 // 文件上传下载
 │   │   │   ├── 📄 notice/               // 通知 + SSE
@@ -31,7 +30,6 @@ Bunstuff 采用 **Monorepo** 架构，在一个仓库中管理后端、前端、
 │   │   └── 📁 admin/                    // 管理端 API（18 条路由）
 │   │       ├── 📄 auth/                 // 会话管理
 │   │       ├── 📄 config/               // 参数配置 CRUD
-│   │       ├── 📄 crud-table/           // 动态表管理
 │   │       ├── 📄 dict/                 // 字典 CRUD
 │   │       ├── 📄 file/                 // 文件管理
 │   │       ├── 📄 ip-blacklist/         // IP 黑名单
@@ -74,7 +72,6 @@ Bunstuff 采用 **Monorepo** 架构，在一个仓库中管理后端、前端、
 │   │   ├── 📁 rate-limit-rule/         // 限流规则
 │   │   ├── 📁 ip-blacklist/            // IP 黑名单
 │   │   ├── 📁 seed-log/                // Seed 日志
-│   │   ├── 📁 crud-table/              // CRUD 注册表
 │   │   ├── 📁 vip-tier/                // VIP 等级
 │   │   ├── 📁 vip-resource-limit/      // VIP 资源限制
 │   │   ├── 📁 user-vip/                // 用户 VIP
@@ -98,7 +95,6 @@ Bunstuff 采用 **Monorepo** 架构，在一个仓库中管理后端、前端、
 │   │   ├── 📄 login-log.ts             // 登录日志
 │   │   ├── 📄 oper-log.ts              // 操作日志
 │   │   ├── 📄 rate-limit.ts            // 限流服务
-│   │   ├── 📄 crud-table.ts            // CRUD 注册
 │   │   ├── 📄 seed.ts                  // Seed 服务
 │   │   ├── 📄 vip.ts                   // VIP 服务
 │   │   └── 📄 response.ts              // 统一响应工具
