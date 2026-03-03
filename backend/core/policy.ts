@@ -156,8 +156,13 @@ export function collectAllMenus(configs: ModuleConfig[]): ResolvedMenu[] {
     for (const menu of config.menus) {
       if (menuMap.has(menu.path)) {
         const existing = menuMap.get(menu.path)!
-        // 仅在属性有实质差异时警告（忽略 name/sort 相同的目录菜单重复声明）
-        if (existing.component !== (menu.component ?? null) || existing.redirect !== (menu.redirect ?? null)) {
+        // 目录菜单（type=1，无 component）允许多模块重复声明，自动合并缺失属性
+        const isDir = (existing.type ?? 2) === 1 && !existing.component && !menu.component
+        if (isDir) {
+          // 合并：补充首次定义中缺失的 redirect / icon
+          if (!existing.redirect && menu.redirect) existing.redirect = menu.redirect
+          if (!existing.icon && menu.icon) existing.icon = menu.icon
+        } else if ((existing.component ?? null) !== (menu.component ?? null) || (existing.redirect ?? null) !== (menu.redirect ?? null)) {
           console.warn(`[menu] 重复路径 "${menu.path}"：模块 "${config.module}" 的定义被忽略（首次定义优先）`)
         }
       } else {
