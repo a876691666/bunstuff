@@ -9,6 +9,7 @@
  *   _generated/schemas.generated.ts   — Schema 运行时导入注册表
  *   _generated/routes.generated.ts    — API 路由运行时导入注册表
  *   _generated/seeds.generated.ts     — Seed 运行时导入注册表
+ *   _generated/configs.generated.ts   — 模块配置运行时导入注册表
  *
  * 使用方式：
  *   bun run scripts/gen-registry.ts        # 直接执行
@@ -126,7 +127,8 @@ export async function generateRegistry(backendDir?: string) {
 
   for await (const file of apiGlob.scan({ cwd: apiDir })) {
     const normalFile = file.replace(/\\/g, '/')
-    // 跳过策略文件（不是路由）
+    // 跳过配置文件（不是路由）
+    if (normalFile.endsWith('/config.ts') || normalFile === 'config.ts') continue
     if (normalFile.endsWith('/policy.ts') || normalFile === 'policy.ts') continue
 
     apiFiles.push({
@@ -232,42 +234,42 @@ export async function generateRegistry(backendDir?: string) {
     console.log(`✅ Generated seed registry → _generated/seeds.generated.ts (${seeds.length} seeds)`)
   }
 
-  // ===== 生成 _generated/policies.generated.ts（策略导入注册表） =====
+  // ===== 生成 _generated/configs.generated.ts（模块配置导入注册表） =====
   {
-    const policyGlob = new Glob('**/policy.ts')
-    const policyFiles: { file: string; varName: string }[] = []
+    const configGlob = new Glob('**/config.ts')
+    const configFiles: { file: string; varName: string }[] = []
 
-    for await (const file of policyGlob.scan({ cwd: apiDir })) {
+    for await (const file of configGlob.scan({ cwd: apiDir })) {
       const normalFile = file.replace(/\\/g, '/')
       const varName =
-        'policy_' +
+        'config_' +
         normalFile
-          .replace(/\/policy\.ts$/, '')
+          .replace(/\/config\.ts$/, '')
           .split('/')
           .map((seg) => (seg === '_' ? '$' : kebabToCamel(seg)))
           .join('_')
-      policyFiles.push({ file: normalFile, varName })
+      configFiles.push({ file: normalFile, varName })
     }
-    policyFiles.sort((a, b) => a.file.localeCompare(b.file))
+    configFiles.sort((a, b) => a.file.localeCompare(b.file))
 
     const lines = header()
-    lines.push("import type { PolicyDefinition } from '@/core/policy'")
+    lines.push("import type { ModuleConfig } from '@/core/policy'")
     lines.push('')
-    for (const { file, varName } of policyFiles) {
+    for (const { file, varName } of configFiles) {
       const importPath = file.replace(/\.ts$/, '')
       lines.push(`import ${varName} from '@/api/${importPath}'`)
     }
     lines.push('')
-    lines.push('// 策略注册表 — 自动生成自 api{/}**/policy.ts')
-    lines.push('export const allPolicies: PolicyDefinition[] = [')
-    for (const { varName } of policyFiles) {
+    lines.push('// 模块配置注册表 — 自动生成自 api{/}**/config.ts')
+    lines.push('export const allConfigs: ModuleConfig[] = [')
+    for (const { varName } of configFiles) {
       lines.push(`  ${varName},`)
     }
     lines.push(']')
     lines.push('')
-    await Bun.write(join(generatedDir, 'policies.generated.ts'), lines.join('\n'))
+    await Bun.write(join(generatedDir, 'configs.generated.ts'), lines.join('\n'))
     console.log(
-      `✅ Generated policy registry → _generated/policies.generated.ts (${policyFiles.length} policies)`,
+      `✅ Generated config registry → _generated/configs.generated.ts (${configFiles.length} configs)`,
     )
   }
 }

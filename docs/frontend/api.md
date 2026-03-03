@@ -1,83 +1,142 @@
-# API 层
+# API 模块
 
-## 概述
+## 🎯 概述
 
-`frontend/src/api/` 目录包含所有后端接口的请求封装，每个模块一个文件。
+前端共有 **17 个 API 模块**，统一存放在 `frontend/src/api/` 目录下。每个模块导出一个对象，包含该业务域的所有接口方法。类型定义集中在 `types/api.ts`（814 行，20+ 实体类型）。
 
-## API 模块清单
+## 📋 模块总览
 
-| 文件                  | 模块      | 主要接口                                         |
-| --------------------- | --------- | ------------------------------------------------ |
-| `auth.ts`             | 认证      | login, register, logout, me, changePassword      |
-| `user.ts`             | 用户管理  | list, detail, create, update, delete             |
-| `role.ts`             | 角色管理  | list, detail, create, update, delete             |
-| `menu.ts`             | 菜单管理  | list, create, update, delete                     |
-| `permission.ts`       | 权限管理  | list, create, update, delete                     |
-| `permission-scope.ts` | 权限范围  | list, create, update, delete                     |
-| `role-menu.ts`        | 角色菜单  | list, bindMenus                                  |
-| `role-permission.ts`  | 角色权限  | list, bindPermissions                            |
-| `rbac.ts`             | RBAC 查询 | permissions, menus, permissionInfo               |
-| `system.ts`           | 系统功能  | dictType, dictData, config, loginLog, operLog    |
-| `notice.ts`           | 通知公告  | list, create, update, delete, unreadCount        |
-| `file.ts`             | 文件管理  | list, upload, delete                             |
-| `job.ts`              | 定时任务  | list, create, update, delete, run, pause, resume |
-| `rate-limit.ts`       | 限流      | rules, ipBlacklist                               |
-| `crud.ts`             | 动态CRUD  | list, create, update, delete, tableConfig        |
-| `vip.ts`              | VIP管理   | tiers, resourceLimits, userVips                  |
+| 模块 | 文件 | 说明 | 核心方法 |
+|------|------|------|----------|
+| 认证 | `auth.ts` | 登录、注册、登出、用户信息 | login, register, logout, me |
+| 用户 | `user.ts` | 用户管理 CRUD | list, get, create, update, delete |
+| 角色 | `role.ts` | 角色管理 CRUD | list, get, create, update, delete |
+| 权限 | `permission.ts` | 权限管理 CRUD | list, get, create, update, delete |
+| 权限范围 | `permission-scope.ts` | 权限范围管理 | list, get, create, update, delete |
+| 菜单 | `menu.ts` | 菜单管理、树结构 | list, tree, get, create, update, delete |
+| 角色菜单 | `role-menu.ts` | 角色与菜单关联 | getByRole, assign |
+| 角色权限 | `role-permission.ts` | 角色与权限关联 | getByRole, assign |
+| RBAC | `rbac.ts` | 当前用户权限和菜单 | myPermissions, myMenuTree |
+| VIP | `vip.ts` | VIP 等级、资源限额、用户 VIP | tiers, limits, users (各自 CRUD) |
+| 系统 | `system.ts` | 字典、配置、登录日志、操作日志 | dict*, config*, loginLog*, operLog* |
+| 通知 | `notice.ts` | 通知管理 | list, get, create, update, delete, publish |
+| 文件 | `file.ts` | 文件上传与管理 | upload, list, get, delete |
+| 定时任务 | `job.ts` | 任务管理与日志 | list, get, create, update, delete, run, logs |
+| 频率限制 | `rate-limit.ts` | 规则与 IP 黑名单 | rules (CRUD), blacklist (CRUD) |
+| CRUD | `crud.ts` | 动态 CRUD 表配置 | tables (CRUD), data (CRUD) |
+| 会话 | `session.ts` | 在线会话管理 | list, kick |
 
-## 标准 CRUD API 模板
+## 🔧 标准模式
 
-```typescript
-// api/article.ts
+每个 API 模块遵循统一的编码模式：
+
+```ts
 import { http } from '@/utils/http'
+import type { User, CreateUserDto, UpdateUserDto } from '@/types/api'
 
-export const articleApi = {
-  // 分页列表
-  list: (params?: Record<string, any>) => http.getPage('/api/admin/article', params),
+export const userApi = {
+  /** 分页查询 */
+  list(params?: Record<string, any>) {
+    return http.getPage<User>('/user', params)
+  },
 
-  // 详情
-  detail: (id: number) => http.get(`/api/admin/article/${id}`),
+  /** 获取详情 */
+  get(id: number) {
+    return http.get<User>(`/user/${id}`)
+  },
 
-  // 创建
-  create: (data: Record<string, any>) => http.post('/api/admin/article', data),
+  /** 创建 */
+  create(data: CreateUserDto) {
+    return http.post<User>('/user', data)
+  },
 
-  // 更新
-  update: (id: number, data: Record<string, any>) => http.put(`/api/admin/article/${id}`, data),
+  /** 更新 */
+  update(id: number, data: UpdateUserDto) {
+    return http.put<User>(`/user/${id}`, data)
+  },
 
-  // 删除
-  delete: (id: number) => http.delete(`/api/admin/article/${id}`),
+  /** 删除 */
+  delete(id: number) {
+    return http.delete(`/user/${id}`)
+  }
 }
 ```
 
-## 认证 API 示例
+:::tip
+所有 API 方法都返回已解包的业务数据（`Promise<T>`），无需手动解构 `response.data`。详见 [HTTP 客户端](./http.md)。
+:::
 
-```typescript
-// api/auth.ts
-import { http } from '@/utils/http'
+## 📝 类型定义
 
-export const authApi = {
-  login: (data: { username: string; password: string }) => http.post('/api/login', data),
+类型集中定义在 `frontend/src/types/api.ts`，包含 20+ 实体类型：
 
-  register: (data: { username: string; password: string }) => http.post('/api/register', data),
-
-  logout: () => http.post('/api/logout'),
-
-  me: () => http.get('/api/me'),
-
-  changePassword: (data: { oldPassword: string; newPassword: string }) =>
-    http.post('/api/change-password', data),
+```ts
+// 用户
+export interface User {
+  id: number
+  username: string
+  nickname: string
+  email: string
+  avatar: string
+  status: number
+  createdAt: string
+  updatedAt: string
 }
+
+// 角色
+export interface Role {
+  id: number
+  name: string
+  code: string
+  description: string
+  status: number
+}
+
+// 菜单项（树结构）
+export interface MenuItem {
+  id: number
+  parentId: number | null
+  name: string
+  path: string
+  component: string
+  icon: string
+  type: 1 | 2 | 3  // 目录 | 页面 | 按钮
+  sort: number
+  children?: MenuItem[]
+}
+
+// DTO 类型
+export interface CreateUserDto {
+  username: string
+  password: string
+  nickname?: string
+  email?: string
+}
+
+export interface UpdateUserDto {
+  nickname?: string
+  email?: string
+  status?: number
+}
+
+// ... 更多实体类型
 ```
 
-## 在组件中使用
+## 🔗 特殊接口
 
-```vue
-<script setup lang="ts">
-import { articleApi } from '@/api/article'
-import { useTable } from '@/composables/useTable'
+部分模块提供标准 CRUD 之外的自定义方法：
 
-const { tableData, loading, pagination, refresh } = useTable({
-  fetchApi: articleApi.list,
-})
-</script>
-```
+| 模块 | 方法 | 说明 |
+|------|------|------|
+| `auth` | `me()` | 获取当前登录用户信息 |
+| `menu` | `tree()` | 获取菜单树结构 |
+| `rbac` | `myPermissions()` | 获取当前用户权限列表 |
+| `rbac` | `myMenuTree()` | 获取当前用户菜单树 |
+| `notice` | `publish(id)` | 发布通知 |
+| `file` | `upload(file)` | 上传文件（FormData） |
+| `job` | `run(id)` | 手动触发任务 |
+| `session` | `kick(id)` | 踢出在线用户 |
+
+:::warning
+文件上传使用 `FormData` 格式，不走默认的 JSON Content-Type。HttpClient 内部会自动处理。
+:::

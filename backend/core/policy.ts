@@ -1,9 +1,9 @@
 /**
- * 策略定义工具
+ * 模块配置定义工具
  *
- * 每个 API 模块通过 definePolicy() 声明自己的权限、角色分配和数据域规则。
- * 所有策略在启动时由 policies/index.ts 收集并加载到 Casbin 引擎中。
- * 策略为只读，运行时不可修改。
+ * 每个 API 模块通过 defineConfig() 声明自己的权限、角色分配、数据域规则和菜单。
+ * 所有配置在启动时由 _generated/configs.generated.ts 收集并加载到 Casbin 引擎中。
+ * 配置为只读，运行时不可修改。
  */
 
 // ============ 类型定义 ============
@@ -32,8 +32,48 @@ export interface ScopeDef {
   description?: string
 }
 
-/** 策略定义 */
-export interface PolicyDefinition {
+/** 菜单定义（扁平结构，通过 parent 字段关联父菜单） */
+export interface MenuDef {
+  /** 菜单名称 */
+  name: string
+  /** 路由路径（唯一标识） */
+  path: string
+  /** 父菜单路径（为空或不填表示顶级菜单） */
+  parent?: string | null
+  /** 组件路径 */
+  component?: string | null
+  /** 图标 */
+  icon?: string | null
+  /** 菜单类型: 1-目录 2-菜单 3-按钮（默认 2） */
+  type?: number
+  /** 是否可见: 0-隐藏 1-显示（默认 1） */
+  visible?: number
+  /** 重定向地址 */
+  redirect?: string | null
+  /** 排序值（默认 0） */
+  sort?: number
+  /** 权限编码（关联权限，决定菜单可见性） */
+  permCode?: string | null
+}
+
+/** 解析后的菜单（扁平结构，带自动分配的 ID） */
+export interface ResolvedMenu {
+  id: number
+  parentId: number | null
+  name: string
+  path: string
+  component: string | null
+  icon: string | null
+  type: number
+  visible: number
+  status: number
+  redirect: string | null
+  sort: number
+  permCode: string | null
+}
+
+/** 模块配置定义 */
+export interface ModuleConfig {
   /** 模块名称（用于日志和调试） */
   module: string
   /** 权限列表 */
@@ -42,20 +82,28 @@ export interface PolicyDefinition {
   roles: Record<string, '*' | string[]>
   /** 数据域规则（可选） */
   scopes?: ScopeDef[]
+  /** 菜单定义（可选，扁平结构，通过 parent 关联父菜单） */
+  menus?: MenuDef[]
 }
+
+/** @deprecated 使用 ModuleConfig 代替 */
+export type PolicyDefinition = ModuleConfig
 
 // ============ 辅助函数 ============
 
-/** 定义策略（类型辅助，原样返回） */
-export function definePolicy(policy: PolicyDefinition): PolicyDefinition {
-  return policy
+/** 定义模块配置（类型辅助，原样返回） */
+export function defineConfig(config: ModuleConfig): ModuleConfig {
+  return config
 }
 
-/** 解析策略定义为 Casbin 策略数组 (sub, dom, obj, act) */
-export function resolvePolicies(definitions: PolicyDefinition[]): string[][] {
+/** @deprecated 使用 defineConfig 代替 */
+export const definePolicy = defineConfig
+
+/** 解析模块配置为 Casbin 策略数组 (sub, dom, obj, act) */
+export function resolvePolicies(configs: ModuleConfig[]): string[][] {
   const policies: string[][] = []
 
-  for (const def of definitions) {
+  for (const def of configs) {
     // 解析角色-权限分配
     for (const [roleCode, assignment] of Object.entries(def.roles)) {
       const permCodes =
@@ -76,10 +124,10 @@ export function resolvePolicies(definitions: PolicyDefinition[]): string[][] {
   return policies
 }
 
-/** 从策略定义列表中提取所有权限编码集合 */
-export function collectPermissionCodes(definitions: PolicyDefinition[]): Set<string> {
+/** 从配置列表中提取所有权限编码集合 */
+export function collectPermissionCodes(configs: ModuleConfig[]): Set<string> {
   const codes = new Set<string>()
-  for (const def of definitions) {
+  for (const def of configs) {
     for (const p of def.permissions) {
       codes.add(p.code)
     }
@@ -87,7 +135,69 @@ export function collectPermissionCodes(definitions: PolicyDefinition[]): Set<str
   return codes
 }
 
-/** 从策略定义列表中提取所有权限定义 */
-export function collectPermissions(definitions: PolicyDefinition[]): PermissionDef[] {
-  return definitions.flatMap((d) => d.permissions)
+/** 从配置列表中提取所有权限定义 */
+export function collectPermissions(configs: ModuleConfig[]): PermissionDef[] {
+  return configs.flatMap((d) => d.permissions)
+}
+
+// ============ 菜单收集 ============
+
+/**
+ * 从所有模块配置中收集并合并菜单，返回扁平化的 ResolvedMenu 列表。
+ * 同 path 的菜单自动去重（第一个定义的属性优先）。
+ * parent 字段通过路径匹配解析为 parentId。
+ */
+export function collectAllMenus(configs: ModuleConfig[]): ResolvedMenu[] {
+  // Step 1: 收集所有菜单，同 path 去重（先来的优先）
+  const menuMap = new Map<string, MenuDef>()
+
+  for (const config of configs) {
+    if (!config.menus?.length) continue
+    for (const menu of config.menus) {
+      if (menuMap.has(menu.path)) {
+        const existing = menuMap.get(menu.path)!
+        // 仅在属性有实质差异时警告（忽略 name/sort 相同的目录菜单重复声明）
+        if (existing.component !== (menu.component ?? null) || existing.redirect !== (menu.redirect ?? null)) {
+          console.warn(`[menu] 重复路径 "${menu.path}"：模块 "${config.module}" 的定义被忽略（首次定义优先）`)
+        }
+      } else {
+        menuMap.set(menu.path, menu)
+      }
+    }
+  }
+
+  // Step 2: 按 sort 排序，分配 ID
+  const allMenus = [...menuMap.values()].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
+  const pathToId = new Map<string, number>()
+  let nextId = 1
+  for (const menu of allMenus) {
+    pathToId.set(menu.path, nextId++)
+  }
+
+  // Step 3: 解析 parent path → parentId，检测无效 parent
+  return allMenus.map((menu) => {
+    let parentId: number | null = null
+    if (menu.parent) {
+      const resolved = pathToId.get(menu.parent)
+      if (resolved != null) {
+        parentId = resolved
+      } else {
+        console.warn(`[menu] "${menu.path}" 的 parent "${menu.parent}" 未找到对应菜单，将作为顶级菜单处理`)
+      }
+    }
+    return {
+      id: pathToId.get(menu.path)!,
+      parentId,
+      name: menu.name,
+      path: menu.path,
+      component: menu.component ?? null,
+      icon: menu.icon ?? null,
+      type: menu.type ?? 2,
+      visible: menu.visible ?? 1,
+      status: 1,
+      redirect: menu.redirect ?? null,
+      sort: menu.sort ?? 0,
+      permCode: menu.permCode ?? null,
+    }
+  })
 }

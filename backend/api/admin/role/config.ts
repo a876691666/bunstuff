@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'role',
   permissions: [
     { code: 'role:admin:list', name: '查看角色列表', description: '获取角色列表' },
@@ -19,5 +19,9 @@ export default definePolicy({
     { role: 'user', table: 'role', permission: 'role:admin:list', rule: 'status = 1', description: '仅查看启用角色' },
     { role: 'user', table: 'role', permission: 'role:admin:tree', rule: 'status = 1', description: '仅查看启用角色' },
     { role: 'user', table: 'role', permission: 'role:admin:read', rule: 'status = 1', description: '仅查看启用角色' },
+  ],
+  menus: [
+    { name: '系统管理', path: '/system', icon: 'setting', type: 1, sort: 1 },
+    { name: '角色管理', path: '/system/roles', parent: '/system', component: 'admin/system/Roles', icon: 'peoples', sort: 2, permCode: 'role:admin:list' },
   ],
 })

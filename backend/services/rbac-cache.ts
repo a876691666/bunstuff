@@ -3,17 +3,19 @@
  *
  * 委托 Casbin 服务处理权限/数据域策略，
  * 本地缓存角色对象和菜单对象。
+ * 菜单从模块配置（config.ts）收集，不再依赖数据库表。
  * 菜单可见性从角色权限编码自动派生（无需 role_menu 表）。
  */
 
-import type { Row } from '@/packages/orm'
 import { model } from '@/core/model'
+import { type ResolvedMenu, collectAllMenus } from '@/core/policy'
+import { allConfigs } from '@/_generated/configs.generated'
 import * as casbin from '@/services/casbin'
+import type { Row } from '@/packages/orm'
 
 const Role = model.role
-const Menu = model.menu
 
-type MenuRow = Row<typeof Menu>
+type MenuRow = ResolvedMenu
 
 // ============ 缓存数据结构 ============
 
@@ -53,10 +55,8 @@ export async function reload(): Promise<void> {
 }
 
 async function loadLocalCache(): Promise<void> {
-  const [roles, menus] = await Promise.all([
-    Role.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] }),
-    Menu.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] }),
-  ])
+  const roles = await Role.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] })
+  const menus = collectAllMenus(allConfigs)
 
   state.roles.clear()
   state.menus.clear()
@@ -117,6 +117,7 @@ export async function getRoleMenus(roleCode: string): Promise<MenuRow[]> {
   // Step 1: 标记叶子菜单（页面/按钮且有 permCode 且角色拥有该权限，或无 permCode 的页面）
   const visibleIds = new Set<number>()
   for (const menu of allMenus) {
+    if (menu.type === 1) continue // 目录不在此处标记，由 Step 2 向上传播决定
     if (menu.permCode && permCodes.has(menu.permCode)) {
       visibleIds.add(menu.id)
     } else if (!menu.permCode && menu.type === 2) {

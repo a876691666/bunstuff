@@ -1,192 +1,257 @@
 # 架构设计
 
-## 整体架构
+本章节详细介绍 Bunstuff 的整体架构设计，包括 Monorepo 架构、后端分层、插件链、数据权限流、前端架构和启动流程。
 
-Bunstuff 采用 **Monorepo** 结构，包含三个独立应用和一套自研工具包：
+## 🏗️ 整体架构
 
-```
-┌──────────────────────────────────────────────────────┐
-│                    Monorepo Root                       │
-├──────────────┬──────────────┬──────────┬──────────────┤
-│   frontend/  │   client/    │ backend/ │    docs/     │
-│  管理端 SPA  │  客户端 SPA  │ API 服务  │   文档站     │
-└──────┬───────┴──────┬───────┴────┬─────┴──────────────┘
-       │              │            │
-       └──────────────┴────────────┘
-                      ↓
-              ┌───────────────┐
-              │  Backend API  │
-              │  Port: 3000   │
-              ├───────────────┤
-              │  /api/*       │ ← 客户端接口
-              │  /api/admin/* │ ← 管理端接口
-              │  /            │ ← 客户端 SPA
-              │  /_admin      │ ← 管理端 SPA
-              └───────┬───────┘
-                      ↓
-              ┌───────────────┐
-              │   Database    │
-              │ SQLite/MySQL/ │
-              │  PostgreSQL   │
-              └───────────────┘
-```
-
-## 后端架构
-
-### 分层设计
+Bunstuff 采用 Monorepo 单仓库管理，包含三个独立运行的应用：
 
 ```
-路由层（Elysia Route）
-    ↓ 请求校验（TypeBox）
-插件层（Plugin）
-    ↓ 认证 / 权限 / 日志 / 限流
-服务层（Service / CrudService）
-    ↓ 业务逻辑 / 数据权限过滤
-模型层（Model / ORM）
-    ↓ CRUD 操作 / Schema 管理
-数据库层（DB）
-    ↓ SQL 编译执行
+┌─────────────────────────────────────────────────────────────┐
+│                     用户 / 浏览器                            │
+├───────────────┬───────────────────┬─────────────────────────┤
+│  客户端 :5174  │  管理端 :5173      │      OpenAPI 文档        │
+│  Vue 3         │  Vue 3 + Naive UI │      /openapi            │
+├───────────────┴───────────────────┴─────────────────────────┤
+│                                                             │
+│              后端 Elysia API 服务 :3000                       │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ 路由层: api/_/ (客户端) + api/admin/ (管理端)         │   │
+│  ├──────────────────────────────────────────────────────┤   │
+│  │ 插件层: auth → rbac → vip → file → notice → ...     │   │
+│  ├──────────────────────────────────────────────────────┤   │
+│  │ 服务层: CrudService → 业务逻辑 → 数据权限             │   │
+│  ├──────────────────────────────────────────────────────┤   │
+│  │ 模型层: Schema → Model → column 构建器                │   │
+│  ├──────────────────────────────────────────────────────┤   │
+│  │ 数据库: SQLite / MySQL / PostgreSQL                   │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 模块结构约定
+## 🔄 后端分层架构
 
-每个功能模块遵循统一的文件结构：
-
-```
-modules/
-  └── feature/
-      └── main/           # 或直接在 feature/ 下
-          ├── plugin.ts    # Elysia 插件（derive 注入上下文）
-          ├── service.ts   # 业务逻辑服务
-          ├── api_client.ts# 客户端路由（/api/...）
-          └── api_admin.ts # 管理端路由（/api/admin/...）
-```
-
-### 插件链架构
-
-Elysia 插件按依赖关系链式组合：
+### 请求处理流程
 
 ```
-请求 → CORS → 限流 → 路由匹配
-                       ↓
-              authPlugin()  → 注入 session/userId/roleId
-                       ↓
-              rbacPlugin()  → 权限校验 → 注入 dataScope
-                       ↓
-              operLogPlugin() → 操作日志记录（可选）
-                       ↓
-              业务 Handler → CrudService → 数据库
+HTTP 请求
+    │
+    ▼
+┌──────────┐
+│ Elysia   │  CORS → OpenAPI → 静态文件 → 限流
+│ 中间件链  │
+└────┬─────┘
+     │
+     ▼
+┌──────────┐
+│ 路由层   │  匹配 /api/_/* 或 /api/admin/*
+│ api/     │
+└────┬─────┘
+     │
+     ▼
+┌──────────┐
+│ 插件层   │  authPlugin → rbacPlugin → 其他插件
+│ plugins/ │  注入: session, userId, roleId, dataScope, ...
+└────┬─────┘
+     │
+     ▼
+┌──────────┐
+│ 服务层   │  CrudService.findAll() / create() / update() / delete()
+│ services/│  数据权限: buildWhere() → Velocity 模板渲染 → SSQL 拼接
+└────┬─────┘
+     │
+     ▼
+┌──────────┐
+│ 模型层   │  Model.findMany() / findById() / create() / update()
+│ models/  │  Schema → TypeBox → 自动建表/迁移
+└────┬─────┘
+     │
+     ▼
+┌──────────┐
+│ 数据库   │  SQLite (bun:sqlite) / MySQL / PostgreSQL
+└──────────┘
 ```
 
-### 数据权限流
+### 各层职责
 
-数据权限是本系统的核心特性，实现行级数据过滤：
+| 层次 | 目录 | 职责 |
+|------|------|------|
+| **路由层** | `api/` | 接收请求、参数校验、声明配置（认证/权限/日志） |
+| **插件层** | `plugins/` | 通过 `derive` 注入上下文，`onBeforeHandle` 拦截校验 |
+| **服务层** | `services/` | 业务逻辑、数据权限过滤、缓存管理 |
+| **模型层** | `models/` | Schema 定义、数据库操作、类型推导 |
+| **工具层** | `packages/` | ORM、SSQL、Route Model 底层工具 |
+
+## 🧩 插件链架构
+
+插件按依赖顺序链式加载，每个插件通过 `derive` 向请求上下文注入能力：
 
 ```
-1. 路由声明权限
-   detail: { rbac: { scope: { permissions: ['user:admin:list'] } } }
-
-2. rbacPlugin 匹配权限 → 查找 PermissionScope
-   PermissionScope { permissionId, tableName, ssqlRule }
-
-3. ssqlRule 模板渲染（VelocityJS）
-   "userId = $auth.userId" → "userId = 42"
-
-4. CrudService 合并条件
-   原始 WHERE + DataScope WHERE → 最终查询
-
-5. 结果：用户只能看到自己权限范围内的数据
+请求 → authPlugin ──────────────────────────────────┐
+         │                                          │
+         │ 注入: session, userId, roleId            │
+         ▼                                          │
+       rbacPlugin ─────────────────────────────┐    │
+         │                                     │    │
+         │ 注入: dataScope                     │    │
+         ▼                                     │    │
+       vipPlugin ────────────────────────┐     │    │
+         │                               │     │    │
+         │ 注入: vip (canUseResource)    │     │    │
+         ▼                               │     │    │
+       filePlugin → noticePlugin → ...   │     │    │
+         │                               │     │    │
+         ▼                               │     │    │
+       路由处理函数                       │     │    │
+         │                               │     │    │
+         │ 上下文中包含所有插件注入的能力  │     │    │
+         ▼                               │     │    │
+       响应                              │     │    │
 ```
 
-## 前端架构
+### 插件配置方式
+
+插件的行为通过路由的 `detail` 字段声明式配置：
+
+```typescript
+.get('/users', handler, {
+  detail: {
+    // 认证配置
+    auth: { skipAuth: false },       // 是否跳过认证（默认 false）
+
+    // 权限配置
+    rbac: {
+      permissions: ['user:list'],    // 需要的权限
+      roles: ['admin'],              // 需要的角色
+      scope: 'user:admin:list',      // 数据权限标识
+    },
+
+    // 操作日志配置
+    operLog: {
+      title: '用户管理',              // 模块名称
+      type: 'list',                  // 操作类型
+    },
+  },
+})
+```
+
+## 🔐 数据权限流
+
+数据权限是 Bunstuff 的核心特性之一，基于 Velocity 模板动态生成 SQL 过滤条件：
+
+```
+1. 管理员配置 PermissionScope (权限范围)
+   ┌────────────────────────────────────────────┐
+   │ scope: "user:admin:list"                   │
+   │ rule: "createdBy = $auth.userId"           │
+   └────────────────────────────────────────────┘
+                    │
+                    ▼
+2. rbacPlugin 注入 dataScope
+   ┌────────────────────────────────────────────┐
+   │ dataScope = { scope, rule, 上下文变量 }     │
+   └────────────────────────────────────────────┘
+                    │
+                    ▼
+3. CrudService.buildWhere() 渲染模板
+   ┌────────────────────────────────────────────┐
+   │ Velocity 渲染:                             │
+   │   "createdBy = $auth.userId"               │
+   │   → "createdBy = 1"                        │
+   └────────────────────────────────────────────┘
+                    │
+                    ▼
+4. SSQL 拼接查询条件
+   ┌────────────────────────────────────────────┐
+   │ WHERE (原始条件) AND (createdBy = 1)       │
+   └────────────────────────────────────────────┘
+```
+
+### Velocity 模板变量
+
+| 变量 | 说明 |
+|------|------|
+| `$auth.userId` | 当前用户 ID |
+| `$auth.roleId` | 当前角色 ID |
+| `$req.params.xxx` | URL 路径参数 |
+| `$req.query.xxx` | URL 查询参数 |
+
+## 💻 前端架构
 
 ### 管理端架构
 
 ```
-App.vue
-  └── AdminLayout.vue
-        ├── 侧边栏菜单（动态生成）
-        ├── 顶部导航栏
-        └── RouterView（动态路由）
-               ├── Dashboard
-               ├── Admin 视图
-               │     ├── system/  (Users/Roles/Menus/...)
-               │     ├── rbac/    (RoleMenus/RolePermissions/...)
-               │     ├── crud/    (CrudTable)
-               │     ├── file/    (文件管理)
-               │     ├── job/     (定时任务)
-               │     └── ...
-               └── Auth 视图
-                     ├── Login
-                     ├── Profile
-                     └── ChangePassword
+┌─────────────────────────────────────────────┐
+│               AdminLayout                    │
+│  ┌──────────┐ ┌────────────────────────┐    │
+│  │          │ │  Header                │    │
+│  │  侧边栏  │ ├────────────────────────┤    │
+│  │  动态菜单 │ │                        │    │
+│  │          │ │  <RouterView />        │    │
+│  │  基于     │ │                        │    │
+│  │  RBAC    │ │  PageTable / FormModal │    │
+│  │  权限生成 │ │  CRUD 组件化           │    │
+│  │          │ │                        │    │
+│  └──────────┘ └────────────────────────┘    │
+└─────────────────────────────────────────────┘
 ```
 
-### 路由流程
+### 前端数据流
 
 ```
-用户访问页面
-    ↓
-路由守卫检查
-    ↓ 无 Token
-重定向到登录页
-    ↓ 有 Token
-检查用户信息是否已初始化
-    ↓ 未初始化
-fetchUserInfo() → fetchPermissions() → fetchMenuTree()
-    ↓
-addDynamicRoutes(menuTree) → 生成 Vue Router 路由
-    ↓
-进入目标页面
+用户操作
+    │
+    ▼
+视图层 (views/)
+    │  使用 composables: useTable / useModal / useDict
+    │
+    ▼
+API 层 (api/)
+    │  HttpClient.get() / post() / put() / delete()
+    │  自动注入 Token、统一响应解包
+    │
+    ▼
+状态管理 (stores/)
+    │  authStore: token / userInfo / permissions / menuTree
+    │
+    ▼
+路由守卫 (router/)
+    │  Token 检查 → 初始化 → 动态路由注入
+    │
+    ▼
+后端 API
 ```
 
-### CRUD 模式
+## 🚀 启动流程
 
-管理端视图高度标准化，遵循统一的 CRUD 模式：
+后端采用严格的 9 步启动流程，确保各组件按依赖顺序初始化：
 
-```
-视图组件（.vue）
-    ├── useTable(options)     复用表格逻辑
-    │     ├── 分页
-    │     ├── SSQL 过滤
-    │     └── 数据加载
-    ├── useModal(options)     复用弹窗逻辑
-    │     ├── 新增/编辑
-    │     └── 表单校验
-    ├── PageTable 组件        渲染数据表格
-    │     ├── columns 定义
-    │     ├── SearchForm      搜索条件
-    │     └── 操作按钮
-    └── FormModal 组件        渲染表单弹窗
-          ├── FormField       字段渲染
-          └── 提交/取消
-```
+| 步骤 | 操作 | 说明 |
+|------|------|------|
+| 1 | `runSeeds()` | 执行 20 个 Seed，确保基础数据就绪 |
+| 2 | `session.init()` | 从 DB 恢复未过期会话到内存 |
+| 3 | `rbacService.init()` | 全量加载角色/权限/菜单到内存缓存 |
+| 4 | `dictService.initCache()` | 全量加载字典数据到内存 |
+| 5 | `configService.initCache()` | 全量加载系统配置到内存 |
+| 6 | `rateLimitService.initCache()` | 加载限流规则和 IP 黑名单 |
+| 7 | `crudRegistry.initFromDb()` | 加载动态 CRUD 表注册 |
+| 8 | `jobService.start()` | 启动定时任务调度 |
+| 9 | `app.listen(3000)` | 启动 HTTP 服务 |
 
-## 启动流程
+> ⚠️ **注意**: 各步骤有严格的依赖关系，不可调整顺序。例如 RBAC 缓存依赖 Seed 创建的基础角色数据。
 
-系统启动按严格顺序执行：
+## 🛡️ 安全设计
 
-```
-1. runSeeds()              → 数据库迁移 + 种子数据初始化
-2. sessionStore.init()     → 从 DB 加载 Session 到内存
-3. rbacService.init()      → 全量预热 RBAC 缓存（角色/权限/菜单）
-4. dictService.initCache() → 字典全量缓存
-5. configService.initCache()→ 配置全量缓存
-6. rateLimitRuleService.initCache() → 限流规则缓存
-7. crudRegistry.initFromDb()→ 动态 CRUD 表注册
-8. jobService.start()      → Cron 调度器启动
-9. Elysia.listen(3000)     → 开始接收请求
-```
+Bunstuff 采用多层安全防护：
 
-## 安全设计
-
-| 层级       | 安全措施                           |
-| ---------- | ---------------------------------- |
-| **传输层** | CORS 白名单控制                    |
-| **认证层** | Token 校验、Session 过期、强制踢出 |
-| **权限层** | 接口级权限码、角色校验             |
-| **数据层** | 行级数据过滤（DataScope）          |
-| **限流层** | 时间窗口/并发/滑动窗口限流         |
-| **封禁层** | IP 黑名单自动封禁                  |
-| **输入层** | TypeBox 自动校验、SSQL 白名单字段  |
-| **日志层** | 登录日志、操作日志全记录           |
+| 层次 | 机制 | 说明 |
+|------|------|------|
+| **传输层** | CORS | 跨域请求控制 |
+| **网络层** | IP 黑名单 | 自动封禁恶意 IP |
+| **接口层** | API 限流 | 三种模式防刷 |
+| **认证层** | JWT Token | 64 字符随机 Token，24h 过期 |
+| **会话层** | SessionStore | 内存 + DB 双存储，1min 清理过期 |
+| **权限层** | RBAC + Casbin | 角色/权限/数据权限三级控制 |
+| **数据层** | 数据权限过滤 | Velocity 模板动态生成行级过滤 |
+| **存储层** | 密码哈希 | Bun 原生 Argon2 哈希 |

@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'file',
   permissions: [
     { code: 'file:admin:list', name: '查看文件列表', description: '获取文件列表' },
@@ -17,5 +17,9 @@ export default definePolicy({
     { role: 'admin', table: 'sys_file', permission: 'file:admin:delete', rule: 'uploadBy = $auth.userId', description: '管理员只能删除自己的文件' },
     { role: 'user', table: 'sys_file', permission: 'file:admin:list', rule: 'uploadBy = $auth.userId', description: '仅查看本人文件' },
     { role: 'user', table: 'sys_file', permission: 'file:admin:read', rule: 'uploadBy = $auth.userId', description: '仅查看本人文件' },
+  ],
+  menus: [
+    { name: '文件管理', path: '/file', icon: 'file', type: 1, sort: 5, redirect: '/file/list' },
+    { name: '文件列表', path: '/file/list', parent: '/file', component: 'admin/file/Files', icon: 'folder', sort: 1, permCode: 'file:admin:list' },
   ],
 })

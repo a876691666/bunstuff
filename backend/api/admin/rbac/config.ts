@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'rbac',
   permissions: [
     { code: 'rbac:admin:roles-tree', name: '查看角色列表', description: '获取所有角色（扁平列表）' },
@@ -24,4 +24,8 @@ export default definePolicy({
     'super-admin': '*',
     'admin': '*',
   },
+  menus: [
+    { name: '权限配置', path: '/rbac', icon: 'security', type: 1, sort: 2 },
+    { name: '缓存管理', path: '/rbac/cache', parent: '/rbac', component: 'admin/rbac/Cache', icon: 'cache', sort: 2, permCode: 'rbac:admin:cache-status' },
+  ],
 })

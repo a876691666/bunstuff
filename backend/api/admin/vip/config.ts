@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'vip',
   permissions: [
     // VIP 等级
@@ -39,5 +39,11 @@ export default definePolicy({
     { role: 'user', table: 'vip_tier', permission: 'vip:admin:tier:read', rule: 'status = 1', description: '仅查看启用VIP等级' },
     { role: 'user', table: 'user_vip', permission: 'vip:admin:user:list', rule: 'userId = $auth.userId', description: '仅查看本人VIP信息' },
     { role: 'user', table: 'user_vip', permission: 'vip:admin:user:read', rule: 'userId = $auth.userId', description: '仅查看本人VIP信息' },
+  ],
+  menus: [
+    { name: 'VIP管理', path: '/vip', icon: 'vip', type: 1, sort: 3, redirect: '/vip/tiers' },
+    { name: 'VIP等级', path: '/vip/tiers', parent: '/vip', component: 'admin/vip/Tiers', icon: 'tier', sort: 1, permCode: 'vip:admin:tier:list' },
+    { name: '用户VIP', path: '/vip/users', parent: '/vip', component: 'admin/vip/Users', icon: 'vip-user', sort: 2, permCode: 'vip:admin:user:list' },
+    { name: '资源限制', path: '/vip/resource-limits', parent: '/vip', component: 'admin/vip/ResourceLimits', icon: 'resource', sort: 3, permCode: 'vip:admin:resource-limit:list' },
   ],
 })

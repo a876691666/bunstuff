@@ -1,71 +1,104 @@
 # 项目简介
 
-## 什么是 Bunstuff？
+Bunstuff 是一套基于 **Bun + Elysia** 构建的全栈后台管理系统模板，采用 Monorepo 架构，涵盖后端 API 服务、管理端前端、客户端前端三大模块，提供完整的企业级后台管理功能。
 
-**Bunstuff** 是一个基于 **Bun + Elysia** 构建的全栈后台管理系统模板，旨在提供一套开箱即用、规范统一、可高度定制的中后台解决方案。
+## 🎯 项目定位
 
-## 技术选型
+| 维度 | 说明 |
+|------|------|
+| **项目类型** | 全栈后台管理系统模板 |
+| **核心理念** | 高性能 + 类型安全 + 零样板代码 + 插件化 |
+| **技术栈** | Bun + Elysia + SQLite + Vue 3 + Naive UI |
+| **开源协议** | MIT |
 
-| 层级         | 技术                           | 说明                                           |
-| ------------ | ------------------------------ | ---------------------------------------------- |
-| **运行时**   | [Bun](https://bun.sh)          | 高性能 JavaScript 运行时，内置包管理器与打包器 |
-| **后端框架** | [Elysia](https://elysiajs.com) | TypeBox 端到端类型安全，自动生成 OpenAPI 文档  |
-| **前端框架** | Vue 3 + Naive UI               | Composition API + 企业级 UI 组件库             |
-| **状态管理** | Pinia                          | Vue 官方推荐状态管理                           |
-| **路由**     | Vue Router                     | 动态路由，基于后端菜单自动生成                 |
-| **数据库**   | SQLite / MySQL / PostgreSQL    | 默认 SQLite 零配置，生产可切换                 |
-| **ORM**      | `@pkg/orm`（自研）             | 轻量级、类型安全的 ORM                         |
-| **查询构建** | `@pkg/ssql`（自研）            | SQL 条件构建器，支持前后端共用                 |
+## 📊 技术选型对比
 
-## 核心特性
+| 维度 | 传统方案 (Express + Prisma) | Bunstuff (Bun + Elysia) |
+|------|---------------------------|------------------------|
+| 运行时 | Node.js | Bun（启动速度提升 4x） |
+| 框架 | Express / Koa | Elysia（类型安全、自动文档） |
+| ORM | Prisma / TypeORM | 自研 ORM（轻量、TypeBox Schema） |
+| 查询构建 | 手写 SQL / QueryBuilder | SSQL 自研查询语言 |
+| 权限 | 手写中间件 | Casbin 策略引擎 + 数据权限 |
+| 文档 | Swagger 手动标注 | OpenAPI 自动生成 |
+| 类型安全 | 部分类型推导 | 全链路类型安全 |
 
-### 🔐 完整权限体系
+## 🏢 业务功能
 
-- **RBAC 模型**：角色 → 权限 → 菜单 三级关联
-- **数据权限**：基于 SSQL 规则的行级数据过滤（DataScope）
-- **Session Token**：内存 + 数据库双存储，24h 过期自动清理
-- **API 限流**：时间窗口 / 并发 / 滑动窗口三种模式
-- **IP 黑名单**：异常请求自动封禁
+### 基础功能模块
 
-### 📦 丰富功能模块
+| 模块 | 说明 |
+|------|------|
+| 用户管理 | 用户 CRUD，密码哈希存储，角色关联 |
+| 角色管理 | 树形角色结构，支持无限层级继承 |
+| 菜单管理 | 三级菜单（目录 / 菜单 / 按钮），动态路由生成 |
+| 权限管理 | 细粒度权限点，`模块:操作` 格式，权限向上汇聚 |
+| 数据权限 | 基于 SSQL 的行级数据过滤，Velocity 模板变量 |
+| 字典管理 | 字典类型与字典数据维护，全量缓存 |
+| 参数配置 | 系统参数键值对配置，全量缓存 |
 
-- 用户管理、角色管理、菜单管理、权限管理
-- 字典管理、参数配置
-- 文件管理（本地 + S3）
-- 通知公告（SSE 实时推送）
-- 定时任务（Cron 调度）
-- 登录日志、操作日志
-- VIP 会员体系
-- 动态 CRUD（数据库驱动表配置）
+### 高级功能模块
 
-### 🧩 插件化架构
+| 模块 | 说明 |
+|------|------|
+| VIP 会员 | 多等级体系，资源配额管理与用量追踪 |
+| 文件管理 | 本地存储 / S3 兼容，MD5 去重，按日期分目录 |
+| 通知公告 | 通知发布与管理，SSE 实时推送，已读状态追踪 |
+| 定时任务 | 基于 Croner 的 Cron 调度，任务暂停/恢复/手动执行 |
+| 动态 CRUD | 零代码动态建表，运行时注册管理，低代码数据管理 |
 
-所有功能模块均以 Elysia 插件形式组织，可独立使用或组合：
+### 系统管理模块
 
-```
-authPlugin()     → 认证与会话
-rbacPlugin()     → 权限校验
-vipPlugin()      → VIP 会员
-filePlugin()     → 文件操作
-noticePlugin()   → 通知推送
-dictPlugin()     → 字典数据
-configPlugin()   → 参数配置
-loginLogPlugin() → 登录日志
-operLogPlugin()  → 操作日志
-```
+| 模块 | 说明 |
+|------|------|
+| 操作日志 | 通过路由 `detail.operLog` 自动记录请求/响应/耗时 |
+| 登录日志 | 登录事件记录，自动填充 IP / UserAgent |
+| API 限流 | 三种限流模式（时间窗口/并发/滑动窗口），IP 自动封禁 |
+| Seed 种子 | 15 个核心种子按依赖排序执行，支持手动触发 |
 
-### 🎨 管理端前端
+## 🔧 核心特性
 
-- Naive UI 企业级组件
-- 动态菜单路由
-- 通用 CRUD 组件（PageTable / FormModal / SearchForm）
-- 组合式函数封装（useTable / useModal / useDict）
-- 前端 SSQL Builder 构建查询条件
+### 插件化架构
 
-## 项目定位
+11 个功能插件，即插即用，上下文自动注入：
 
-Bunstuff 不是框架，而是一个**可即刻投入使用的项目模板**。你可以：
+| 插件 | 注入上下文 | 用途 |
+|------|-----------|------|
+| `authPlugin` | `session, userId, roleId` | JWT 认证，路由级 `skipAuth` |
+| `rbacPlugin` | `dataScope` | Casbin 权限检查 + 数据权限 |
+| `vipPlugin` | `vip` | VIP 等级检查 + 资源限制 |
+| `filePlugin` | `file` | 文件上传/下载/流式读取 |
+| `noticePlugin` | `notice` | 通知发布 + SSE 实时推送 |
+| `dictPlugin` | `dict` | 字典缓存访问 |
+| `configPlugin` | `config` | 系统配置缓存访问 |
+| `loginLogPlugin` | `loginLog` | 登录事件记录 |
+| `operLogPlugin` | — | 通过 `detail.operLog` 自动记录 |
+| `rateLimitPlugin` | — | 全局限流 + IP 自动封禁 |
+| `jobPlugin` | — | 任务触发/执行 |
 
-1. **直接使用** — 作为后台管理系统的基础，在此之上添加业务模块
-2. **学习参考** — 了解 Bun + Elysia 全栈开发的最佳实践
-3. **裁剪定制** — 移除不需要的模块，保留核心功能
+### 自研工具链
+
+| 包 | 用途 | 特点 |
+|---|------|------|
+| `@pkg/orm` | 数据库 ORM | 轻量、TypeBox Schema 生成、自动表迁移 |
+| `@pkg/ssql` | SQL 条件构建器 | 零依赖、防注入、前后端通用 |
+| `@pkg/route-model` | 路由 Schema 工具 | 自动生成查询/响应/请求 Schema |
+
+### 代码生成系统
+
+通过 `bun run generate` 自动扫描文件系统，生成 4 个静态注册文件：
+
+| 生成文件 | 内容 |
+|---------|------|
+| `schemas.generated.ts` | 22 个数据库模型 Schema |
+| `routes.generated.ts` | 25 条 API 路由 |
+| `policies.generated.ts` | 18 个权限策略 |
+| `seeds.generated.ts` | 20 个 Seed 模块 |
+
+## 🔗 相关链接
+
+- [GitHub 仓库](https://github.com/a876691666/bunstuff)
+- [快速开始](/guide/getting-started)
+- [架构设计](/guide/architecture)
+- [后端文档](/backend/)
+- [前端文档](/frontend/)

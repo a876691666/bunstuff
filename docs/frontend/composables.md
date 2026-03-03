@@ -1,233 +1,182 @@
 # 组合式函数
 
-## 概述
+## 🎯 概述
 
-`frontend/src/composables/` 提供可复用的组合式函数，封装常见业务逻辑。
+项目封装了 3 个核心 composable，覆盖表格数据、弹窗表单和字典数据三大场景。它们与 CRUD 组件深度配合，实现最小化的页面开发代码。
 
-## useTable
+## 📦 useTable\<T, Q\>
 
-表格数据管理，封装分页、加载、搜索和 SSQL 过滤：
+表格数据管理，自动处理分页、加载、搜索和 SSQL 筛选构建。
 
-```typescript
-import { useTable } from '@/composables/useTable'
-import { articleApi } from '@/api/article'
+### 配置参数
 
-const {
-  tableData, // Ref<any[]>     — 表格数据
-  loading, // Ref<boolean>   — 加载状态
-  pagination, // Reactive       — 分页信息 { page, pageSize, total }
+```ts
+interface UseTableConfig<T, Q> {
+  api: (params: any) => Promise<PagedResult<T>>  // 列表查询 API
+  defaultQuery?: Partial<Q>                       // 默认查询条件
+  defaultPageSize?: number                        // 默认每页条数，默认 10
+  immediate?: boolean                             // 是否立即加载，默认 true
+  opMap?: Record<string, string>                  // SSQL 操作符映射
+  transform?: (data: T[]) => T[]                  // 数据转换函数
+}
+```
 
-  refresh, // () => void     — 刷新当前页
-  handlePageChange, // (page) => void — 翻页
-  handleSearch, // (conditions) => void — 搜索
-  handleReset, // () => void     — 重置搜索
-} = useTable({
-  fetchApi: articleApi.list,
-  defaultPageSize: 10,
-  immediate: true, // 是否立即加载
+### 返回值
+
+| 返回值 | 类型 | 说明 |
+|--------|------|------|
+| `loading` | `Ref<boolean>` | 加载状态 |
+| `data` | `Ref<T[]>` | 表格数据 |
+| `total` | `Ref<number>` | 总记录数 |
+| `page` | `Ref<number>` | 当前页码 |
+| `pageSize` | `Ref<number>` | 每页条数 |
+| `query` | `Ref<Q>` | 查询参数 |
+| `load` | `() => Promise<void>` | 加载数据（当前参数） |
+| `reload` | `() => Promise<void>` | 重新加载（重置页码） |
+| `search` | `() => void` | 搜索（重置到第 1 页） |
+| `reset` | `() => void` | 重置查询条件并搜索 |
+| `setPage` | `(p: number) => void` | 设置页码并加载 |
+| `setPageSize` | `(s: number) => void` | 设置每页条数并加载 |
+| `setQuery` | `(q: Partial<Q>) => void` | 更新查询参数 |
+
+### SSQL 操作符映射
+
+通过 `opMap` 配置，自动将查询参数转换为 SSQL 筛选字符串：
+
+```ts
+const table = useTable<User, UserQuery>({
+  api: userApi.list,
+  defaultQuery: { username: '', status: null },
+  opMap: {
+    username: 'like',     // username LIKE '%value%'
+    status: 'eq',         // status = value
+    createdAt: 'between', // createdAt BETWEEN a AND b
+  }
 })
 ```
 
-### SSQL 搜索集成
-
-`useTable` 内部使用 SSQL Builder 构建过滤条件：
-
-```typescript
-// 搜索时
-handleSearch({
-  username: 'admin', // → username ~ 'admin'
-  status: 1, // → status = 1
-})
-
-// 自动构建 SSQL: username ~ 'admin' && status = 1
-// 发送请求: GET /api/admin/users?page=1&pageSize=10&filter=username%20~%20'admin'%20%26%26%20status%20%3D%201
-```
-
-## useModal
-
-弹窗逻辑管理，封装新增/编辑/保存流程：
-
-```typescript
-import { useModal } from '@/composables/useModal'
-import { articleApi } from '@/api/article'
-
-const {
-  modalVisible, // Ref<boolean>    — 弹窗显示状态
-  modalTitle, // Computed<string> — 弹窗标题（新增/编辑）
-  formData, // Ref<any>        — 表单数据
-  saving, // Ref<boolean>    — 保存中状态
-  isEdit, // Ref<boolean>    — 是否编辑模式
-
-  openCreate, // () => void      — 打开新增弹窗
-  openEdit, // (row) => void   — 打开编辑弹窗
-  close, // () => void      — 关闭弹窗
-  handleSave, // () => void      — 保存（自动判断新增/编辑）
-} = useModal({
-  createApi: articleApi.create,
-  updateApi: articleApi.update,
-  onSuccess: () => refresh(), // 保存成功回调
-  defaultFormData: {
-    // 默认表单数据
-    title: '',
-    content: '',
-    status: 1,
-  },
-})
-```
+:::tip
+`opMap` 中的 key 对应 query 的字段名，value 对应 SSQL 操作符。空值字段会自动跳过，不会生成无意义的筛选条件。
+:::
 
 ### 使用示例
 
-```vue
-<script setup lang="ts">
-// 新增
-const handleCreate = () => {
-  openCreate()
-  // formData 重置为 defaultFormData
-  // modalTitle = '新增'
-}
-
-// 编辑
-const handleEdit = (row: any) => {
-  openEdit(row)
-  // formData 填充为 row 数据
-  // modalTitle = '编辑'
-}
-</script>
-
-<template>
-  <n-button @click="handleCreate">新增</n-button>
-  <n-button @click="handleEdit(row)">编辑</n-button>
-
-  <FormModal
-    v-model:visible="modalVisible"
-    :title="modalTitle"
-    :loading="saving"
-    @confirm="handleSave"
-  >
-    <FormField label="标题">
-      <n-input v-model:value="formData.title" />
-    </FormField>
-  </FormModal>
-</template>
-```
-
-## useDict
-
-字典数据管理，带缓存：
-
-```typescript
-import { useDict } from '@/composables/useDict'
-
-const {
-  options, // Ref<{ label, value }[]>  — 选项列表
-  dictMap, // Ref<Record<string, string>> — value → label 映射
-  getLabel, // (value) => string — 获取标签
-  loading, // Ref<boolean>
-} = useDict('sys_status')
-
-// 在模板中使用
-// <n-select :options="options" />
-// <span>{{ getLabel(row.status) }}</span>
-```
-
-### 缓存机制
-
-`useDict` 在全局缓存字典数据，相同 `dictType` 只请求一次：
-
-```typescript
-// 多处使用同一字典类型，只会发送一次请求
-const { options: statusOptions } = useDict('sys_status')
-const { options: statusOptions2 } = useDict('sys_status') // 命中缓存
-```
-
-## 完整页面示例
-
-```vue
-<script setup lang="ts">
-import { PageTable, FormModal, FormField, ConfirmButton, SearchForm } from '@/components/common'
-import { useTable, useModal, useDict } from '@/composables'
-import { articleApi } from '@/api/article'
-
-// 字典
-const { options: statusOptions, getLabel: getStatusLabel } = useDict('sys_status')
-
-// 表格
-const { tableData, loading, pagination, handlePageChange, handleSearch, handleReset, refresh } =
-  useTable({
-    fetchApi: articleApi.list,
-  })
-
-// 弹窗
-const { modalVisible, modalTitle, formData, saving, openCreate, openEdit, handleSave } = useModal({
-  createApi: articleApi.create,
-  updateApi: articleApi.update,
-  onSuccess: refresh,
-  defaultFormData: { title: '', status: 1 },
+```ts
+const table = useTable<User, { username: string; status: number | null }>({
+  api: userApi.list,
+  defaultQuery: { username: '', status: null },
+  defaultPageSize: 20,
+  opMap: { username: 'like', status: 'eq' }
 })
 
-// 删除
-const handleDelete = async (id: number) => {
-  await articleApi.delete(id)
-  refresh()
-}
+// 模板中
+// table.data / table.loading / table.total / table.page / table.pageSize
+// table.search() / table.reset() / table.setPage(n)
+```
 
-// 表格列
-const columns = [
-  { title: 'ID', key: 'id', width: 80 },
-  { title: '标题', key: 'title' },
-  {
-    title: '状态',
-    key: 'status',
-    render: (row) => getStatusLabel(row.status),
-  },
-  { title: '创建时间', key: 'createdAt', width: 180 },
-  {
-    title: '操作',
-    key: 'actions',
-    width: 200,
-    render: (row) => [
-      h(NButton, { size: 'small', onClick: () => openEdit(row) }, '编辑'),
-      h(ConfirmButton, { size: 'small', onConfirm: () => handleDelete(row.id) }, '删除'),
-    ],
-  },
-]
+## 📦 useModal\<T, Id\>
+
+表单弹窗管理，统一处理新建/编辑模式、表单状态和提交逻辑。
+
+### 配置参数
+
+```ts
+interface UseModalConfig<T, Id> {
+  defaultData: T | (() => T)                     // 默认表单数据
+  validate?: () => Promise<boolean>              // 表单验证函数
+  createApi?: (data: T) => Promise<any>          // 创建接口
+  updateApi?: (id: Id, data: T) => Promise<any>  // 更新接口
+  onSuccess?: () => void                         // 成功回调（通常 reload 表格）
+  onError?: (err: Error) => void                 // 失败回调
+}
+```
+
+### 返回值
+
+| 返回值 | 类型 | 说明 |
+|--------|------|------|
+| `visible` | `Ref<boolean>` | 弹窗是否可见 |
+| `loading` | `Ref<boolean>` | 提交加载状态 |
+| `title` | `Ref<string>` | 弹窗标题（自动：新增/编辑） |
+| `editingId` | `Ref<Id \| null>` | 编辑中的记录 ID |
+| `formData` | `Ref<T>` | 表单数据 |
+| `isEdit` | `ComputedRef<boolean>` | 是否为编辑模式 |
+| `open` | `(data?: Partial<T>) => void` | 打开新建弹窗 |
+| `edit` | `(row: T & { id: Id }) => void` | 打开编辑弹窗 |
+| `close` | `() => void` | 关闭弹窗 |
+| `save` | `() => Promise<void>` | 提交表单（自动判断新建/编辑） |
+| `resetForm` | `() => void` | 重置表单数据 |
+
+### 使用示例
+
+```ts
+const modal = useModal<CreateUserDto, number>({
+  defaultData: { username: '', password: '', nickname: '' },
+  createApi: userApi.create,
+  updateApi: userApi.update,
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    table.reload()
+  }
+})
+
+// modal.open()        → 打开新增弹窗
+// modal.edit(row)     → 打开编辑弹窗，自动填充数据
+// modal.save()        → 提交（自动判断 create/update）
+```
+
+## 📦 useDict / useDicts
+
+字典数据管理，自动加载和缓存字典项。
+
+### useDict(dictType)
+
+```ts
+const { data, loading, options, getLabel, getValue, refresh } = useDict('sys_status')
+```
+
+| 返回值 | 类型 | 说明 |
+|--------|------|------|
+| `data` | `Ref<DictItem[]>` | 字典项列表 |
+| `loading` | `Ref<boolean>` | 加载状态 |
+| `options` | `ComputedRef<SelectOption[]>` | NSelect 选项格式 |
+| `getLabel` | `(value: any) => string` | 根据值获取标签 |
+| `getValue` | `(label: string) => any` | 根据标签获取值 |
+| `refresh` | `() => Promise<void>` | 强制刷新缓存 |
+
+:::tip
+`useDict` 内置内存缓存，同一 `dictType` 在多个组件中使用只会请求一次 API。调用 `refresh()` 可清除缓存并重新加载。
+:::
+
+### useDicts(types[])
+
+批量加载多个字典：
+
+```ts
+const dicts = useDicts(['sys_status', 'sys_gender', 'sys_yes_no'])
+
+// dicts.sys_status.options
+// dicts.sys_gender.getLabel(1)
+```
+
+### 在模板中使用
+
+```vue
+<script setup>
+const { options: statusOptions, getLabel: getStatusLabel } = useDict('sys_status')
 </script>
 
 <template>
-  <PageTable
-    :columns="columns"
-    :data="tableData"
-    :loading="loading"
-    :pagination="pagination"
-    @page-change="handlePageChange"
-  >
-    <template #header>
-      <n-button type="primary" @click="openCreate">新增</n-button>
-    </template>
-    <template #search>
-      <SearchForm
-        :fields="[
-          { key: 'title', label: '标题', type: 'input' },
-          { key: 'status', label: '状态', type: 'select', options: statusOptions },
-        ]"
-        @search="handleSearch"
-        @reset="handleReset"
-      />
-    </template>
-  </PageTable>
+  <!-- 搜索表单中 -->
+  <NSelect v-model:value="query.status" :options="statusOptions" clearable />
 
-  <FormModal
-    v-model:visible="modalVisible"
-    :title="modalTitle"
-    :loading="saving"
-    @confirm="handleSave"
-  >
-    <FormField label="标题" required>
-      <n-input v-model:value="formData.title" />
-    </FormField>
-    <FormField label="状态">
-      <n-select v-model:value="formData.status" :options="statusOptions" />
-    </FormField>
-  </FormModal>
+  <!-- 表格列中 -->
+  <template #status="{ row }">
+    {{ getStatusLabel(row.status) }}
+  </template>
 </template>
 ```
+
+:::warning
+字典缓存生命周期为当前页面会话，页面刷新后缓存会重建。如果后端字典数据有变更，需要调用 `refresh()` 手动更新。
+:::

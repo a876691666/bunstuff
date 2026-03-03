@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'dict',
   permissions: [
     { code: 'dict:admin:type:list', name: '查看字典类型列表', description: '获取字典类型列表' },
@@ -27,5 +27,10 @@ export default definePolicy({
     { role: 'user', table: 'dict_type', permission: 'dict:admin:type:read', rule: 'status = 1', description: '仅查看启用字典类型' },
     { role: 'user', table: 'dict_data', permission: 'dict:admin:data:list', rule: 'status = 1', description: '仅查看启用字典数据' },
     { role: 'user', table: 'dict_data', permission: 'dict:admin:data:read', rule: 'status = 1', description: '仅查看启用字典数据' },
+  ],
+  menus: [
+    { name: '系统管理', path: '/system', icon: 'setting', type: 1, sort: 1 },
+    { name: '字典类型', path: '/system/dict-types', parent: '/system', component: 'admin/system/DictTypes', icon: 'dict', sort: 6, permCode: 'dict:admin:type:list' },
+    { name: '字典数据', path: '/system/dict-data', parent: '/system', component: 'admin/system/DictData', icon: 'dict', sort: 7, permCode: 'dict:admin:data:list' },
   ],
 })

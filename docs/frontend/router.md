@@ -1,119 +1,140 @@
 # 路由系统
 
-## 路由类型
+## 🎯 概述
 
-管理端使用两种路由：
+路由系统分为 **静态路由** 和 **动态路由** 两部分。静态路由在应用初始化时注册，动态路由根据用户权限从后端菜单树生成。
 
-- **静态路由**：在代码中直接定义（登录、404 等固定页面）
-- **动态路由**：根据后端菜单树在运行时生成
+## 📋 静态路由
 
-## 静态路由
+| 路径 | 组件 | 说明 |
+|------|------|------|
+| `/login` | `Login.vue` | 登录/注册页 |
+| `/dashboard` | `Dashboard.vue` | 仪表盘首页 |
+| `/profile` | `Profile.vue` | 个人资料 |
+| `/change-password` | `ChangePassword.vue` | 修改密码 |
+| `/:pathMatch(.*)*` | `NotFound.vue` | 404 兜底页 |
 
-```typescript
-// router/index.ts
-const routes = [
-  { path: '/login', component: Login },
+```ts
+const staticRoutes: RouteRecordRaw[] = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/auth/Login.vue'),
+    meta: { requiresAuth: false }
+  },
   {
     path: '/',
     component: AdminLayout,
     children: [
-      { path: '', component: Dashboard },
-      { path: 'profile', component: Profile },
-      { path: 'change-password', component: ChangePassword },
-    ],
+      { path: 'dashboard', name: 'Dashboard', component: () => import('../views/dashboard/Index.vue') },
+      { path: 'profile', name: 'Profile', component: () => import('../views/auth/Profile.vue') },
+      { path: 'change-password', name: 'ChangePassword', component: () => import('../views/auth/ChangePassword.vue') },
+    ]
   },
-  { path: '/:pathMatch(.*)*', component: NotFound },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/NotFound.vue') }
 ]
 ```
 
-## 动态路由
+## 🔄 动态路由
 
-### 菜单到路由的转换
+动态路由基于后端返回的菜单树（MenuTree）自动生成。
 
-```typescript
-// router/dynamic.ts
+### 菜单类型
 
-// 预加载所有视图组件
+| type | 含义 | 路由处理 |
+|------|------|----------|
+| 1 | 目录 | 生成嵌套路由容器 |
+| 2 | 页面 | 生成叶子路由，懒加载对应组件 |
+| 3 | 按钮 | **跳过**，不生成路由 |
+
+### 生成流程
+
+```
+后端 /rbac/my/menus/tree
+        ↓
+  authStore.fetchMenuTree()
+        ↓
+  generateRoutes(menuTree)
+        ↓
+  router.addRoute(route)
+```
+
+### 组件懒加载
+
+使用 `import.meta.glob` 自动收集所有视图组件：
+
+```ts
+// 收集所有 views 下的 .vue 文件
 const modules = import.meta.glob('../views/**/*.vue')
 
-// 递归生成路由
+// 根据菜单路径匹配组件
+function resolveComponent(path: string) {
+  const componentPath = `../views${path}.vue`
+  return modules[componentPath] || modules[`../views${path}/Index.vue`]
+}
+```
+
+### generateRoutes 核心逻辑
+
+```ts
 function generateRoutes(menuTree: MenuItem[]): RouteRecordRaw[] {
   return menuTree
-    .filter((menu) => menu.type !== 3) // 排除按钮类型
-    .map((menu) => ({
-      path: menu.path,
-      name: menu.name,
-      component: menu.component ? modules[`../views/${menu.component}.vue`] : undefined,
-      redirect: menu.redirect,
-      meta: {
-        title: menu.name,
-        icon: menu.icon,
-        permissions: menu.permCode ? [menu.permCode] : [],
-      },
-      children: menu.children ? generateRoutes(menu.children) : [],
-    }))
-}
-
-// 添加动态路由
-export function addDynamicRoutes(menuTree: MenuItem[]) {
-  const routes = generateRoutes(menuTree)
-  routes.forEach((route) => {
-    router.addRoute('Layout', route) // 添加到 Layout 路由下
-  })
+    .filter(item => item.type !== 3) // 跳过按钮类型
+    .map(item => {
+      const route: RouteRecordRaw = {
+        path: item.path,
+        name: item.name,
+        meta: { title: item.title, icon: item.icon },
+        component: item.type === 1
+          ? () => import('../layouts/RouterView.vue')  // 目录 → 容器
+          : resolveComponent(item.component),           // 页面 → 实际组件
+        children: item.children ? generateRoutes(item.children) : []
+      }
+      return route
+    })
 }
 ```
 
-### 菜单数据结构
+## 🛡️ 路由守卫
 
-```typescript
-interface MenuItem {
-  id: number
-  parentId: number
-  name: string // 菜单名称
-  path: string // 路由路径
-  component: string // 组件路径（相对于 views/）
-  icon: string // 图标
-  type: number // 1=目录 2=菜单 3=按钮
-  visible: number // 是否显示
-  redirect: string // 重定向
-  sort: number // 排序
-  permCode: string // 权限编码
-  children: MenuItem[] // 子菜单
-}
-```
-
-## 路由守卫
-
-```typescript
-router.beforeEach(async (to, from) => {
+```ts
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // 1. 登录页直接放行
-  if (to.path === '/login') return true
-
-  // 2. 无 Token → 跳转登录
-  if (!authStore.token) {
-    return { path: '/login', query: { redirect: to.fullPath } }
+  // 1. 未登录用户 → 跳转 /login
+  if (to.meta.requiresAuth !== false && !authStore.isLoggedIn) {
+    return next('/login')
   }
 
-  // 3. 未初始化 → 加载用户信息和动态路由
-  if (!authStore.initialized) {
+  // 2. 已登录访问 /login → 跳转 /dashboard
+  if (to.path === '/login' && authStore.isLoggedIn) {
+    return next('/dashboard')
+  }
+
+  // 3. 首次进入：初始化用户信息和动态路由
+  if (authStore.isLoggedIn && !authStore.initialized) {
     await authStore.init()
-    // 重新导航（因为动态路由已添加）
-    return { ...to, replace: true }
+    return next({ ...to, replace: true }) // 重新导航以匹配动态路由
   }
 
-  return true
+  next()
 })
 ```
 
-### 初始化流程
+### 守卫流程图
 
 ```
-authStore.init()
-  → fetchUserInfo()          获取用户信息
-  → fetchPermissions()       获取权限列表
-  → fetchMenuTree()          获取菜单树
-  → addDynamicRoutes(menus)  注入动态路由
-  → initialized = true
+请求路由
+  ├─ 未登录 & 需要认证 → /login
+  ├─ 已登录 & 访问 /login → /dashboard
+  ├─ 已登录 & 未初始化 → init() → 重新导航
+  └─ 正常放行
 ```
+
+:::tip
+`authStore.init()` 会依次调用 `fetchUserInfo()`、`fetchPermissions()`、`fetchMenuTree()`，并将菜单树转为动态路由注册到 router 中。
+:::
+
+:::warning
+动态路由在页面刷新时会丢失，因此守卫中通过 `initialized` 标志判断是否需要重新加载。刷新后会自动从后端重新拉取菜单数据。
+:::

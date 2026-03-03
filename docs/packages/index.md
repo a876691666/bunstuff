@@ -1,34 +1,32 @@
 # 自研包总览
 
-## 概述
+Bunstuff 包含三个自研包，位于 `backend/packages/` 目录，为整个系统提供基础能力。
 
-Bunstuff 包含三个自研工具包，位于 `backend/packages/`：
+## 📦 包列表
 
-| 包                           | 路径别名                 | 说明               |
-| ---------------------------- | ------------------------ | ------------------ |
-| [ORM](./orm)                 | `@pkg/orm`               | 轻量级类型安全 ORM |
-| [SSQL](./ssql)               | `@pkg/ssql`              | SQL 条件查询构建器 |
-| [Route Model](./route-model) | `@/packages/route-model` | 路由 Schema 工具   |
+| 包 | 目录 | 说明 |
+|------|------|------|
+| `@pkg/orm` | `packages/orm/` | 轻量 ORM，支持 SQLite / MySQL / PostgreSQL |
+| `@pkg/ssql` | `packages/ssql/` | 安全 SQL 查询 DSL，防注入 |
+| `@pkg/route-model` | `packages/route-model/` | Elysia 路由 Schema 工具集 |
 
-## 设计原则
-
-1. **零外部依赖** — 不引入额外 npm 包
-2. **类型安全** — 完整的 TypeScript 类型推导
-3. **轻量高效** — 最小化抽象层
-4. **前后端共用** — SSQL 同时用于前后端
-
-## 依赖关系
+## 🔗 依赖关系
 
 ```
-ORM
-  ├── 使用 SSQL 进行条件查询
-  └── 生成 TypeBox Schema（用于路由校验）
-
-SSQL
-  ├── 后端：Model 内部条件编译
-  └── 前端：构建过滤条件字符串
-
-Route Model
-  ├── 使用 ORM 的 Schema 类生成 TypeBox
-  └── 为 Elysia 路由提供标准 Schema
+@pkg/route-model
+  └── @pkg/orm
+        └── @pkg/ssql
 ```
+
+- `@pkg/ssql` 是最底层包，提供 SQL 方言和查询解析
+- `@pkg/orm` 依赖 SSQL 方言能力，构建跨数据库 ORM
+- `@pkg/route-model` 依赖 ORM 的 Schema 定义，生成路由类型
+
+## 🎯 设计理念
+
+| 原则 | 说明 |
+|------|------|
+| **零外部依赖** | 三个包均无第三方运行时依赖 |
+| **类型安全** | 全程 TypeScript，完整类型推导 |
+| **跨数据库** | 同一套 API 适配 SQLite / MySQL / PostgreSQL |
+| **前后端统一** | SSQL 语法在前端 Builder 和后端 Parser 间保持一致 |

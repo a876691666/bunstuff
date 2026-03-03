@@ -1,136 +1,175 @@
 # 技术栈
 
-## 运行时与语言
+Bunstuff 采用现代化技术栈，注重性能和开发体验。本章节详细介绍项目使用的各项技术。
 
-### Bun
+## 📊 技术栈总览
 
-[Bun](https://bun.sh) 是一个高性能的 JavaScript 运行时，内置了包管理器、打包器和测试运行器。本项目全面使用 Bun 作为后端运行时和工具链：
+| 层次 | 技术 | 版本 | 用途 |
+|------|------|------|------|
+| **运行时** | Bun | >= 1.0 | JS/TS 运行时、包管理器、打包器 |
+| **后端框架** | Elysia | 1.4.x | HTTP 框架、类型安全路由 |
+| **数据库** | SQLite / MySQL / PostgreSQL | — | 数据持久化 |
+| **ORM** | 自研 `@pkg/orm` | — | 数据库操作、Schema 生成 |
+| **查询语言** | 自研 `@pkg/ssql` | — | 类型安全条件构建 |
+| **权限引擎** | Casbin | 5.49.x | RBAC 策略引擎 |
+| **管理端** | Vue 3 + Naive UI | 3.5.x | 后台管理界面 |
+| **客户端** | Vue 3 | 3.5.x | C 端应用 |
+| **状态管理** | Pinia | 最新 | 前端状态管理 |
+| **构建工具** | Vite | 最新 | 前端构建 |
+| **定时任务** | Croner | 10.0.x | Cron 调度引擎 |
+| **模板引擎** | VelocityJS | 2.1.x | 数据权限模板 |
+| **容器化** | Docker | — | 部署运维 |
 
-- **运行时**：替代 Node.js 运行后端服务
-- **包管理器**：替代 npm/yarn/pnpm
-- **打包器**：`Bun.build` 将后端编译为单文件
-- **密码哈希**：`Bun.password.hash` / `Bun.password.verify`（内置 argon2/bcrypt）
-- **文件操作**：`Bun.file` / `Bun.write`
-- **SQLite**：`bun:sqlite`（内置原生 SQLite 驱动）
+## ⚡ Bun 运行时
 
-### TypeScript
+Bunstuff 的核心运行时是 [Bun](https://bun.sh/)，一个高性能的 JavaScript/TypeScript 运行时。
 
-全栈 TypeScript 开发，前后端共享类型安全。
+### 为什么选择 Bun？
 
-## 后端技术
+| 能力 | Node.js | Bun | 优势 |
+|------|---------|-----|------|
+| 启动速度 | ~300ms | ~50ms | **6 倍提升** |
+| HTTP 吞吐量 | ~65,000 req/s | ~150,000 req/s | **2.3 倍提升** |
+| 包安装速度 | npm ~30s | bun ~3s | **10 倍提升** |
+| 原生 TypeScript | ❌ 需要 ts-node | ✅ 原生支持 | 零配置 |
+| 原生 SQLite | ❌ 需要依赖 | ✅ 内置 `bun:sqlite` | 零依赖 |
+| 密码哈希 | ❌ 需要 bcrypt | ✅ `Bun.password` | 原生 Argon2 |
+| 打包构建 | webpack/esbuild | ✅ `Bun.build()` | 内置打包器 |
 
-### Elysia
-
-[Elysia](https://elysiajs.com) 是专为 Bun 设计的 Web 框架，核心特性：
-
-- **TypeBox 校验**：编译期类型推导 + 运行时自动校验
-- **OpenAPI 文档**：自动生成 Swagger 文档
-- **插件系统**：声明式插件组合
-- **生命周期钩子**：`onBeforeHandle` / `derive` / `onAfterHandle` / `onError`
-- **端到端类型安全**：从路由定义到响应类型完全推导
+### Bun 在项目中的应用
 
 ```typescript
-new Elysia().get('/users', () => userService.findAll(), {
-  query: t.Object({ page: t.Number() }),
-  response: { 200: PagedResponse(UserSchema) },
-  detail: {
-    tags: ['用户管理'],
-    rbac: { scope: { permissions: ['user:list'] } },
-  },
-})
+// 1. 原生 SQLite 驱动
+import { Database } from 'bun:sqlite'
+
+// 2. 内置密码哈希（Argon2）
+const hash = await Bun.password.hash('password')
+const isValid = await Bun.password.verify('password', hash)
+
+// 3. 内置打包器
+await Bun.build({ entrypoints: ['./index.ts'], outdir: './build' })
+
+// 4. 原生文件操作
+const file = Bun.file('./path/to/file')
+await Bun.write('./output', content)
 ```
 
-### 自研 ORM（@pkg/orm）
+## 🦊 Elysia 框架
 
-轻量级 ORM，支持 SQLite / MySQL / PostgreSQL：
+[Elysia](https://elysiajs.com/) 是专为 Bun 优化的 TypeScript HTTP 框架。
 
-- 链式 Schema 定义
-- 自动表同步（建表/迁移）
-- TypeBox Schema 生成（`Model.getSchema()`）
-- 类型安全的 CRUD 操作
+### 核心优势
 
-### 自研 SSQL（@pkg/ssql）
+| 特性 | 说明 |
+|------|------|
+| **端到端类型安全** | 路由参数、请求体、响应全部类型推导 |
+| **自动 OpenAPI** | 基于 TypeBox Schema 自动生成 API 文档 |
+| **插件系统** | `derive` / `onBeforeHandle` 注入上下文 |
+| **生命周期钩子** | `onRequest` → `onParse` → `onBeforeHandle` → `onAfterHandle` → `onError` |
+| **性能** | 基于 Bun HTTP 服务器，吞吐量极高 |
 
-SQL 条件构建器，前后端共用：
+### 在项目中的应用
 
-- 类 SQL 语法的字符串查询
-- AST 解析和编译
-- 多方言支持
-- 防注入安全设计
+```typescript
+import { Elysia, t } from 'elysia'
 
-### Croner
+new Elysia()
+  .get('/api/users', ({ query }) => {
+    // query 类型自动推导
+    return service.findAll(query)
+  }, {
+    query: t.Object({
+      page: t.Optional(t.Number()),
+      size: t.Optional(t.Number()),
+      filter: t.Optional(t.String()),
+    }),
+    response: {
+      200: PagedResponse(UserSchema),
+    },
+    detail: {
+      tags: ['管理 - 用户'],
+      security: [{ bearerAuth: [] }],
+      operLog: { title: '用户管理', type: 'list' },
+    },
+  })
+```
 
-Cron 表达式调度器，用于定时任务模块。
+## 🗄️ 数据库
 
-### VelocityJS
+### 多数据库支持
 
-模板引擎，用于数据权限规则中的变量渲染。
+| 数据库 | 适用场景 | 特点 |
+|--------|---------|------|
+| **SQLite** | 开发环境、小型应用 | 零配置、内置于 Bun、文件存储 |
+| **MySQL** | 生产环境 | 广泛使用、生态成熟 |
+| **PostgreSQL** | 生产环境 | 功能丰富、性能优秀 |
 
-## 前端技术
+### 自研 ORM (`@pkg/orm`)
 
-### Vue 3
+```typescript
+// 定义 Schema
+class UserSchema extends TimestampSchema {
+  tableName = 'users'
+  username = column.string().unique().description('用户名')
+  password = column.string().description('密码')
+  roleId = column.string().nullable().description('角色ID')
+}
 
-Composition API + `<script setup>` 语法，组件化开发。
+// 创建 Model
+const UserModel = db.model(UserSchema)
 
-### Naive UI
+// 类型安全的 CRUD
+const users = UserModel.findMany({ where: 'status = 1' })
+const user = UserModel.findById(1)
+UserModel.create({ username: 'test', password: hash })
+```
 
-企业级 Vue 3 组件库，提供丰富的 UI 组件：
+> 📖 详细文档请查看 [ORM 包](/packages/orm)。
 
-- Data Table（数据表格）
-- Form / FormItem（表单）
-- Modal / Drawer（弹窗/抽屉）
-- Menu / Breadcrumb（菜单/面包屑）
-- Tree / TreeSelect（树形选择）
-- Message / Notification（消息/通知）
+## 🔐 权限引擎
 
-### Pinia
+基于 [Casbin](https://casbin.org/) 实现 RBAC 权限控制：
 
-Vue 官方推荐的状态管理库，用于管理：
+| 组件 | 用途 |
+|------|------|
+| **Casbin** | 策略引擎，评估权限规则 |
+| **VelocityJS** | 数据权限模板渲染（`$auth.userId` 等变量） |
+| **SSQL** | 行级数据过滤条件生成 |
 
-- 用户认证状态（authStore）
-- 全局应用状态
+## 💻 前端技术栈
 
-### Vue Router
+### 管理端
 
-前端路由，支持：
+| 技术 | 用途 |
+|------|------|
+| **Vue 3** | 组合式 API，响应式编程 |
+| **Naive UI** | 企业级 UI 组件库 |
+| **Pinia** | 状态管理（authStore） |
+| **Vue Router** | 路由管理，支持动态路由 |
+| **Vite** | 构建工具，HMR 热更新 |
 
-- 静态路由（登录、404 等固定页面）
-- 动态路由（基于后端菜单树自动生成）
-- 路由守卫（认证检查）
+### 客户端
 
-### Vite
+| 技术 | 用途 |
+|------|------|
+| **Vue 3** | 极简应用框架 |
+| **Vue Router** | 路由管理 |
+| **Vite** | 构建工具 |
 
-前端构建工具：
+## 🔧 开发工具链
 
-- 极速 HMR
-- 开发代理（`/api` 代理到后端）
-- 生产构建优化
+| 工具 | 用途 |
+|------|------|
+| **TypeScript** | 类型安全 |
+| **Prettier** | 代码格式化 |
+| **VitePress** | 文档站点 |
+| **Docker** | 容器化部署 |
 
-## 数据库
+## 🔗 相关链接
 
-### SQLite（默认）
-
-- 零配置，文件级数据库
-- 通过 `bun:sqlite` 内置驱动连接
-- 适合开发和中小规模部署
-
-### MySQL / PostgreSQL
-
-- 生产环境推荐
-- 切换只需修改连接字符串
-- ORM 自动适配 SQL 方言
-
-## 部署技术
-
-### Docker
-
-- 多阶段构建（deps → build → runtime）
-- 基于 `oven/bun:1-slim` 镜像
-- 非 root 用户运行
-- 健康检查配置
-
-### Docker Compose
-
-- 卷挂载（数据持久化、静态资源）
-- 环境变量配置
-- 一键部署
+- [Bun 官网](https://bun.sh/)
+- [Elysia 官网](https://elysiajs.com/)
+- [Casbin 官网](https://casbin.org/)
+- [Vue 3 文档](https://vuejs.org/)
+- [Naive UI 文档](https://www.naiveui.com/)
+- [Pinia 文档](https://pinia.vuejs.org/)

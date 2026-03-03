@@ -1,145 +1,155 @@
-# 模型定义规范
+# Schema 定义
 
-## 创建模型
+Schema 类定义数据表的字段结构，是 ORM 自动建表、类型推导、CRUD 接口生成的基础。
 
-每个模型包含两个文件，放在 `backend/models/` 下的独立目录中。
+## 🎯 基本结构
 
-### Schema 文件
-
-定义数据表结构：
+每个模型的 `schema.ts` 文件需要导出两个内容：
 
 ```typescript
-// models/article/schema.ts
-import { TimestampSchema, column } from '@pkg/orm'
+import { TimestampSchema, column } from '../../packages/orm'
 
-export default class ArticleSchema extends TimestampSchema {
-  // 主键 — 自增 ID
-  id = column.number().primaryKey().autoIncrement().description('文章ID')
+// 1. 导出表名
+export const tableName = 'users'
 
-  // 字符串字段
-  title = column.string().default('').description('标题')
-  content = column.string().default('').description('内容')
-  slug = column.string().default('').unique().description('URL 别名')
-
-  // 数字字段
-  viewCount = column.number().default(0).description('浏览量')
-  authorId = column.number().default(0).description('作者ID')
-
-  // 状态字段（1=正常 0=禁用）
-  status = column.number().default(1).description('状态：1正常 0禁用')
-
-  // 排序字段
-  sort = column.number().default(0).description('排序')
-
-  // 可空字段
-  publishedAt = column.string().nullable().description('发布时间')
-
-  // JSON 字段（序列化/反序列化）
-  tags = column
-    .string()
-    .default('[]')
-    .serialize((v: string[]) => JSON.stringify(v))
-    .deserialize((v: string) => JSON.parse(v))
-    .description('标签')
+// 2. 默认导出 Schema 类
+export default class UsersSchema extends TimestampSchema {
+  id = column.number().primaryKey().autoIncrement().description('用户ID')
+  username = column.string().default('').description('用户名')
+  email = column.string().nullable().default(null).description('邮箱')
+  status = UsersSchema.status(1).description('状态')
 }
 ```
 
-### 模型注册文件
+::: tip 基类 TimestampSchema
+继承 `TimestampSchema` 会自动添加 `createdAt` 和 `updatedAt` 时间戳字段，由 ORM 自动维护。
+:::
+
+## 📋 字段类型
+
+`column` 提供以下类型构造器：
+
+| 构造器 | SQL 类型 | TypeScript 类型 | 说明 |
+|--------|---------|-----------------|------|
+| `column.string()` | `TEXT` | `string` | 字符串 |
+| `column.number()` | `INTEGER` | `number` | 数值 |
+| `column.boolean()` | `INTEGER` | `boolean` | 布尔值（0/1） |
+| `column.date()` | `TEXT` | `Date` | 日期时间 |
+| `column.blob()` | `BLOB` | `Buffer` | 二进制数据 |
+
+## 🔗 链式修饰符
+
+每个字段支持链式调用修饰符：
+
+| 修饰符 | 说明 | 示例 |
+|--------|------|------|
+| `.primaryKey()` | 主键 | `column.number().primaryKey()` |
+| `.autoIncrement()` | 自增 | `column.number().primaryKey().autoIncrement()` |
+| `.nullable()` | 允许 NULL | `column.string().nullable()` |
+| `.unique()` | 唯一约束 | `column.string().unique()` |
+| `.default(value)` | 默认值 | `column.number().default(0)` |
+| `.description(text)` | 字段说明（用于 OpenAPI） | `column.string().description('用户名')` |
+| `.deserialize(fn)` | 写入时转换 | `column.string().deserialize(v => hash(v))` |
+
+### 链式组合示例
 
 ```typescript
-// models/article/index.ts
-import { db } from '../main'
-import Schema from './schema'
+// 可空 + 唯一 + 默认值
+email = column.string().nullable().unique().default(null).description('邮箱')
 
-const Article = await db.model({
-  tableName: 'article',
-  schema: Schema,
-})
+// 主键 + 自增
+id = column.number().primaryKey().autoIncrement().description('ID')
 
-export default Article
+// 写入时加密
+password = column.string().default('').description('密码')
+  .deserialize((v) => Bun.password.hash(v))
 ```
 
-## Column 链式 API
+## 🏗️ 基类便捷方法
 
-`column` 提供链式构建器：
+`TimestampSchema` 提供了常用的静态方法生成标准字段：
 
-### 类型方法
-
-| 方法               | SQL 类型             | TS 类型   |
-| ------------------ | -------------------- | --------- |
-| `column.string()`  | TEXT / VARCHAR       | `string`  |
-| `column.number()`  | INTEGER / INT        | `number`  |
-| `column.boolean()` | BOOLEAN              | `boolean` |
-| `column.date()`    | DATETIME / TIMESTAMP | `string`  |
-| `column.blob()`    | BLOB                 | `Buffer`  |
-
-### 修饰方法
-
-| 方法                 | 说明                     |
-| -------------------- | ------------------------ |
-| `.primaryKey()`      | 设为主键                 |
-| `.autoIncrement()`   | 自增                     |
-| `.unique()`          | 唯一约束                 |
-| `.nullable()`        | 允许 NULL                |
-| `.default(value)`    | 默认值                   |
-| `.description(text)` | 字段描述（用于 OpenAPI） |
-| `.serialize(fn)`     | 写入时转换               |
-| `.deserialize(fn)`   | 读取时转换               |
-
-## Schema 基类选择
-
-| 基类              | 包含字段                           | 适用场景         |
-| ----------------- | ---------------------------------- | ---------------- |
-| `Schema`          | 无额外字段                         | 关联表、日志表   |
-| `TimestampSchema` | `createdAt`, `updatedAt`           | 大多数业务表     |
-| `BaseSchema`      | `createdAt`, `updatedAt`, `remark` | 需要备注的业务表 |
-
-## getSchema() 用法
-
-模型的 `getSchema()` 方法生成 TypeBox Schema，用于 Elysia 路由校验和 OpenAPI 文档：
+| 方法 | 说明 | 等效写法 |
+|------|------|---------|
+| `Schema.status(default)` | 状态字段（0/1） | `column.number().default(default)` |
+| `Schema.sort(default)` | 排序字段 | `column.number().default(default)` |
 
 ```typescript
-// 完整 Schema（所有字段）
-Article.getSchema()
-
-// 排除字段
-Article.getSchema({ exclude: ['id', 'createdAt', 'updatedAt'] })
-
-// 部分字段可选（用于更新 Body）
-Article.getSchema({ exclude: ['id'], partial: true })
-
-// 指定必填字段
-Article.getSchema({ exclude: ['id'], required: ['title', 'content'] })
-
-// 添加额外字段
-Article.getSchema({ exclude: ['id'] }, { categoryName: t.String() })
+export default class RoleSchema extends TimestampSchema {
+  id = column.string().primaryKey().description('角色编码')
+  name = column.string().default('').description('角色名称')
+  status = RoleSchema.status(1).description('状态：1启用 0禁用')
+  sort = RoleSchema.sort(0).description('排序值')
+}
 ```
 
-## 数据库同步
+## 🌳 树形结构
 
-模型注册时自动同步表结构：
-
-- **表不存在**：自动创建（CREATE TABLE）
-- **新字段**：自动添加（ALTER TABLE ADD COLUMN）
-- **字段删除**：不自动删除（安全考虑）
-- **类型变更**：不自动变更（需手动迁移）
-
-## Model 类型推导
-
-ORM 提供完整的类型推导工具：
+通过 `parentId` 字段实现树形结构，配合前端树形组件和后端 tree 接口使用：
 
 ```typescript
-import type { Row, Insert, Update } from '@pkg/orm'
-
-// 行类型（完整记录）
-type ArticleRow = Row<typeof Article>
-// { id: number, title: string, content: string, status: number, ... }
-
-// 插入类型（排除自动生成字段）
-type ArticleInsert = Insert<typeof Article>
-// { title?: string, content?: string, status?: number, ... }
-
-// 更新类型（所有字段可选）
-type ArticleUpdate = Update<typeof Article>
-// { title?: string, content?: string, status?: number, ... }
+export default class MenuSchema extends TimestampSchema {
+  id = column.number().primaryKey().autoIncrement().description('菜单ID')
+  parentId = column.number().nullable().default(null).description('父菜单ID')
+  name = column.string().default('').description('菜单名称')
+  type = column.number().default(2).description('类型：1目录 2菜单 3按钮')
+  sort = MenuSchema.sort(0).description('排序值')
+}
 ```
+
+## 📝 完整示例
+
+以字典类型表为例：
+
+```typescript
+import { TimestampSchema, column } from '../../packages/orm'
+
+export const tableName = 'dict_type'
+
+export default class DictTypeSchema extends TimestampSchema {
+  /** ID */
+  id = column.number().primaryKey().autoIncrement().description('ID')
+  /** 字典名称 */
+  name = column.string().default('').description('字典名称')
+  /** 字典类型（唯一标识） */
+  type = column.string().unique().default('').description('字典类型')
+  /** 状态 */
+  status = DictTypeSchema.status(1).description('状态：1启用 0禁用')
+  /** 备注 */
+  remark = column.string().nullable().default(null).description('备注')
+}
+```
+
+## ⚙️ getSchema 方法
+
+每个注册到 `model` 的模型实例都拥有 `getSchema()` 方法，用于自动生成 Elysia 路由的请求/响应 Schema：
+
+```typescript
+import { model } from '@/core/model'
+
+// 获取完整 Schema（用于响应）
+const fullSchema = model.users.getSchema()
+
+// 获取部分字段（用于创建 Body）
+const createBody = model.users.getSchema('omit', ['id', 'createdAt', 'updatedAt'])
+
+// 获取指定字段（用于更新 Body）
+const updateBody = model.users.getSchema('pick', ['username', 'nickname', 'email'])
+```
+
+::: tip 与 route-model 配合
+`getSchema()` 返回的是 Elysia `t.Object()` 类型，可直接用于路由的 `body` / `response` 定义，参见 [route-model 包文档](/packages/route-model)。
+:::
+
+## 🔄 代码生成
+
+新增模型后需运行代码生成器更新注册表：
+
+```bash
+bun run generate
+```
+
+生成器会：
+1. 扫描 `models/*/schema.ts`
+2. 生成 `_generated/schemas.generated.ts`（Schema 注册表）
+3. 生成 `_generated/model.generated.ts`（TypeScript 类型定义）

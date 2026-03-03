@@ -1,116 +1,194 @@
 # 路由体系
 
-## 路由组织
+Bunstuff 采用基于文件系统的路由组织方式，通过 `createApi()` / `createAdminApi()` 工厂函数聚合所有路由。
 
-路由在 `modules/index.ts` 中通过两个工厂函数聚合：
+## 🏗️ 路由架构
+
+```
+/api/_/         ← 客户端 API（7 条路由）    createApi()
+/api/admin/     ← 管理端 API（18 条路由）   createAdminApi()
+/uploads/       ← 静态文件服务
+/               ← 客户端前端 SPA
+/_admin/        ← 管理端前端 SPA
+/openapi        ← OpenAPI 文档
+```
+
+## 📁 路由文件结构
+
+```
+api/
+├── _/                          # 客户端路由（前缀 /api/_/）
+│   ├── auth/index.ts           # 认证（登录/注册/登出）
+│   ├── config/index.ts         # 配置查询
+│   ├── crud/index.ts           # 动态 CRUD
+│   ├── dict/index.ts           # 字典查询
+│   ├── file/index.ts           # 文件上传下载
+│   ├── notice/index.ts         # 通知 + SSE
+│   └── rbac/index.ts           # 权限查询
+│
+└── admin/                      # 管理端路由（前缀 /api/admin/）
+    ├── auth/index.ts           # 会话管理
+    ├── users/                  # 用户 CRUD
+    │   ├── index.ts            # 路由定义
+    │   └── policy.ts           # 权限策略
+    ├── role/                   # 角色 CRUD
+    │   ├── index.ts
+    │   └── policy.ts
+    ├── menu/                   # 菜单 CRUD
+    │   ├── index.ts
+    │   └── policy.ts
+    └── ...                     # 其他管理模块
+```
+
+## 🔧 路由工厂函数
+
+### `createApi()` — 客户端路由
+
+组装所有客户端路由，挂载到 `/api/_/` 前缀：
 
 ```typescript
-// 客户端路由 — /api
-export function createApi() {
-  return new Elysia({ prefix: '/api' })
-    .use(authClientApi) // /api/login, /api/register, /api/logout, /api/me
-    .use(rbacClientApi) // /api/rbac/permissions, /api/rbac/menus
-    .use(dictClientApi) // /api/dict/*
-    .use(configClientApi) // /api/config/*
-    .use(noticeClientApi) // /api/notice/*
-    .use(fileClientApi) // /api/file/*
-    .use(crudClientApi) // /api/crud/:tableName
-}
+import { Elysia } from 'elysia'
+import { authPlugin } from '@/plugins/auth'
 
-// 管理端路由 — /api/admin
-export function createAdminApi() {
-  return new Elysia({ prefix: '/api/admin' })
-    .use(authAdminApi) // /api/admin/stats, sessions, kick
-    .use(userAdminApi) // /api/admin/users
-    .use(roleAdminApi) // /api/admin/role
-    .use(menuAdminApi) // /api/admin/menu
-    .use(permissionAdminApi) // /api/admin/permission
-    .use(permScopeAdminApi) // /api/admin/permission-scope
-    .use(rolePermAdminApi) // /api/admin/role-permission
-    .use(roleMenuAdminApi) // /api/admin/role-menu
-    .use(dictAdminApi) // /api/admin/dict-type, dict-data
-    .use(configAdminApi) // /api/admin/config
-    .use(fileAdminApi) // /api/admin/file
-    .use(noticeAdminApi) // /api/admin/notice
-    .use(jobAdminApi) // /api/admin/job
-    .use(loginLogAdminApi) // /api/admin/login-log
-    .use(operLogAdminApi) // /api/admin/oper-log
-    .use(rateLimitAdminApi) // /api/admin/rate-limit
-    .use(crudAdminApi) // /api/admin/crud-table
-    .use(seedAdminApi) // /api/admin/seed
-    .use(vipAdminApi) // /api/admin/vip
+export function createApi() {
+  return new Elysia({ prefix: '/api/_' })
+    .use(authPlugin)          // 认证插件（注入 session/userId/roleId）
+    .use(authRoute)           // /api/_/auth
+    .use(rbacRoute)           // /api/_/rbac
+    .use(dictRoute)           // /api/_/dict
+    .use(configRoute)         // /api/_/config
+    .use(noticeRoute)         // /api/_/notice
+    .use(fileRoute)           // /api/_/file
+    .use(crudRoute)           // /api/_/crud
 }
 ```
 
-## 路由配置
+### `createAdminApi()` — 管理端路由
 
-每个路由通过 Elysia 的选项对象声明 Schema、响应类型和元数据：
+组装所有管理端路由，挂载到 `/api/admin/` 前缀，额外加载 RBAC 和操作日志插件：
 
 ```typescript
-.get('/users', handler, {
-  // 查询参数 Schema（TypeBox）
-  query: t.Object({
-    page: t.Number({ default: 1 }),
-    pageSize: t.Number({ default: 10 }),
-    filter: t.Optional(t.String()),
-  }),
+export function createAdminApi() {
+  return new Elysia({ prefix: '/api/admin' })
+    .use(authPlugin)          // 认证插件
+    .use(rbacPlugin)          // 权限插件（校验权限 + 注入数据权限）
+    .use(operLogPlugin)       // 操作日志插件
+    .use(usersRoute)          // /api/admin/users
+    .use(roleRoute)           // /api/admin/role
+    .use(menuRoute)           // /api/admin/menu
+    .use(rbacRoute)           // /api/admin/rbac
+    .use(dictRoute)           // /api/admin/dict
+    .use(configRoute)         // /api/admin/config
+    // ... 其他管理端路由
+}
+```
 
-  // 响应 Schema（用于校验和文档生成）
+## 📋 路由配置详解
+
+每条路由通过第三个参数配置 Schema、安全、权限、日志等：
+
+```typescript
+.get('/list', async ({ query, dataScope }) => {
+  const result = await service.findAll(query, dataScope)
+  return R.page(result)
+}, {
+  // 1. 请求 Schema
+  query: service.getSchema('query'),     // 查询参数 Schema
+
+  // 2. 响应 Schema
   response: {
-    200: PagedResponse(User.getSchema()),
-    401: ErrorResponse,
-    403: ErrorResponse,
+    200: PagedResponse(service.getSchema()),
   },
 
-  // 路由元数据
+  // 3. OpenAPI 文档
   detail: {
-    tags: ['用户管理'],           // OpenAPI 标签
-    summary: '获取用户列表',      // OpenAPI 摘要
+    tags: ['管理 - 用户'],               // API 分组
+    summary: '用户列表',                  // 接口摘要
+    description: '查询用户分页列表',       // 接口描述
 
-    // 认证配置
+    // 4. 安全配置
+    security: [{ bearerAuth: [] }],      // 需要 JWT Token
+
+    // 5. 认证配置
     auth: {
-      skipAuth: false,           // 是否跳过认证
+      skipAuth: false,                   // 是否跳过认证（默认 false）
     },
 
-    // 权限配置
+    // 6. 权限配置
     rbac: {
-      scope: {
-        permissions: ['user:admin:list'],  // 需要的权限
-        roles: ['admin'],                  // 需要的角色（可选）
-      },
+      permissions: ['user:admin:list'],  // 需要的权限
+      roles: ['admin'],                  // 需要的角色（可选）
+      scope: 'user:admin:list',          // 数据权限标识
     },
 
-    // 操作日志
+    // 7. 操作日志配置
     operLog: {
-      title: '用户管理',          // 操作标题
-      type: 'list',              // 操作类型
+      title: '用户管理',                  // 模块名
+      type: 'list',                      // 操作类型
     },
   },
 })
 ```
 
-## 静态路由
+### `detail` 配置项
 
-除 API 路由外，后端还提供静态文件服务：
+| 配置项 | 类型 | 说明 |
+|--------|------|------|
+| `tags` | `string[]` | OpenAPI 分组标签 |
+| `summary` | `string` | 接口摘要 |
+| `security` | `object[]` | 安全策略（bearerAuth） |
+| `auth.skipAuth` | `boolean` | 跳过认证检查 |
+| `rbac.permissions` | `string[]` | 需要的权限列表 |
+| `rbac.roles` | `string[]` | 需要的角色列表 |
+| `rbac.scope` | `string` | 数据权限标识 |
+| `operLog.title` | `string` | 操作日志模块名 |
+| `operLog.type` | `string` | 操作类型：list/create/update/delete/export |
 
-| 路径         | 文件源                              | 说明       |
-| ------------ | ----------------------------------- | ---------- |
-| `/`          | `client/` 或 `frontend/client/`     | 客户端 SPA |
-| `/_admin`    | `frontend/` 或 `frontend/frontend/` | 管理端 SPA |
-| `/uploads/*` | `uploads/`                          | 上传文件   |
+## 🔄 Schema 自动生成
 
-::: tip SPA 路由回退
-所有未匹配的路径（除 `/api` 外）都会回退到对应 SPA 的 `index.html`，交由前端路由处理。
-:::
+路由 Schema 通过 `service.getSchema()` 从 ORM 模型自动生成，无需手动定义：
 
-## OpenAPI 文档
+```typescript
+// ✅ 推荐：内联使用 getSchema()
+.get('/list', handler, {
+  query: service.getSchema('query'),           // 分页 + filter 参数
+  response: { 200: PagedResponse(service.getSchema()) },
+})
 
-通过 `@elysiajs/openapi` 插件自动生成：
+.post('/', handler, {
+  body: service.getSchema('body'),             // 创建表单
+  response: { 200: SuccessResponse() },
+})
 
-- 访问地址：`http://localhost:3000/api/swagger`
-- 自动从路由配置提取：
-  - 请求参数（query / params / body）
-  - 响应类型
-  - 标签分组
-  - 摘要描述
-- Schema 由 `Model.getSchema()` 生成，确保与数据库模型同步
+.put('/:id', handler, {
+  params: service.getSchema('idParams'),       // { id: number }
+  body: service.getSchema('updateBody'),       // 更新表单（所有字段可选）
+  response: { 200: SuccessResponse() },
+})
+
+.delete('/:id', handler, {
+  params: service.getSchema('idParams'),
+  response: { 200: SuccessResponse() },
+})
+```
+
+> 📖 详细 Schema 生成规则请查看 [Route Model](/packages/route-model)。
+
+## 📡 OpenAPI 文档
+
+后端自动生成 OpenAPI 3.0 文档，访问地址：`http://localhost:3000/openapi`
+
+文档按标签分组，覆盖所有客户端和管理端接口：
+
+| 分组 | 说明 |
+|------|------|
+| 客户端 - 认证 | 登录、注册、登出等 |
+| 客户端 - RBAC权限 | 当前用户权限查询 |
+| 客户端 - 字典 | 字典数据查询 |
+| 客户端 - 通知公告 | 通知查询、SSE |
+| 客户端 - 文件 | 文件上传下载 |
+| 管理 - 用户 | 用户 CRUD |
+| 管理 - 角色 | 角色 CRUD |
+| 管理 - 菜单 | 菜单 CRUD |
+| 管理 - 权限 | 权限管理 |
+| ... | 共 25+ 分组 |

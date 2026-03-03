@@ -1,186 +1,128 @@
-# SSQL
+# @pkg/ssql
 
-## 概述
+安全 SQL 查询 DSL（Safe SQL），提供类型安全、防注入的查询条件表达能力。支持字符串语法解析和链式 Builder 两种用法。
 
-`@pkg/ssql` 是零依赖的 SQL 条件构建器，提供类 SQL 语法的字符串查询能力，支持前后端共用。
+## 🎯 核心能力
 
-## 核心特性
+| 功能 | 说明 |
+|------|------|
+| **SSQL 语法** | 类 SQL 但更安全的查询字符串 `status=1 && username~"admin"` |
+| **Parser** | 将 SSQL 字符串解析为表达式树 |
+| **Compiler** | 将表达式编译为目标数据库 SQL |
+| **Builder** | 链式 API 构建查询条件 |
+| **多方言** | 支持 MySQL / PostgreSQL / SQLite |
+| **防注入** | 参数化查询 + 字段白名单验证 |
 
-- **类 SQL 语法**：学习成本极低
-- **前后端共用**：前端构建，后端编译
-- **防注入**：白名单字段校验 + 自动转义
-- **多方言**：SQLite / MySQL / PostgreSQL
-- **AST 支持**：解析 → AST → 编译
+## 📋 SSQL 语法
 
-## 语法速查
+### 操作符
 
-### 比较运算符
+| 操作符 | 说明 | 示例 |
+|--------|------|------|
+| `=` | 等于 | `status=1` |
+| `!=` | 不等于 | `status!=0` |
+| `>` | 大于 | `age>18` |
+| `>=` | 大于等于 | `age>=18` |
+| `<` | 小于 | `score<60` |
+| `<=` | 小于等于 | `score<=100` |
+| `~` | 模糊匹配 (LIKE) | `username~"admin"` |
+| `!~` | 非模糊匹配 | `username!~"test"` |
+| `?=` | IN | `status?=(1,2,3)` |
+| `?!=` | NOT IN | `type?!=(1,2)` |
+| `?null` | IS NULL | `email?null` |
+| `?!null` | IS NOT NULL | `email?!null` |
+| `><` | BETWEEN | `age><(18,60)` |
 
-| SSQL | SQL  | 示例           |
-| ---- | ---- | -------------- |
-| `=`  | `=`  | `status = 1`   |
-| `!=` | `!=` | `status != 0`  |
-| `>`  | `>`  | `age > 18`     |
-| `>=` | `>=` | `age >= 18`    |
-| `<`  | `<`  | `price < 100`  |
-| `<=` | `<=` | `price <= 100` |
+### 逻辑连接
 
-### 模糊匹配
+| 连接符 | 说明 | 示例 |
+|--------|------|------|
+| `&&` | AND | `status=1 && age>18` |
+| `\|\|` | OR | `role="admin" \|\| role="manager"` |
+| `()` | 分组 | `(status=1 && age>18) \|\| role="admin"` |
 
-| SSQL | SQL        | 示例              |
-| ---- | ---------- | ----------------- |
-| `~`  | `LIKE`     | `name ~ 'test'`   |
-| `!~` | `NOT LIKE` | `name !~ 'admin'` |
+### 完整示例
 
-### 集合运算
-
-| SSQL  | SQL      | 示例             |
-| ----- | -------- | ---------------- |
-| `?=`  | `IN`     | `id ?= [1,2,3]`  |
-| `!?=` | `NOT IN` | `id !?= [4,5,6]` |
-
-### 空值判断
-
-| SSQL     | SQL           | 示例           |
-| -------- | ------------- | -------------- |
-| `?null`  | `IS NULL`     | `email ?null`  |
-| `!?null` | `IS NOT NULL` | `email !?null` |
-
-### 范围
-
-| SSQL | SQL       | 示例             |
-| ---- | --------- | ---------------- |
-| `><` | `BETWEEN` | `age >< [18,60]` |
-
-### 逻辑运算
-
-| SSQL   | SQL   | 示例                          |
-| ------ | ----- | ----------------------------- |
-| `&&`   | `AND` | `a = 1 && b = 2`              |
-| `\|\|` | `OR`  | `a = 1 \|\| b = 2`            |
-| `()`   | 分组  | `(a = 1 \|\| b = 2) && c = 3` |
-
-## 后端使用
-
-### SSQL 字符串（推荐）
-
-最简洁的方式，直接使用模板字符串：
-
-```typescript
-// 简单条件
-const users = await User.findMany(`status = 1`)
-
-// 变量插值（自动安全处理）
-const users = await User.findMany(`id = ${id}`)
-const users = await User.findMany(`name ~ '${keyword}'`)
-
-// 复合条件
-const users = await User.findMany(`status = 1 && roleId = ${roleId}`)
-
-// IN 查询
-const users = await User.findMany(`id ?= [${ids.join(',')}]`)
+```
+status=1 && (username~"admin" || email~"admin") && createdAt>"2024-01-01"
 ```
 
-### 安全机制
-
-Model 自动配置 `allowedFields` 白名单：
-
-```typescript
-// SSQL 中只允许使用模型定义的字段名
-const result = await User.findMany(`hackField = 1`)
-// ❌ 抛出错误：字段 'hackField' 不在白名单中
-
-const result = await User.findMany(`username = 'admin'`)
-// ✅ username 是 User 模型的合法字段
+编译为 SQLite：
+```sql
+WHERE status = 1 AND (username LIKE '%admin%' OR email LIKE '%admin%') AND createdAt > '2024-01-01'
 ```
 
-### CrudService 中的 SSQL
+## 🔧 核心 API
 
-`CrudService.findAll()` 自动处理前端传来的 SSQL `filter`：
+### 解析与编译
 
 ```typescript
-// 前端请求: GET /api/admin/users?filter=status%20=%201%20&&%20name%20~%20'test'
+import { toSQL, toSQLite, toMySQL, toPostgres, parse } from '@pkg/ssql'
 
-.get('/users', async (ctx) => {
-  // ctx.query.filter 包含 SSQL 字符串
-  // findAll 自动解析并合并到查询条件
-  return R.page(await userService.findAll(ctx.query, ctx))
+// SSQL → SQL（指定方言）
+const [wherePart, fullSql, params] = toSQLite('status=1 && username~"admin"')
+// wherePart → "status = 1 AND username LIKE '%admin%'"
+
+// 带字段白名单验证
+const result = toSQLite('status=1', {
+  allowedFields: ['status', 'username', 'email']
 })
 ```
 
-## 前端使用
-
-### SSQL Builder
-
-前端提供 Builder API 构建 SSQL 字符串：
+### Builder 链式构建
 
 ```typescript
-import { SSQLBuilder } from '@/utils/ssql'
+import { where, whereOr } from '@pkg/ssql'
 
-const filter = new SSQLBuilder()
-  .eq('status', 1) // status = 1
-  .like('name', 'test') // name ~ 'test'
-  .gt('age', 18) // age > 18
-  .in('roleId', [1, 2]) // roleId ?= [1,2]
-  .between('price', 10, 100) // price >< [10,100]
-  .isNull('deletedAt') // deletedAt ?null
-  .build()
+// AND 条件
+const filter = where()
+  .eq('status', 1)
+  .like('username', 'admin')
+  .gt('age', 18)
+  .toString()
+// → '(status=1 && username~"admin" && age>18)'
 
-// 结果: "status = 1 && name ~ 'test' && age > 18 && roleId ?= [1,2] && price >< [10,100] && deletedAt ?null"
+// OR 条件
+const filter = whereOr()
+  .eq('role', 'admin')
+  .eq('role', 'manager')
+  .toString()
+// → '(role="admin" || role="manager")'
+
+// 嵌套组合
+const filter = where()
+  .eq('status', 1)
+  .group(whereOr()
+    .like('username', 'test')
+    .like('email', 'test')
+  )
+  .toString()
+// → '(status=1 && (username~"test" || email~"test"))'
 ```
 
-### 在 useTable 中使用
-
-`useTable` 的搜索功能内部使用 SSQL Builder：
+### ORM 条件对象
 
 ```typescript
-handleSearch({
-  username: 'admin', // → username ~ 'admin'
-  status: 1, // → status = 1
-})
-// 自动构建: username ~ 'admin' && status = 1
+import { toWhere, buildWhere, sqlite } from '@pkg/ssql'
+
+// SSQL 字符串 → ORM 条件对象
+const condition = toWhere('status=1 && age>18')
+
+// ORM 条件 → SQL WHERE
+const sql = buildWhere(sqlite, condition)
 ```
 
-## AST 结构
+## 🌐 前后端统一
 
-SSQL 内部使用 AST 表示条件：
-
-```
-SSQL: "status = 1 && name ~ 'test'"
-
-AST:
-LogicExpr {
-  op: '&&',
-  left: FieldExpr { field: 'status', op: '=', value: 1 },
-  right: FieldExpr { field: 'name', op: '~', value: 'test' },
-}
-```
-
-### 节点类型
-
-| 类型          | 说明                 |
-| ------------- | -------------------- |
-| `FieldExpr`   | 字段比较表达式       |
-| `LogicExpr`   | 逻辑运算（AND/OR）   |
-| `GroupExpr`   | 括号分组             |
-| `LiteralExpr` | 字面量（true/false） |
-
-## 编译流程
+前端同样提供 Builder API（位于 `frontend/src/utils/ssql/`），生成 SSQL 字符串后通过 API 的 `filter` 参数传递给后端：
 
 ```
-SSQL 字符串
-  → Lexer（词法分析）→ Token 流
-  → Parser（语法分析）→ AST
-  → Compiler（编译）→ SQL + 参数
+前端 Builder → SSQL 字符串 → HTTP filter 参数 → 后端 Parser → SQL WHERE
 ```
 
-```typescript
-// 输入
-"status = 1 && name ~ 'test'"
-
-// 编译输出（SQLite）
-{
-  sql: "status = ? AND name LIKE ?",
-  params: [1, '%test%']
-}
-```
+::: tip 安全性
+SSQL 的安全性体现在：
+- 字段白名单验证，防止访问非授权字段
+- 参数化查询输出，防止 SQL 注入
+- 无法执行子查询或函数调用
+:::

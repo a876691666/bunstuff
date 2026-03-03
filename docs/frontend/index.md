@@ -1,140 +1,115 @@
-# 管理端前端总览
+# 前端概述
 
-## 概述
+## 🎯 架构总览
 
-管理端前端基于 **Vue 3 + Naive UI + Pinia + Vue Router** 构建，提供完整的后台管理界面。
+本项目包含两个独立的前端应用：
 
-## 技术栈
+| 应用 | 目录 | 用途 | 端口 | Base |
+|------|------|------|------|------|
+| Admin 管理后台 | `frontend/` | 系统管理、运维操作 | 5173 | `/_admin/` |
+| Client 客户端 | `client/` | 面向用户的前台应用 | 5174 | `/` |
 
-| 技术         | 说明                               |
-| ------------ | ---------------------------------- |
-| Vue 3        | Composition API + `<script setup>` |
-| Naive UI     | 企业级 UI 组件库                   |
-| Pinia        | 状态管理                           |
-| Vue Router   | 路由（静态 + 动态）                |
-| Vite         | 开发构建工具                       |
-| SSQL Builder | 前端查询条件构建                   |
+## 🚀 技术栈
 
-## 项目配置
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| Vue | 3.5 | 响应式 UI 框架 |
+| Naive UI | 2.43 | 企业级组件库 |
+| Pinia | 3.0 | 状态管理 |
+| Vue Router | 4.6 | 路由管理 |
+| Vite | latest | 构建工具 |
+| TypeScript | 5.x | 类型系统 |
 
-### Vite 配置
-
-```typescript
-// vite.config.ts
-export default defineConfig({
-  base: '/_admin/', // 管理端路径前缀
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': 'http://localhost:3000', // 代理到后端
-    },
-  },
-})
-```
-
-### 路径别名
-
-| 别名 | 路径            |
-| ---- | --------------- |
-| `@/` | `frontend/src/` |
-
-## 目录结构
+## 📦 目录结构
 
 ```
-src/
-├── main.ts              # 应用入口
-├── App.vue              # 根组件
-├── api/                 # API 请求层
-│   ├── auth.ts          # 认证
-│   ├── user.ts          # 用户
-│   ├── role.ts          # 角色
-│   ├── menu.ts          # 菜单
-│   ├── permission.ts    # 权限
-│   ├── permission-scope.ts
-│   ├── role-menu.ts
-│   ├── role-permission.ts
-│   ├── rbac.ts          # RBAC 查询
-│   ├── system.ts        # 系统功能
-│   ├── notice.ts        # 通知
-│   ├── file.ts          # 文件
-│   ├── job.ts           # 定时任务
-│   ├── rate-limit.ts    # 限流
-│   ├── crud.ts          # 动态CRUD
-│   └── vip.ts           # VIP
-├── components/          # 通用组件
-│   ├── common/          # 基础组件
-│   └── crud/            # CRUD 组件
-├── composables/         # 组合式函数
-│   ├── useTable.ts      # 表格逻辑
-│   ├── useModal.ts      # 弹窗逻辑
-│   └── useDict.ts       # 字典数据
-├── layouts/             # 布局组件
-│   └── AdminLayout.vue  # 管理端布局
-├── router/              # 路由
-│   ├── index.ts         # 路由配置
-│   └── dynamic.ts       # 动态路由生成
-├── stores/              # Pinia Store
-│   └── auth.ts          # 认证状态
-├── types/               # TypeScript 类型
-├── utils/               # 工具函数
-│   ├── http.ts          # HTTP 客户端
-│   └── ssql/            # SSQL Builder
-└── views/               # 页面视图
-    ├── Dashboard.vue    # 仪表盘
-    ├── NotFound.vue     # 404
-    ├── auth/            # 认证页面
-    └── admin/           # 管理页面
+frontend/src/
+├── api/                # API 模块（17 个）
+│   ├── auth.ts
+│   ├── user.ts
+│   ├── role.ts
+│   ├── ...
+├── assets/             # 静态资源
+├── components/         # 公共组件（5 个通用 + 4 个 CRUD）
+│   ├── PageTable.vue
+│   ├── FormModal.vue
+│   ├── FormField.vue
+│   ├── SearchForm.vue
+│   ├── ConfirmButton.vue
+│   ├── CrudTable.vue
+│   ├── CrudSearch.vue
+│   ├── CrudModal.vue
+│   └── CrudConfirm.vue
+├── composables/        # 组合式函数（3 个）
+│   ├── useTable.ts
+│   ├── useModal.ts
+│   └── useDict.ts
+├── layouts/            # 布局组件
+│   └── AdminLayout.vue
+├── router/             # 路由配置
+│   └── index.ts
+├── stores/             # Pinia 状态仓库
+│   └── auth.ts
+├── types/              # TypeScript 类型定义
+│   └── api.ts
+├── views/              # 页面视图（25+ 页面）
+│   ├── dashboard/
+│   ├── auth/
+│   ├── system/
+│   ├── rbac/
+│   ├── vip/
+│   ├── notice/
+│   ├── file/
+│   ├── job/
+│   ├── rate-limit/
+│   └── crud/
+├── App.vue             # 根组件
+└── main.ts             # 入口文件
 ```
 
-## 页面清单
+## 🏗️ 架构图
 
-### 认证页面
+```
+┌─────────────────────────────────────────────────┐
+│                   浏览器                          │
+├──────────────────────┬──────────────────────────┤
+│  Admin (/_admin/)    │  Client (/)              │
+│  Vue 3 + Naive UI    │  Vue 3 (轻量)            │
+│  Pinia + Router      │  Router only             │
+│  Port 5173           │  Port 5174               │
+├──────────────────────┴──────────────────────────┤
+│              Vite Dev Server (Proxy)             │
+│              /api → localhost:3000               │
+├─────────────────────────────────────────────────┤
+│              Elysia Backend (:3000)              │
+│              REST API + Static Files             │
+└─────────────────────────────────────────────────┘
+```
 
-| 页面           | 路径               | 说明     |
-| -------------- | ------------------ | -------- |
-| Login          | `/login`           | 登录     |
-| Profile        | `/profile`         | 个人信息 |
-| ChangePassword | `/change-password` | 修改密码 |
+## 📊 项目规模
 
-### 系统管理
+| 维度 | 数量 |
+|------|------|
+| 页面视图 | 25+ |
+| API 模块 | 17 |
+| 通用组件 | 5 |
+| CRUD 组件 | 4 |
+| 组合式函数 | 3 |
+| 类型定义 | 20+ 实体，814 行 |
 
-| 页面             | 路径                              | 权限                          |
-| ---------------- | --------------------------------- | ----------------------------- |
-| Users            | `/admin/system/users`             | `user:admin:list`             |
-| Roles            | `/admin/system/roles`             | `role:admin:list`             |
-| Menus            | `/admin/system/menus`             | `menu:admin:list`             |
-| Permissions      | `/admin/system/permissions`       | `permission:admin:list`       |
-| PermissionScopes | `/admin/system/permission-scopes` | `permission-scope:admin:list` |
-| DictTypes        | `/admin/system/dict-types`        | `dict-type:admin:list`        |
-| DictData         | `/admin/system/dict-data`         | `dict-data:admin:list`        |
-| Configs          | `/admin/system/configs`           | `config:admin:list`           |
-| LoginLogs        | `/admin/system/login-logs`        | `login-log:admin:list`        |
-| OperLogs         | `/admin/system/oper-logs`         | `oper-log:admin:list`         |
+:::tip
+Admin 后台是功能完整的管理系统，Client 客户端目前为脚手架状态，可按需扩展。
+:::
 
-### 权限管理
+## 📖 文档导航
 
-| 页面            | 路径                           | 权限                         |
-| --------------- | ------------------------------ | ---------------------------- |
-| RoleMenus       | `/admin/rbac/role-menus`       | `role-menu:admin:list`       |
-| RolePermissions | `/admin/rbac/role-permissions` | `role-permission:admin:list` |
-| Sessions        | `/admin/rbac/sessions`         | 在线会话管理                 |
-| Cache           | `/admin/rbac/cache`            | 缓存管理                     |
-
-### 功能模块
-
-| 页面        | 路径                             | 说明             |
-| ----------- | -------------------------------- | ---------------- |
-| CrudTable   | `/admin/crud`                    | 动态 CRUD 表管理 |
-| Files       | `/admin/file`                    | 文件管理         |
-| Jobs        | `/admin/job`                     | 定时任务         |
-| Notices     | `/admin/notice`                  | 通知公告         |
-| RateLimits  | `/admin/rate-limit`              | 限流规则         |
-| IpBlacklist | `/admin/rate-limit/ip-blacklist` | IP 黑名单        |
-| VipTiers    | `/admin/vip`                     | VIP 等级管理     |
-
-### 其他
-
-| 页面      | 路径 | 说明     |
-| --------- | ---- | -------- |
-| Dashboard | `/`  | 仪表盘   |
-| NotFound  | `/*` | 404 页面 |
+- [路由系统](./router.md) - 静态路由、动态路由、导航守卫
+- [状态管理](./stores.md) - Pinia Store 设计
+- [HTTP 客户端](./http.md) - 请求封装与错误处理
+- [API 模块](./api.md) - 接口模块总览
+- [组件体系](./components.md) - 通用组件与 CRUD 组件
+- [组合式函数](./composables.md) - useTable、useModal、useDict
+- [CRUD 开发指南](./crud-components.md) - 完整增删改查开发流程
+- [页面视图](./views.md) - 各业务页面说明
+- [布局系统](./layout.md) - AdminLayout 布局结构
+- [客户端应用](./client.md) - Client 前台应用

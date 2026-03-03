@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'ip-blacklist',
   permissions: [
     { code: 'rateLimit:admin:blacklist:list', name: '查看IP黑名单列表', description: '获取IP黑名单列表' },
@@ -17,5 +17,9 @@ export default definePolicy({
   scopes: [
     { role: 'user', table: 'ip_blacklist', permission: 'rateLimit:admin:blacklist:list', rule: 'status = 1', description: '仅查看生效中黑名单' },
     { role: 'user', table: 'ip_blacklist', permission: 'rateLimit:admin:blacklist:read', rule: 'status = 1', description: '仅查看生效中黑名单' },
+  ],
+  menus: [
+    { name: '限流保护', path: '/rate-limit', icon: 'shield', type: 1, sort: 8 },
+    { name: 'IP黑名单', path: '/rate-limit/blacklist', parent: '/rate-limit', component: 'admin/rate-limit/IpBlacklist', icon: 'lock', sort: 2, permCode: 'rateLimit:admin:blacklist:list' },
   ],
 })

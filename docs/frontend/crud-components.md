@@ -1,69 +1,194 @@
-# CRUD 组件
+# CRUD 开发指南
 
-## 概述
+## 🎯 概述
 
-`frontend/src/components/crud/` 提供面向动态 CRUD 的专用组件集。
+本指南介绍如何使用 **CrudTable + CrudSearch + CrudModal** 组件配合 **useTable + useModal** composable，快速开发标准增删改查页面。
 
-## CrudTable
+## 🚀 开发步骤
 
-动态 CRUD 表格组件，根据表配置自动渲染列和操作：
+### 步骤总览
 
-```vue
-<CrudTable
-  :table-name="tableName"
-  :columns="columns"
-  :searchable="true"
-  :creatable="true"
-  :editable="true"
-  :deletable="true"
-/>
+| 步骤 | 内容 | 涉及 |
+|------|------|------|
+| 1 | 定义搜索字段 | `searchFields` 配置 |
+| 2 | 初始化 useTable | API + query + opMap |
+| 3 | 初始化 useModal | defaultData + API + 回调 |
+| 4 | 定义表格列 | `columns` 配置 |
+| 5 | 编写模板 | CrudSearch + CrudTable + CrudModal |
+
+### 步骤 1：定义搜索字段
+
+```ts
+const searchFields = [
+  { label: '用户名', key: 'username', type: 'input' },
+  { label: '状态', key: 'status', type: 'select', options: statusOptions },
+  { label: '创建时间', key: 'createdAt', type: 'daterange' },
+]
 ```
 
-## CrudSearch
+### 步骤 2：初始化 useTable
 
-CRUD 搜索组件，根据列配置自动生成搜索表单：
-
-```vue
-<CrudSearch :columns="columns" @search="handleSearch" @reset="handleReset" />
+```ts
+const table = useTable<User, UserQuery>({
+  api: userApi.list,
+  defaultQuery: {
+    username: '',
+    status: null,
+    createdAt: null,
+  },
+  defaultPageSize: 10,
+  opMap: {
+    username: 'like',
+    status: 'eq',
+    createdAt: 'between',
+  }
+})
 ```
 
-## CrudModal
+### 步骤 3：初始化 useModal
 
-CRUD 表单弹窗，根据列配置自动生成表单字段：
-
-```vue
-<CrudModal
-  v-model:visible="visible"
-  :columns="columns"
-  :data="formData"
-  :loading="saving"
-  @confirm="handleSave"
-/>
+```ts
+const modal = useModal<CreateUserDto, number>({
+  defaultData: {
+    username: '',
+    password: '',
+    nickname: '',
+    email: '',
+    status: 1,
+  },
+  createApi: userApi.create,
+  updateApi: userApi.update,
+  onSuccess: () => {
+    message.success(modal.isEdit.value ? '更新成功' : '创建成功')
+    table.reload()
+  }
+})
 ```
 
-## CrudConfirm
+### 步骤 4：定义表格列
 
-CRUD 操作确认组件：
-
-```vue
-<CrudConfirm title="确认删除" content="删除后数据无法恢复，是否继续？" @confirm="handleDelete" />
+```ts
+const columns: DataTableColumn<User>[] = [
+  { title: 'ID', key: 'id', width: 80 },
+  { title: '用户名', key: 'username' },
+  { title: '昵称', key: 'nickname' },
+  { title: '邮箱', key: 'email' },
+  {
+    title: '状态',
+    key: 'status',
+    render: (row) => getStatusLabel(row.status)
+  },
+  { title: '创建时间', key: 'createdAt', width: 180 },
+  {
+    title: '操作',
+    key: 'action',
+    width: 200,
+    fixed: 'right',
+  }
+]
 ```
 
-## 动态 CRUD 页面
-
-动态 CRUD 页面组合以上组件，实现零代码的数据管理界面：
+### 步骤 5：编写模板
 
 ```vue
-<script setup lang="ts">
-import { CrudTable, CrudSearch, CrudModal, CrudConfirm } from '@/components/crud'
-import { crudApi } from '@/api/crud'
+<template>
+  <div>
+    <!-- 搜索区域 -->
+    <CrudSearch :fields="searchFields" :use-table="table" />
 
-const props = defineProps<{
-  tableName: string
-}>()
+    <!-- 数据表格 -->
+    <CrudTable :use-table="table" :columns="columns">
+      <template #toolbar>
+        <NButton type="primary" @click="modal.open()">
+          <template #icon><NIcon><AddOutline /></NIcon></template>
+          新增
+        </NButton>
+      </template>
 
-// 自动根据 tableName 加载表配置和数据
-</script>
+      <template #action="{ row }">
+        <NSpace>
+          <NButton size="small" @click="modal.edit(row)">编辑</NButton>
+          <CrudConfirm @confirm="handleDelete(row.id)">删除</CrudConfirm>
+        </NSpace>
+      </template>
+    </CrudTable>
+
+    <!-- 表单弹窗 -->
+    <CrudModal :use-modal="modal">
+      <NFormItem label="用户名" path="username">
+        <NInput v-model:value="modal.formData.value.username" :disabled="modal.isEdit.value" />
+      </NFormItem>
+      <NFormItem v-if="!modal.isEdit.value" label="密码" path="password">
+        <NInput v-model:value="modal.formData.value.password" type="password" />
+      </NFormItem>
+      <NFormItem label="昵称" path="nickname">
+        <NInput v-model:value="modal.formData.value.nickname" />
+      </NFormItem>
+      <NFormItem label="邮箱" path="email">
+        <NInput v-model:value="modal.formData.value.email" />
+      </NFormItem>
+      <NFormItem label="状态" path="status">
+        <NSelect v-model:value="modal.formData.value.status" :options="statusOptions" />
+      </NFormItem>
+    </CrudModal>
+  </div>
+</template>
 ```
 
-这些组件与后端的动态 CRUD 模块配合使用，管理员通过管理界面定义表结构后，前端自动生成完整的 CRUD 界面。
+## 🔧 删除处理
+
+```ts
+async function handleDelete(id: number) {
+  await userApi.delete(id)
+  message.success('删除成功')
+  table.reload()
+}
+```
+
+## 📐 SSQL 前端构建器
+
+对于复杂查询场景，可以使用 SSQL Builder 手动构建筛选条件：
+
+```ts
+import { where } from '@/utils/ssql'
+
+// 链式调用
+const filter = where()
+  .like('username', 'admin')
+  .eq('status', 1)
+  .between('createdAt', '2025-01-01', '2025-12-31')
+  .toString()
+
+// 输出: username~admin,status=1,createdAt><2025-01-01|2025-12-31
+```
+
+### 支持的操作符
+
+| 方法 | SSQL 符号 | SQL 等价 |
+|------|-----------|----------|
+| `eq(key, value)` | `=` | `= value` |
+| `ne(key, value)` | `!=` | `!= value` |
+| `gt(key, value)` | `>` | `> value` |
+| `gte(key, value)` | `>=` | `>= value` |
+| `lt(key, value)` | `<` | `< value` |
+| `lte(key, value)` | `<=` | `<= value` |
+| `like(key, value)` | `~` | `LIKE '%value%'` |
+| `in(key, values)` | `@` | `IN (values)` |
+| `between(key, a, b)` | `><` | `BETWEEN a AND b` |
+
+:::tip
+`useTable` 的 `opMap` 配置在内部会自动调用 SSQL Builder，大多数场景无需手动使用。仅在需要自定义复杂查询时才需要直接使用 `where()` 构建器。
+:::
+
+## 📋 完整文件结构
+
+一个标准 CRUD 页面的文件结构：
+
+```
+views/system/users/
+└── Index.vue          # 单文件组件，包含以上所有逻辑
+```
+
+:::warning
+编辑模式下，某些字段可能需要禁用（如用户名）。使用 `modal.isEdit.value` 判断当前模式，通过 `:disabled` 或 `v-if` 控制。
+:::

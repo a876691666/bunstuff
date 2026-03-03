@@ -1,262 +1,227 @@
 # 开发规范
 
-## 命名规范
+本章节定义 Bunstuff 项目的开发规范和约定，确保代码风格一致、结构清晰。
+
+## 📝 命名规范
 
 ### 文件命名
 
-| 场景     | 规范                             | 示例                             |
-| -------- | -------------------------------- | -------------------------------- |
-| 模型目录 | kebab-case                       | `dict-type/`、`role-permission/` |
-| 模块目录 | kebab-case                       | `rate-limit/`、`login-log/`      |
-| 服务文件 | `service.ts`                     | `modules/auth/main/service.ts`   |
-| 路由文件 | `api_client.ts` / `api_admin.ts` | 客户端 / 管理端                  |
-| 插件文件 | `plugin.ts`                      | `modules/auth/main/plugin.ts`    |
-| Vue 组件 | PascalCase                       | `PageTable.vue`、`FormModal.vue` |
-| Vue 视图 | PascalCase                       | `Users.vue`、`Roles.vue`         |
-| 组合函数 | `use*.ts`                        | `useTable.ts`、`useModal.ts`     |
+| 类型 | 规范 | 示例 |
+|------|------|------|
+| 目录名 | `kebab-case` | `dict-data/`, `login-log/` |
+| Schema 文件 | `schema.ts` | `models/users/schema.ts` |
+| Seed 文件 | `seed.ts` | `models/users/seed.ts` |
+| 服务文件 | `kebab-case.ts` | `services/sys-config.ts` |
+| 插件文件 | `kebab-case.ts` | `plugins/rate-limit.ts` |
+| 路由目录 | `kebab-case/index.ts` | `api/admin/job-log/index.ts` |
+| 权限文件 | `policy.ts` | `api/admin/users/policy.ts` |
+| Vue 组件 | `PascalCase.vue` | `PageTable.vue`, `FormModal.vue` |
+| 组合函数 | `camelCase.ts` | `useTable.ts`, `useModal.ts` |
 
 ### 变量命名
 
-| 场景         | 规范                     | 示例                                   |
-| ------------ | ------------------------ | -------------------------------------- |
-| Schema 类    | PascalCase + Schema 后缀 | `UsersSchema`、`RoleSchema`            |
-| Model 导出   | PascalCase               | `User`、`Role`、`Menu`                 |
-| Service 导出 | camelCase                | `userService`、`roleService`           |
-| Plugin 导出  | camelCase + Plugin 后缀  | `authPlugin`、`rbacPlugin`             |
-| 权限编码     | 冒号分隔                 | `user:admin:list`、`role:admin:create` |
-| 字典编码     | snake_case               | `sys_status`、`notice_type`            |
+| 类型 | 规范 | 示例 |
+|------|------|------|
+| Schema 类 | `XxxSchema` | `UserSchema`, `RoleSchema` |
+| Model 实例 | `XxxModel` | `UserModel`, `RoleModel` |
+| Service 类 | `XxxService` | `UserService`, `RoleService` |
+| Plugin | `xxxPlugin` | `authPlugin`, `rbacPlugin` |
+| 权限编码 | `模块:端:操作` | `user:admin:list`, `role:admin:create` |
+| 数据表名 | `snake_case` | `users`, `dict_type`, `sys_config` |
 
-## 后端开发规范
+## 🔧 后端开发规范
 
-### 新增功能模块
+### 新增模块流程
 
-1. **创建模型** — 在 `models/` 下新建目录
+新增一个完整的后端模块需要 4 步：
+
+```
+步骤 1: models/xxx/schema.ts       ← 定义表结构
+步骤 2: models/xxx/seed.ts         ← 初始数据（可选）
+步骤 3: services/xxx.ts            ← 业务服务
+步骤 4: api/admin/xxx/index.ts     ← API 路由
+步骤 5: api/admin/xxx/policy.ts    ← 权限策略（可选）
+步骤 6: bun run generate           ← 自动注册
+```
+
+### Schema 定义规范
 
 ```typescript
-// models/article/schema.ts
+// models/xxx/schema.ts
 import { TimestampSchema, column } from '@pkg/orm'
 
-export default class ArticleSchema extends TimestampSchema {
-  id = column.number().primaryKey().autoIncrement().description('文章ID')
-  title = column.string().default('').description('标题')
-  content = column.string().default('').description('内容')
-  status = column.number().default(1).description('状态：1正常 0禁用')
-  authorId = column.number().default(0).description('作者ID')
+export const tableName = 'xxx'
+
+export default class XxxSchema extends TimestampSchema {
+  tableName = tableName
+
+  // 字段定义：类型 + 修饰链
+  name = column.string().description('名称')
+  status = column.number().default(1).description('状态 0停用 1正常')
+  remark = column.string().nullable().description('备注')
 }
 ```
 
-```typescript
-// models/article/index.ts
-import { db } from '../main'
-import Schema from './schema'
-const Article = await db.model({ tableName: 'article', schema: Schema })
-export default Article
-```
-
-2. **创建服务** — 继承 `CrudService`
+### Service 规范
 
 ```typescript
-// modules/article/main/service.ts
-import { CrudService } from '@/modules/crud-service'
-import Article from '@/models/article'
+// services/xxx.ts
+import { CrudService } from '@/core/crud'
+import XxxSchema from '@/models/xxx/schema'
 
-class ArticleService extends CrudService<typeof Article.schemaInstance> {
+class XxxServiceClass extends CrudService<XxxSchema> {
   constructor() {
-    super(Article)
+    super(XxxSchema)
   }
 }
 
-export const articleService = new ArticleService()
+export const xxxService = new XxxServiceClass()
 ```
 
-3. **创建路由** — 遵循 CRUD 模板
+### API 路由规范
 
 ```typescript
-// modules/article/main/api_admin.ts
-import Elysia from 'elysia'
-import { authPlugin } from '@/modules/auth/main/plugin'
-import { rbacPlugin } from '@/modules/rbac/main/plugin'
-import { query, idParams } from '@/packages/route-model'
-import { R, PagedResponse, SuccessResponse, ErrorResponse } from '@/modules/response'
-import Article from '@/models/article'
-import { articleService } from './service'
+// api/admin/xxx/index.ts
+import { Elysia } from 'elysia'
+import { xxxService as service } from '@/services/xxx'
+import { R } from '@/services/response'
 
-export const articleAdminApi = new Elysia({ prefix: '/article', tags: ['文章管理'] })
-  .use(authPlugin())
-  .use(rbacPlugin())
-
-  .get('/', async (ctx) => R.page(await articleService.findAll(ctx.query, ctx)), {
-    query: query(),
-    response: { 200: PagedResponse(Article.getSchema()) },
-    detail: { rbac: { scope: { permissions: ['article:admin:list'] } } },
+export default new Elysia({ prefix: '/xxx' })
+  .get('/', async ({ query }) => {
+    const result = await service.findAll(query)
+    return R.page(result)
+  }, {
+    query: service.getSchema('query'),
+    response: { 200: PagedResponse(service.getSchema()) },
+    detail: {
+      tags: ['管理 - XXX'],
+      summary: 'XXX 列表',
+      security: [{ bearerAuth: [] }],
+      rbac: { permissions: ['xxx:admin:list'], scope: 'xxx:admin:list' },
+      operLog: { title: 'XXX管理', type: 'list' },
+    },
   })
-
-  .get(
-    '/:id',
-    async (ctx) => {
-      const data = await articleService.findById(ctx.params.id, ctx)
-      return data ? R.ok(data) : R.notFound('文章')
-    },
-    {
-      params: idParams(),
-      response: { 200: SuccessResponse(Article.getSchema()), 404: ErrorResponse },
-      detail: { rbac: { scope: { permissions: ['article:admin:read'] } } },
-    },
-  )
-
-  .post('/', async (ctx) => R.ok(await articleService.create(ctx.body, ctx)), {
-    body: Article.getSchema({ exclude: ['id'], required: ['title'] }),
-    response: { 200: SuccessResponse(Article.getSchema()) },
-    detail: { rbac: { scope: { permissions: ['article:admin:create'] } } },
-  })
-
-  .put(
-    '/:id',
-    async (ctx) => {
-      const r = await articleService.update(ctx.params.id, ctx.body, ctx)
-      return r ? R.ok(r) : R.notFound('文章')
-    },
-    {
-      params: idParams(),
-      body: Article.getSchema({ exclude: ['id'], partial: true }),
-      detail: { rbac: { scope: { permissions: ['article:admin:update'] } } },
-    },
-  )
-
-  .delete(
-    '/:id',
-    async (ctx) => {
-      return (await articleService.delete(ctx.params.id, ctx))
-        ? R.success('删除成功')
-        : R.notFound('文章')
-    },
-    {
-      params: idParams(),
-      detail: { rbac: { scope: { permissions: ['article:admin:delete'] } } },
-    },
-  )
-```
-
-4. **注册路由** — 在 `modules/index.ts` 中添加
-
-```typescript
-import { articleAdminApi } from './article/main/api_admin'
-
-export function createAdminApi() {
-  return (
-    new Elysia({ prefix: '/api/admin' })
-      // ... 其他路由
-      .use(articleAdminApi)
-  )
-}
 ```
 
 ### 权限编码规范
 
-权限编码采用三段式格式：`{资源}:{范围}:{操作}`
+权限编码采用三段式格式：`模块:端:操作`
+
+| 段 | 说明 | 示例 |
+|---|------|------|
+| 模块 | 功能模块名 | `user`, `role`, `menu`, `dict` |
+| 端 | 使用端 | `admin`（管理端）, 省略则为客户端 |
+| 操作 | 具体动作 | `list`, `create`, `update`, `delete`, `export` |
+
+示例：
 
 ```
-user:admin:list      # 管理端-用户列表
-user:admin:create    # 管理端-创建用户
-user:admin:update    # 管理端-更新用户
-user:admin:delete    # 管理端-删除用户
-article:client:read  # 客户端-读取文章
+user:admin:list      # 管理端 - 用户列表
+user:admin:create    # 管理端 - 创建用户
+role:admin:update    # 管理端 - 更新角色
+dict:admin:delete    # 管理端 - 删除字典
 ```
 
-### 响应格式规范
+### 统一响应规范
 
-所有 API 必须使用统一响应工具 `R`：
+所有 API 接口使用 `R` 工具返回统一格式：
 
 ```typescript
-// 成功
-R.ok(data) // { code: 0, message: '操作成功', data }
-R.success('创建成功') // { code: 0, message: '创建成功' }
-R.page(pagedResult) // { code: 0, data: [...], total, page, pageSize }
+import { R } from '@/services/response'
 
-// 错误
-R.badRequest('参数错误') // { code: 400, message: '参数错误' }
-R.unauthorized() // { code: 401, message: '未认证' }
-R.forbidden() // { code: 403, message: '无权限' }
-R.notFound('资源') // { code: 404, message: '资源不存在' }
-R.serverError() // { code: 500, message: '服务器错误' }
+// 成功响应
+R.ok(data)                    // { code: 200, message: 'ok', data }
+R.success('操作成功')          // { code: 200, message: '操作成功' }
+R.page({ list, total, page }) // { code: 200, data: [...], total, page }
+
+// 错误响应
+R.badRequest('参数错误')       // { code: 400, message: '参数错误' }
+R.unauthorized('未登录')       // { code: 401, message: '未登录' }
+R.forbidden('无权限')          // { code: 403, message: '无权限' }
+R.notFound('未找到')           // { code: 404, message: '未找到' }
+R.serverError('服务器错误')    // { code: 500, message: '服务器错误' }
 ```
 
-## 前端开发规范
+## 💻 前端开发规范
 
-### 新增管理页面
+### 新增页面流程
 
-1. **创建 API** — 在 `frontend/src/api/` 下新增
-
-```typescript
-// api/article.ts
-import { http } from '@/utils/http'
-
-export const articleApi = {
-  list: (params?: any) => http.getPage('/api/admin/article', params),
-  detail: (id: number) => http.get(`/api/admin/article/${id}`),
-  create: (data: any) => http.post('/api/admin/article', data),
-  update: (id: number, data: any) => http.put(`/api/admin/article/${id}`, data),
-  delete: (id: number) => http.delete(`/api/admin/article/${id}`),
-}
+```
+步骤 1: api/xxx.ts              ← 定义 API 请求
+步骤 2: views/admin/xxx.vue     ← 页面视图
+步骤 3: router 配置             ← 动态路由由菜单自动生成
 ```
 
-2. **创建视图** — 使用通用组合函数
+### 页面开发模式
+
+推荐使用 `useTable` + `useModal` + `useDict` 组合模式：
 
 ```vue
 <script setup lang="ts">
-import { PageTable, FormModal, FormField } from '@/components/common'
-import { useTable, useModal } from '@/composables'
-import { articleApi } from '@/api/article'
+import { useTable } from '@/composables/useTable'
+import { useModal } from '@/composables/useModal'
+import { xxxApi } from '@/api/xxx'
 
-const { tableData, loading, pagination, handlePageChange, refresh } = useTable({
-  fetchApi: articleApi.list,
-})
-
-const { modalVisible, modalTitle, formData, openCreate, openEdit, handleSave } = useModal({
-  createApi: articleApi.create,
-  updateApi: articleApi.update,
-  onSuccess: refresh,
-})
-
-const columns = [
-  { title: 'ID', key: 'id', width: 80 },
-  { title: '标题', key: 'title' },
-  { title: '状态', key: 'status' },
-  { title: '创建时间', key: 'createdAt' },
-]
+const { tableData, loading, pagination, handleSearch } = useTable(xxxApi.list)
+const { visible, formData, handleAdd, handleEdit, handleSave } = useModal(xxxApi)
 </script>
+
+<template>
+  <PageTable :data="tableData" :loading="loading" :pagination="pagination">
+    <template #header>
+      <n-button @click="handleAdd">新增</n-button>
+    </template>
+  </PageTable>
+  <FormModal v-model:visible="visible" :data="formData" @save="handleSave" />
+</template>
 ```
 
-### 组件使用规范
+## 📐 SSQL 过滤规范
 
-- 列表页统一使用 `PageTable` 组件
-- 表单弹窗统一使用 `FormModal` 组件
-- 搜索条件使用 `SearchForm` 组件
-- 危险操作使用 `ConfirmButton` 组件
-- 表格逻辑复用 `useTable` 组合函数
-- 弹窗逻辑复用 `useModal` 组合函数
-- 字典数据使用 `useDict` 组合函数
-
-### SSQL 过滤规范
-
-前端搜索条件通过 SSQL Builder 构建：
+前端通过 SSQL Builder 构建查询条件，后端自动解析过滤：
 
 ```typescript
-import { SSQLBuilder } from '@/utils/ssql'
+// 前端 - SSQLBuilder
+const filter = new SSQLBuilder()
+  .eq('status', 1)
+  .like('name', keyword)
+  .build()
 
-const filter = new SSQLBuilder().eq('status', 1).like('title', keyword).build()
-
-// 发送给后端：GET /api/admin/article?filter=status%20%3D%201%20%26%26%20title%20~%20'keyword'
+// 后端 - 自动处理
+// CrudService.findAll(query) 自动解析 query.filter 中的 SSQL 条件
 ```
 
-## Git 提交规范
+常用 SSQL 语法：
 
-建议使用 Conventional Commits：
+| 语法 | 说明 | 示例 |
+|------|------|------|
+| `=` | 等于 | `status = 1` |
+| `!=` | 不等于 | `status != 0` |
+| `~` | 模糊匹配 | `name ~ 'test'` |
+| `>` `<` `>=` `<=` | 比较 | `age > 18` |
+| `?=` | IN 查询 | `status ?= [1,2,3]` |
+| `><` | BETWEEN | `age >< [18,60]` |
+| `=null` | 为空 | `remark =null` |
+| `&&` | 且 | `status = 1 && name ~ 'test'` |
+| `\|\|` | 或 | `status = 1 \|\| status = 2` |
+
+## 📋 Git 提交规范
 
 ```
-feat: 新增文章管理模块
-fix: 修复用户列表分页问题
-docs: 更新 API 文档
-refactor: 重构权限检查逻辑
-chore: 更新依赖版本
+feat: 新功能
+fix: 修复 bug
+docs: 文档更新
+style: 代码格式（不影响功能）
+refactor: 重构
+perf: 性能优化
+test: 测试
+chore: 构建/工具变更
+```
+
+示例：
+
+```bash
+git commit -m "feat: 新增 VIP 会员管理模块"
+git commit -m "fix: 修复 RBAC 权限缓存未刷新问题"
+git commit -m "docs: 更新部署文档"
 ```

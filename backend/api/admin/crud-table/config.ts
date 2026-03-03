@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'crud-table',
   permissions: [
     { code: 'crud:admin:list', name: '查看CRUD数据列表', description: '通用CRUD列表查询' },
@@ -19,5 +19,10 @@ export default definePolicy({
     { role: 'admin', table: 'crud_table', permission: 'crud:admin:delete', rule: 'createBy = $auth.userId', description: '管理员只能删除自己的CRUD表' },
     { role: 'user', table: 'crud_table', permission: 'crud:admin:list', rule: 'status = 1', description: '仅查看启用CRUD表' },
     { role: 'user', table: 'crud_table', permission: 'crud:admin:read', rule: 'status = 1', description: '仅查看启用CRUD表' },
+  ],
+  menus: [
+    { name: 'CRUD管理', path: '/crud', icon: 'table', type: 1, sort: 9, redirect: '/crud/tables' },
+    { name: '表配置', path: '/crud/tables', parent: '/crud', component: 'admin/crud/CrudTables', icon: 'setting', sort: 1, permCode: 'crud:admin:list' },
+    { name: 'CRUD数据管理', path: '/crud/data', parent: '/crud', component: 'admin/crud/CrudData', icon: 'edit', sort: 2, permCode: 'crud:admin:list' },
   ],
 })

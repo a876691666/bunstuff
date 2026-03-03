@@ -1,77 +1,142 @@
 # 状态管理
 
-## authStore
+## 🎯 概述
 
-认证状态管理（Pinia Store），管理用户登录状态、权限信息和菜单树。
+项目使用 **Pinia 3.0** 进行状态管理，目前核心 Store 为 `useAuthStore`，负责用户认证、权限控制和菜单管理。
 
-### 状态
+## 📦 useAuthStore
 
-```typescript
-const useAuthStore = defineStore('auth', {
-  state: () => ({
-    token: localStorage.getItem('token') || '',
-    userInfo: null as UserInfo | null,
-    permissions: [] as string[],
-    menuTree: [] as MenuItem[],
-    initialized: false,
-  }),
+### State 定义
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `user` | `UserInfo \| null` | 当前登录用户信息 |
+| `permissions` | `string[]` | 用户权限标识列表 |
+| `menuTree` | `MenuItem[]` | 后端返回的菜单树 |
+| `isLoggedIn` | `boolean` | 是否已登录（computed，基于 token 是否存在） |
+| `initialized` | `boolean` | 是否已初始化（用户信息 + 权限 + 菜单已加载） |
+
+### Token 存储
+
+Token 存储在 `localStorage` 中，通过 HttpClient 的 `setToken` / `getToken` 方法管理：
+
+```ts
+// 登录后保存
+localStorage.setItem('token', response.token)
+
+// 请求时自动携带
+headers: { Authorization: `Bearer ${getToken()}` }
+
+// 登出时清除
+localStorage.removeItem('token')
+```
+
+:::tip
+`isLoggedIn` 是计算属性，直接判断 `localStorage` 中是否存在 token，而非依赖响应式状态。这保证了页面刷新后状态的正确性。
+:::
+
+### Methods 一览
+
+| 方法 | 说明 | 调用的 API |
+|------|------|-----------|
+| `login(credentials)` | 用户登录，保存 token | `POST /auth/login` |
+| `register(data)` | 用户注册 | `POST /auth/register` |
+| `logout()` | 登出，清除所有状态 | `POST /auth/logout` |
+| `fetchUserInfo()` | 获取当前用户信息 | `GET /auth/me` |
+| `fetchPermissions()` | 获取权限标识列表 | `GET /rbac/my/permissions` |
+| `fetchMenuTree()` | 获取菜单树并注册动态路由 | `GET /rbac/my/menus/tree` |
+| `hasPermission(perm)` | 检查是否拥有某个权限 | - |
+| `hasAnyPermission(perms)` | 检查是否拥有任一权限 | - |
+| `init()` | 初始化：依次加载用户信息、权限、菜单 | - |
+
+### 核心方法实现
+
+```ts
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<UserInfo | null>(null)
+  const permissions = ref<string[]>([])
+  const menuTree = ref<MenuItem[]>([])
+  const initialized = ref(false)
+
+  const isLoggedIn = computed(() => !!getToken())
+
+  async function login(credentials: LoginForm) {
+    const res = await authApi.login(credentials)
+    setToken(res.token)
+    await init()
+  }
+
+  async function logout() {
+    try {
+      await authApi.logout()
+    } finally {
+      setToken('')
+      user.value = null
+      permissions.value = []
+      menuTree.value = []
+      initialized.value = false
+      router.push('/login')
+    }
+  }
+
+  async function init() {
+    if (initialized.value) return
+    await fetchUserInfo()
+    await fetchPermissions()
+    await fetchMenuTree()
+    initialized.value = true
+  }
+
+  // ...
+
+  return {
+    user, permissions, menuTree, isLoggedIn, initialized,
+    login, register, logout, fetchUserInfo, fetchPermissions,
+    fetchMenuTree, hasPermission, hasAnyPermission, init
+  }
 })
 ```
 
-### 核心方法
-
-| 方法                        | 说明                                      |
-| --------------------------- | ----------------------------------------- |
-| `login(username, password)` | 登录，保存 token                          |
-| `logout()`                  | 登出，清除状态                            |
-| `register(data)`            | 注册                                      |
-| `init()`                    | 初始化（加载用户信息+权限+菜单+动态路由） |
-| `fetchUserInfo()`           | 获取当前用户信息                          |
-| `fetchPermissions()`        | 获取权限列表                              |
-| `fetchMenuTree()`           | 获取菜单树                                |
-
 ### 权限检查
 
-```typescript
-const authStore = useAuthStore()
+```ts
+function hasPermission(perm: string): boolean {
+  return permissions.value.includes(perm)
+}
 
-// 检查单个权限
-authStore.hasPermission('user:admin:list')
-
-// 检查任一权限
-authStore.hasAnyPermission(['user:admin:list', 'user:admin:read'])
-
-// 检查所有权限
-authStore.hasAllPermissions(['user:admin:list', 'user:admin:create'])
+function hasAnyPermission(perms: string[]): boolean {
+  return perms.some(p => permissions.value.includes(p))
+}
 ```
 
-### Token 持久化
-
-```typescript
-// 登录成功后
-localStorage.setItem('token', token)
-this.token = token
-
-// 登出时
-localStorage.removeItem('token')
-this.token = ''
-```
-
-## 在组件中使用
+在模板中使用：
 
 ```vue
-<script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
-
-const authStore = useAuthStore()
-
-// 响应式访问
-const username = computed(() => authStore.userInfo?.username)
-const isAdmin = computed(() => authStore.hasPermission('admin'))
-</script>
-
 <template>
-  <span>{{ authStore.userInfo?.nickname }}</span>
-  <button v-if="authStore.hasPermission('user:admin:create')">新增用户</button>
+  <!-- 按钮级权限控制 -->
+  <NButton v-if="authStore.hasPermission('user:create')" @click="handleCreate">
+    新增用户
+  </NButton>
 </template>
 ```
+
+### 初始化流程
+
+```
+应用启动 / 页面刷新
+  ↓
+路由守卫检测 isLoggedIn && !initialized
+  ↓
+authStore.init()
+  ├─ fetchUserInfo()     → GET /auth/me
+  ├─ fetchPermissions()  → GET /rbac/my/permissions
+  └─ fetchMenuTree()     → GET /rbac/my/menus/tree
+       ↓
+  addDynamicRoutes(menuTree)  → router.addRoute(...)
+       ↓
+  initialized = true → 重新导航
+```
+
+:::warning
+`init()` 内部有幂等保护（`if (initialized.value) return`），不会重复执行。登出时务必重置 `initialized = false`，确保下次登录时重新初始化。
+:::

@@ -1,195 +1,163 @@
-# Route Model
+# @pkg/route-model
 
-## 概述
+Elysia 路由 Schema 工具集，用于生成标准化的请求参数、响应体和查询条件的 TypeBox Schema。
 
-Route Model 是路由 Schema 工具包（`backend/packages/route-model`），为 Elysia 路由提供标准化的参数和响应 Schema 定义。
+## 🎯 核心能力
 
-## API
+| 功能 | 说明 |
+|------|------|
+| **schema()** | 生成完整的响应体 Schema |
+| **body()** | 生成创建请求的 Body Schema |
+| **updateBody()** | 生成更新请求的 Body Schema（字段可选） |
+| **idParams()** | 生成 ID 路径参数 Schema |
+| **query()** | 生成分页 + SSQL 过滤的 Query Schema |
+| **tree()** | 生成递归树形 Schema |
+| **merge / omit / pick** | Schema 合并与裁剪工具 |
+| **fromModel()** | 从 ORM Schema 自动生成 TypeBox Schema |
 
-### query()
+## 📋 API 参考
 
-生成分页 + 过滤查询参数 Schema：
+### schema()
 
 ```typescript
-import { query } from '@/packages/route-model'
+import { schema } from '@pkg/route-model'
+import { t } from 'elysia'
 
-.get('/list', handler, {
-  query: query(),
+const UserSchema = schema({
+  id: t.Number(),
+  username: t.String(),
+  email: t.Nullable(t.String()),
 })
+// 自动包含 createdAt / updatedAt
 
-// 生成 Schema:
-// {
-//   page: t.Number({ default: 1 }),
-//   pageSize: t.Number({ default: 10 }),
-//   filter: t.Optional(t.String()),
-// }
+// 不含时间戳
+const UserSchema = schema({ ... }, { timestamps: false })
+```
+
+### body() / updateBody()
+
+```typescript
+import { body, updateBody } from '@pkg/route-model'
+
+// 创建 Body：所有字段必填
+const CreateBody = body({
+  username: t.String(),
+  email: t.String(),
+  password: t.String(),
+}, { exclude: ['id'] })
+
+// 更新 Body：所有字段可选
+const UpdateBody = updateBody({
+  username: t.String(),
+  email: t.String(),
+}, {
+  exclude: ['password'],
+  required: ['username'], // 保持必填
+})
 ```
 
 ### idParams()
 
-生成 ID 路径参数 Schema：
-
 ```typescript
-import { idParams } from '@/packages/route-model'
+import { idParams } from '@pkg/route-model'
 
-.get('/:id', handler, {
-  params: idParams(),
-})
+// 默认：{ id: Numeric }
+const params = idParams()
 
-// 生成 Schema:
-// {
-//   id: t.Numeric(),  // 字符串自动转数字
-// }
+// 自定义参数名
+const params = idParams({ name: 'userId', label: '用户ID' })
 ```
 
-### schema()
-
-生成带时间戳的响应 Schema（自动添加 createdAt/updatedAt）：
+### query()
 
 ```typescript
-import { schema } from '@/packages/route-model'
+import { query } from '@pkg/route-model'
 
-const ArticleSchema = schema({
-  id: t.Number(),
-  title: t.String(),
-  content: t.String(),
-})
-// 自动包含 createdAt 和 updatedAt
-```
+// 默认：page + pageSize + filter
+const q = query()
 
-### body()
-
-生成创建请求体 Schema：
-
-```typescript
-import { body } from '@/packages/route-model'
-
-.post('/', handler, {
-  body: body({
-    title: t.String(),
-    content: t.String(),
-    status: t.Number({ default: 1 }),
-  }),
-})
-```
-
-### updateBody()
-
-生成更新请求体 Schema（所有字段自动变为可选）：
-
-```typescript
-import { updateBody } from '@/packages/route-model'
-
-.put('/:id', handler, {
-  body: updateBody({
-    title: t.String(),
-    content: t.String(),
-    status: t.Number(),
-  }),
+// 附加字段
+const q = query({
+  extra: {
+    status: t.Optional(t.Numeric()),
+    type: t.Optional(t.String()),
+  }
 })
 
-// 所有字段变为 Optional
+// 无分页
+const q = query({ pagination: false })
 ```
 
 ### tree()
 
-生成树形递归结构 Schema：
-
 ```typescript
-import { tree } from '@/packages/route-model'
+import { tree } from '@pkg/route-model'
 
+// 递归树形 Schema
 const MenuTree = tree({
   id: t.Number(),
   name: t.String(),
-  parentId: t.Number(),
+  parentId: t.Nullable(t.Number()),
 })
-
-// 生成自引用的 children 数组
+// 自动添加 children: Optional(Array(Self))
 ```
 
-### merge()
-
-合并多个 Schema 对象：
+### merge / omit / pick
 
 ```typescript
-import { merge } from '@/packages/route-model'
+import { merge, omit, pick } from '@pkg/route-model'
 
-const Combined = merge(
-  { id: t.Number(), name: t.String() },
-  { status: t.Number(), remark: t.String() },
-)
-```
+const base = { id: t.Number(), name: t.String(), age: t.Number() }
 
-### omit()
+// 合并
+const extended = merge(base, { email: t.String() })
 
-从 Schema 中移除指定字段：
+// 排除
+const withoutId = omit(base, ['id'])
 
-```typescript
-import { omit } from '@/packages/route-model'
-
-const WithoutId = omit(ArticleSchema, ['id', 'createdAt'])
-```
-
-### pick()
-
-从 Schema 中选取指定字段：
-
-```typescript
-import { pick } from '@/packages/route-model'
-
-const IdAndTitle = pick(ArticleSchema, ['id', 'title'])
+// 选取
+const nameOnly = pick(base, ['name'])
 ```
 
 ### fromModel()
 
-从 ORM Schema 类生成 TypeBox Schema：
+从 ORM Schema 类自动生成 TypeBox Schema：
 
 ```typescript
-import { fromModel } from '@/packages/route-model'
-import ArticleSchema from '@/models/article/schema'
+import { fromModel } from '@pkg/route-model'
+import UsersSchema from '@/models/users/schema'
 
-const typeboxSchema = fromModel(ArticleSchema)
+const schema = fromModel(UsersSchema)
+
+// 排除字段
+const schema = fromModel(UsersSchema, { exclude: ['password'] })
+
+// 选取字段
+const schema = fromModel(UsersSchema, { include: ['id', 'username', 'email'] })
 ```
 
-## 与 Model.getSchema() 的关系
+## 🔗 与 Model.getSchema() 的关系
 
-`Model.getSchema()` 内部也生成 TypeBox Schema，但更强大：
-
-| 特性     | Route Model    | Model.getSchema()      |
-| -------- | -------------- | ---------------------- |
-| 来源     | 手动定义       | 从 ORM Schema 自动生成 |
-| 排除字段 | `omit()`       | `{ exclude: [...] }`   |
-| 可选字段 | `updateBody()` | `{ partial: true }`    |
-| 必填字段 | 手动标注       | `{ required: [...] }`  |
-| 额外字段 | `merge()`      | 第二参数               |
-
-::: tip 推荐
-优先使用 `Model.getSchema()` 生成 Schema，它能确保 Schema 与数据库模型始终同步。Route Model 中的工具函数作为补充使用。
-:::
-
-## 完整路由示例
+`Model.getSchema()` 内部使用了 `@pkg/route-model` 的能力，两者可互换：
 
 ```typescript
-import { query, idParams } from '@/packages/route-model'
-import { R, PagedResponse, SuccessResponse, ErrorResponse } from '@/modules/response'
-import Article from '@/models/article'
+// 方式一：通过 model 实例
+const schema = model.users.getSchema('omit', ['password'])
 
-export const articleApi = new Elysia({ prefix: '/article' })
-  .get('/', (ctx) => R.page(articleService.findAll(ctx.query, ctx)), {
-    query: query(),
-    response: { 200: PagedResponse(Article.getSchema()) },
-  })
-  .get('/:id', (ctx) => { ... }, {
-    params: idParams(),
-    response: { 200: SuccessResponse(Article.getSchema()), 404: ErrorResponse },
-  })
-  .post('/', (ctx) => { ... }, {
-    body: Article.getSchema({ exclude: ['id'], required: ['title'] }),
-    response: { 200: SuccessResponse(Article.getSchema()) },
-  })
-  .put('/:id', (ctx) => { ... }, {
-    params: idParams(),
-    body: Article.getSchema({ exclude: ['id'], partial: true }),
-    response: { 200: SuccessResponse(Article.getSchema()), 404: ErrorResponse },
-  })
+// 方式二：通过 route-model 包
+const schema = fromModel(UsersSchema, { exclude: ['password'] })
+```
+
+::: tip 推荐方式
+在已注册模型的场景下，优先使用 `model.xxx.getSchema()`，更简洁。`fromModel()` 适合在模型尚未注册时使用。
+:::
+
+## 📝 预设字段
+
+```typescript
+import { timestamps, pagination, filterField } from '@pkg/route-model'
+
+// timestamps = { createdAt: t.String(), updatedAt: t.String() }
+// pagination = { page: t.Optional(t.Numeric()), pageSize: t.Optional(t.Numeric()) }
+// filterField = { filter: t.Optional(t.String()) }
 ```

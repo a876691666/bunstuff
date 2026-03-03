@@ -1,126 +1,104 @@
-# Bunstuff
+# 🚀 Bunstuff
 
-基于 Bun + Elysia 构建的全栈应用模板，提供完整的后台管理系统功能。
+基于 **Bun + Elysia** 构建的全栈后台管理系统，开箱即用。
 
-## 技术栈
+## ✨ 特性
 
-| 层级   | 技术                        |
-| ------ | --------------------------- |
-| 运行时 | Bun                         |
-| 后端   | Elysia                      |
-| 前端   | Vue 3 + Vite + Element Plus |
-| 数据库 | SQLite / MySQL / PostgreSQL |
-| 工具库 | 自研 ORM + SSQL 条件构建器  |
+- 🏎️ **极速启动** — Bun 运行时 + Elysia 框架，毫秒级冷启动
+- 🔐 **企业级权限** — Casbin RBAC + 数据域行级过滤
+- 💎 **VIP 体系** — 多等级会员 + 资源配额管理
+- 📊 **动态 CRUD** — 数据库驱动的通用增删改查
+- 🔧 **自研工具链** — ORM / SSQL / Route-Model 三件套
+- 🌐 **前后端一体** — Vue 3 + Naive UI + Pinia + Vite
 
----
+## 📦 技术栈
 
-## 功能模块
+| 层级 | 技术 |
+|------|------|
+| 运行时 | Bun |
+| 后端框架 | Elysia 1.4 |
+| 前端框架 | Vue 3.5 + Naive UI |
+| 状态管理 | Pinia 3.0 |
+| 数据库 | SQLite（默认）/ MySQL / PostgreSQL |
+| 权限引擎 | Casbin 5.x |
+| 定时任务 | Croner 10.x |
+| 自研包 | @pkg/orm · @pkg/ssql · @pkg/route-model |
 
-### Auth - 认证
+## 🏗️ 项目结构
 
-用户身份认证，包含登录、注册、Token 会话管理、路由保护。
-
-- 安全密码哈希存储
-- Token 会话管理（创建/验证/刷新/销毁）
-- 声明式路由保护，支持白名单
-- 自动注入 `userId`、`session`、`roleId`
-
-### RBAC - 权限控制
-
-基于角色的访问控制，实现企业级权限管理。
-
-- 树形角色结构，支持无限层级继承
-- 权限向上汇聚，父角色自动继承子角色权限
-- 细粒度权限点（`模块:操作` 格式）
-- 动态菜单生成
-- 基于 SSQL 的行级数据权限过滤
-- 全量缓存预热，查询零数据库访问
-
-### VIP - 会员系统
-
-完整的会员等级与资源配额管理。
-
-- 多等级体系（免费版/专业版/企业版）
-- 资源配额管理与使用量追踪
-- 有效期管理，到期自动失效
-- 绑定状态机（绑定/确认/解绑）
-
-### File - 文件管理
-
-文件上传下载服务，支持多种存储方式。
-
-- 本地存储 / S3 兼容存储
-- 文件上传、下载、删除
-- 文件元信息管理
-
-### Notice - 通知公告
-
-系统通知与公告管理，支持实时推送。
-
-- 通知公告发布与管理
-- 已读状态追踪
-- SSE 实时推送
-
-### System - 系统管理
-
-系统基础配置管理。
-
-- **字典管理**: 字典类型与字典数据维护，支持缓存
-- **参数配置**: 系统参数键值对配置
-- **登录日志**: 用户登录行为记录
-
-### Seed - 数据初始化
-
-数据库初始化与种子数据管理。
-
-- 种子数据注册与执行
-- 执行日志记录
-- 支持自动运行模式
-
----
-
-## 底层工具
-
-### ORM
-
-自研轻量级 ORM，类型安全的数据库操作。
-
-| 特性        | 说明                                        |
-| ----------- | ------------------------------------------- |
-| 类型推导    | Schema 自动推导 Row/Insert/Update 类型      |
-| 链式配置    | 主键、自增、默认值、外键等                  |
-| 多数据库    | SQLite / MySQL / PostgreSQL                 |
-| Schema 基类 | `Schema` / `TimestampSchema` / `BaseSchema` |
-
-### SSQL
-
-零依赖 SQL 条件构建器，支持双向转换。
-
-| 运算符                  | 含义            | 示例              |
-| ----------------------- | --------------- | ----------------- |
-| `=` / `!=`              | 等于 / 不等于   | `status = 1`      |
-| `>` / `>=` / `<` / `<=` | 比较运算        | `age > 18`        |
-| `~` / `!~`              | LIKE / NOT LIKE | `name ~ '张'`     |
-| `?=` / `!?=`            | IN / NOT IN     | `id ?= [1, 2, 3]` |
-| `?null` / `!null`       | NULL 检查       | `email ?null`     |
-| `><`                    | BETWEEN         | `age >< [18, 60]` |
-| `&&` / `\|\|`           | AND / OR        | `a = 1 && b = 2`  |
-
----
-
-## 快速开始
-
-```bash
-# 安装依赖
-bun install
-
-# 启动开发服务
-bun run dev
-
-# 生产构建
-bun run build
+```
+bunstuff/
+├── backend/         # 后端（Bun + Elysia）
+│   ├── api/         # API 路由（客户端 + 管理端）
+│   ├── models/      # 数据模型（22 张表）
+│   ├── services/    # 业务服务层
+│   ├── plugins/     # 11 个 Elysia 插件
+│   └── packages/    # 自研包（ORM / SSQL / Route-Model）
+├── frontend/        # 管理后台（Vue 3 + Naive UI）
+├── client/          # 客户端应用（Vue 3）
+├── docs/            # 文档站（VitePress）
+└── release/         # 构建产物
 ```
 
-## 许可证
+## 🚀 快速开始
+
+```bash
+# 1. 安装依赖
+cd backend && bun install
+cd frontend && bun install
+cd client && bun install
+
+# 2. 启动所有服务
+bun run dev
+
+# 或分别启动
+bun run dev:backend    # 后端 :3000
+bun run dev:frontend   # 管理端 :5173
+bun run dev:client     # 客户端 :5174
+bun run dev:docs       # 文档站 :5175
+```
+
+## 📋 功能模块
+
+| 模块 | 说明 |
+|------|------|
+| 认证管理 | 登录注册、Token 会话、路由保护 |
+| 权限管理 | Casbin RBAC、角色权限、数据域过滤、动态菜单 |
+| VIP 管理 | 等级体系、资源配额、有效期管理 |
+| 用户管理 | 用户 CRUD、状态管理、角色分配 |
+| 菜单管理 | 树形菜单、目录/页面/按钮三级 |
+| 字典管理 | 字典类型 + 字典数据、全量缓存 |
+| 参数配置 | 系统参数键值对、缓存刷新 |
+| 文件管理 | 上传下载、元信息管理 |
+| 通知公告 | 发布管理、已读追踪、SSE 推送 |
+| 定时任务 | Cron 表达式、模板引擎、执行日志 |
+| 操作日志 | 自动记录、错误捕获、耗时统计 |
+| 登录日志 | UA 解析、登录/登出/踢出记录 |
+| 限流保护 | 多模式限流、IP 黑名单、自动封禁 |
+| 动态 CRUD | 数据库驱动的通用表管理 |
+| Seed 系统 | 拓扑排序、自动执行、执行日志 |
+
+## 🐳 部署
+
+```bash
+# 本地构建
+bun run build.ts
+
+# Docker 部署
+bun run docker:build
+cd release-docker
+docker load -i bunstuff.tar
+docker compose up -d
+```
+
+## 📖 文档
+
+```bash
+bun run dev:docs
+```
+
+访问 http://localhost:5175 查看完整文档。
+
+## 📄 许可证
 
 MIT

@@ -4,16 +4,15 @@
  * 权限检查通过 Casbin enforcer，角色/菜单对象从 rbac-cache 获取。
  */
 
-import type { Row } from '@/packages/orm'
+import { type ResolvedMenu } from '@/core/policy'
 import { model } from '@/core/model'
 import * as casbin from '@/services/casbin'
 import * as rbacCache from '@/services/rbac-cache'
 import type { CachedRole } from '@/services/rbac-cache'
 
 const User = model.users
-const Menu = model.menu
 
-type MenuRow = Row<typeof Menu>
+type MenuRow = ResolvedMenu
 
 /** 用户权限信息（简化版，无继承） */
 export interface UserPermissionInfo {
@@ -26,7 +25,7 @@ export interface UserPermissionInfo {
 }
 
 /** 菜单树节点 */
-export interface MenuTreeNode extends Row<typeof Menu> {
+export interface MenuTreeNode extends ResolvedMenu {
   children: MenuTreeNode[]
 }
 
@@ -188,5 +187,15 @@ function buildMenuTree(menus: MenuRow[]): MenuTreeNode[] {
     return nodes
   }
 
-  return sortNodes(roots)
+  // 递归过滤掉没有子菜单的目录节点（type === 1）
+  const filterEmptyDirs = (nodes: MenuTreeNode[]): MenuTreeNode[] => {
+    return nodes
+      .map((node) => ({
+        ...node,
+        children: filterEmptyDirs(node.children),
+      }))
+      .filter((node) => node.type !== 1 || node.children.length > 0)
+  }
+
+  return filterEmptyDirs(sortNodes(roots))
 }

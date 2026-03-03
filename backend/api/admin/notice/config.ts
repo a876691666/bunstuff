@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'notice',
   permissions: [
     { code: 'notice:admin:list', name: '查看通知列表', description: '获取通知列表' },
@@ -19,5 +19,9 @@ export default definePolicy({
     { role: 'admin', table: 'notice', permission: 'notice:admin:delete', rule: 'createBy = $auth.userId', description: '管理员只能删除自己的通知' },
     { role: 'user', table: 'notice', permission: 'notice:admin:list', rule: 'status = 1', description: '仅查看已发布通知' },
     { role: 'user', table: 'notice', permission: 'notice:admin:read', rule: 'status = 1', description: '仅查看已发布通知' },
+  ],
+  menus: [
+    { name: '通知公告', path: '/notice', icon: 'notice', type: 1, sort: 4, redirect: '/notice/list' },
+    { name: '公告管理', path: '/notice/list', parent: '/notice', component: 'admin/notice/Notices', icon: 'message', sort: 1, permCode: 'notice:admin:list' },
   ],
 })

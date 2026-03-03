@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'seed',
   permissions: [
     { code: 'seed:admin:list', name: '查看Seed列表', description: '获取已注册的Seed列表' },

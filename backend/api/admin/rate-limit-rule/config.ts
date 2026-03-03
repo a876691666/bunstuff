@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'rate-limit-rule',
   permissions: [
     { code: 'rateLimit:admin:rule:list', name: '查看限流规则列表', description: '获取限流规则列表' },
@@ -17,5 +17,9 @@ export default definePolicy({
   scopes: [
     { role: 'user', table: 'rate_limit_rule', permission: 'rateLimit:admin:rule:list', rule: 'status = 1', description: '仅查看启用限流规则' },
     { role: 'user', table: 'rate_limit_rule', permission: 'rateLimit:admin:rule:read', rule: 'status = 1', description: '仅查看启用限流规则' },
+  ],
+  menus: [
+    { name: '限流保护', path: '/rate-limit', icon: 'shield', type: 1, sort: 8, redirect: '/rate-limit/rules' },
+    { name: '限流规则', path: '/rate-limit/rules', parent: '/rate-limit', component: 'admin/rate-limit/RateLimitRules', icon: 'setting', sort: 1, permCode: 'rateLimit:admin:rule:list' },
   ],
 })

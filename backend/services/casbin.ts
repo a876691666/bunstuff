@@ -1,8 +1,8 @@
 /**
- * Casbin 服务 - 基于硬编码策略文件的权限引擎
+ * Casbin 服务 - 基于硬编码配置文件的权限引擎
  *
- * 从各 API 模块的 policy.ts 收集策略定义，加载到 Casbin 引擎。
- * 策略只读，运行时不可修改。
+ * 从各 API 模块的 config.ts 收集配置定义，加载到 Casbin 引擎。
+ * 配置只读，运行时不可修改。
  *
  * 策略格式 (4字段):
  *   p = sub, dom, obj, act
@@ -13,7 +13,7 @@
  */
 
 import { newEnforcer, newModel, type Enforcer } from 'casbin'
-import { allPolicies } from '@/_generated/policies.generated'
+import { allConfigs } from '@/_generated/configs.generated'
 import { resolvePolicies, collectPermissions, type PermissionDef } from '@/core/policy'
 
 // ============ Casbin 模型 ============
@@ -71,11 +71,11 @@ async function loadPolicies(): Promise<void> {
   // 清空现有策略
   e.clearPolicy()
 
-  // 从策略定义中解析出 Casbin 策略
-  const policies = resolvePolicies(allPolicies)
+  // 从模块配置中解析出 Casbin 策略
+  const policies = resolvePolicies(allConfigs)
 
   // 缓存所有权限定义
-  allPermissionDefs = collectPermissions(allPolicies)
+  allPermissionDefs = collectPermissions(allConfigs)
 
   if (policies.length > 0) {
     await e.addPolicies(policies)
@@ -84,7 +84,7 @@ async function loadPolicies(): Promise<void> {
   lastUpdated = new Date()
   const elapsed = Date.now() - start
   console.log(
-    `[Casbin] 策略加载完成: ${policies.length} 条策略 (来自 ${allPolicies.length} 个模块), 耗时 ${elapsed}ms`,
+    `[Casbin] 策略加载完成: ${policies.length} 条策略 (来自 ${allConfigs.length} 个模块), 耗时 ${elapsed}ms`,
   )
 }
 
@@ -159,7 +159,7 @@ export async function getStatus() {
     policyCount: allCasbinPolicies.length,
     permCount: allCasbinPolicies.filter((p: string[]) => p[1] === 'perm').length,
     scopeCount: allCasbinPolicies.filter((p: string[]) => p[1] === 'scope').length,
-    moduleCount: allPolicies.length,
+    moduleCount: allConfigs.length,
     permissionDefCount: allPermissionDefs.length,
   }
 }

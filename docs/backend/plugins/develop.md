@@ -1,149 +1,179 @@
 # 插件开发
 
-## 创建插件
+本节介绍如何开发自定义 Elysia 插件，融入 Bunstuff 的插件体系。
 
-Elysia 插件本质是一个返回 Elysia 实例的函数。通过 `derive` 注入上下文，通过 `onBeforeHandle` 拦截请求。
+## 🎯 插件结构
 
-### 基本模板
+每个插件都是一个返回 `Elysia` 实例的工厂函数：
 
 ```typescript
-import Elysia from 'elysia'
+import { Elysia } from 'elysia'
 
-export const myPlugin = () => {
-  return (
-    new Elysia({ name: 'my-plugin' })
-      // 注入上下文（每个请求都会执行）
-      .derive(async ({ request, store }) => {
-        return {
-          // 注入到 ctx 中的属性/方法
-          myTool: {
-            doSomething: () => {
-              /* ... */
-            },
-            getData: () => {
-              /* ... */
-            },
-          },
-        }
-      })
-      // 请求拦截（可选）
-      .onBeforeHandle(({ request, set, route }) => {
-        // 返回非 undefined 值将中断请求
-        // return { code: 403, message: '拒绝访问' }
-      })
-  )
+export function myPlugin() {
+  return new Elysia({ name: 'my-plugin' })
+    .derive({ as: 'global' }, (ctx) => {
+      // 注入上下文
+      return {
+        myService: {
+          doSomething: () => { /* ... */ },
+        },
+      }
+    })
 }
 ```
 
-### 带配置的插件
+::: tip 命名规范
+- 插件文件放在 `backend/plugins/` 目录
+- 函数名使用 `xxxPlugin()` 格式
+- Elysia name 使用 `xxx-plugin` 格式（kebab-case）
+:::
+
+## 📝 注入型插件模板
+
+最简单的插件类型，仅向上下文添加服务对象：
 
 ```typescript
-interface MyPluginOptions {
-  prefix?: string
-  enabled?: boolean
+import { Elysia } from 'elysia'
+import * as myService from '@/services/my-service'
+
+/** 上下文类型 */
+export interface MyContext {
+  getData: (id: number) => Promise<any>
+  create: (data: any) => Promise<any>
 }
 
-export const myPlugin = (options: MyPluginOptions = {}) => {
-  const { prefix = '', enabled = true } = options
-
-  return new Elysia({ name: 'my-plugin' }).derive(async (ctx) => {
-    if (!enabled) return {}
-    return {
-      myFeature: {
-        // ...
-      },
-    }
-  })
+export function myPlugin() {
+  return new Elysia({ name: 'my-plugin' })
+    .derive({ as: 'global' }, () => {
+      const my: MyContext = {
+        getData: myService.findById,
+        create: myService.create,
+      }
+      return { my }
+    })
 }
 ```
 
-### 带缓存的插件
+## 🛡️ 拦截型插件模板
+
+在 `onBeforeHandle` 中执行校验逻辑：
 
 ```typescript
-// 缓存管理
-class MyCache {
-  private cache = new Map<string, any>()
+import { Elysia } from 'elysia'
 
-  async init() {
-    // 启动时全量加载
-    const data = await myModel.findMany()
-    for (const item of data) {
-      this.cache.set(item.key, item.value)
-    }
-  }
-
-  get(key: string) {
-    return this.cache.get(key)
-  }
-
-  async refresh() {
-    this.cache.clear()
-    await this.init()
-  }
-}
-
-export const myCache = new MyCache()
-
-// 插件
-export const myPlugin = () => {
-  return new Elysia({ name: 'my-plugin' }).derive(() => ({
-    getMyValue: (key: string) => myCache.get(key),
-  }))
-}
-```
-
-## 声明扩展
-
-如果插件需要在路由 `detail` 中添加配置，使用 TypeScript 声明扩展：
-
-```typescript
-// 扩展 Elysia 的 DocumentDecoration 接口
+// 扩展路由配置类型
 declare module 'elysia' {
   interface DocumentDecoration {
-    myPlugin?: {
-      enabled?: boolean
-      level?: number
+    myCheck?: {
+      required: boolean
     }
   }
 }
+
+export function myCheckPlugin() {
+  const routerHooksMap = new Map<string, any>()
+
+  return new Elysia({ name: 'my-check-plugin' })
+    // 启动时缓存路由 hooks
+    .on('start', (app) => {
+      // @ts-ignore
+      app.getGlobalRoutes().forEach((route: any) => {
+        routerHooksMap.set(
+          `${route.method}:::${route.path}`,
+          route.hooks || {}
+        )
+      })
+    })
+    // 请求拦截
+    .onBeforeHandle({ as: 'global' }, ({ request, set }) => {
+      const key = `${request.method}:::${new URL(request.url).pathname}`
+      const hooks = routerHooksMap.get(key) || {}
+      const config = hooks?.detail?.myCheck
+
+      if (config?.required) {
+        // 校验逻辑...
+        if (!isValid) {
+          set.status = 403
+          return { code: 403, message: '校验失败' }
+        }
+      }
+    })
+}
 ```
 
-使用时：
+## 🪝 钩子型插件模板
+
+在请求处理后执行后置逻辑（如日志记录）：
 
 ```typescript
-.get('/data', handler, {
-  detail: {
-    myPlugin: { enabled: true, level: 2 },
-  },
-})
-```
+import { Elysia } from 'elysia'
 
-在插件的 `onBeforeHandle` 中读取：
-
-```typescript
-.onBeforeHandle(({ route }) => {
-  const config = route.detail?.myPlugin
-  if (config?.enabled) {
-    // 执行逻辑
+declare module 'elysia' {
+  interface DocumentDecoration {
+    myLog?: { title: string }
   }
-})
+}
+
+export function myLogPlugin() {
+  const routerHooksMap = new Map<string, any>()
+
+  return new Elysia({ name: 'my-log-plugin' })
+    .on('start', (app) => {
+      // @ts-ignore
+      app.getGlobalRoutes().forEach((route: any) => {
+        routerHooksMap.set(
+          `${route.method}:::${route.path}`,
+          route.hooks || {}
+        )
+      })
+    })
+    .derive({ as: 'global' }, () => {
+      return { __startTime: Date.now() }
+    })
+    // 成功后记录
+    .onAfterHandle({ as: 'global' }, async (ctx) => {
+      const hooks = routerHooksMap.get(
+        `${ctx.request.method}:::${(ctx as any).route}`
+      ) || {}
+      const config = hooks?.detail?.myLog
+      if (!config) return
+
+      console.log(`[${config.title}] ${Date.now() - (ctx as any).__startTime}ms`)
+    })
+    // 异常时记录
+    .onError({ as: 'global' }, async (ctx) => {
+      const hooks = routerHooksMap.get(
+        `${ctx.request.method}:::${(ctx as any).route}`
+      ) || {}
+      const config = hooks?.detail?.myLog
+      if (!config) return
+
+      console.error(`[${config.title}] Error: ${(ctx as any).error?.message}`)
+    })
+}
 ```
 
-## 生命周期钩子
+## 🔗 注册插件
 
-Elysia 提供多个生命周期钩子：
+将插件添加到对应的路由组中：
 
-| 钩子             | 执行时机                  | 用途              |
-| ---------------- | ------------------------- | ----------------- |
-| `derive`         | 每个请求，handler 之前    | 注入上下文        |
-| `onBeforeHandle` | derive 之后，handler 之前 | 请求拦截/权限校验 |
-| `onAfterHandle`  | handler 之后              | 响应后处理        |
-| `onError`        | 发生错误时                | 错误处理          |
-| `onRequest`      | 最早期                    | 请求预处理        |
+```typescript
+// backend/api/admin/index.ts
+import { myPlugin } from '@/plugins/my-plugin'
 
-## 注意事项
+export default new Elysia({ prefix: '/api/admin' })
+  .use(authPlugin())
+  .use(rbacPlugin())
+  .use(myPlugin())    // 注册自定义插件
+  .use(usersRoute)
+```
 
-1. **插件命名**：使用 `name` 属性避免重复注册
-2. **作用域**：默认插件作用域为当前实例，使用 `scoped` 控制传播
-3. **性能**：`derive` 每次请求都执行，避免重计算，善用缓存
-4. **依赖**：确保插件使用顺序正确（如 `rbacPlugin` 必须在 `authPlugin` 之后）
+## ⚠️ 注意事项
+
+| 要点 | 说明 |
+|------|------|
+| `as: 'global'` | `derive` 和 `onBeforeHandle` 必须设置 `as: 'global'` 才能作用于所有子路由 |
+| 插件名称唯一 | `new Elysia({ name })` 的 name 必须全局唯一，重复注册会被跳过 |
+| 返回值中断 | `onBeforeHandle` 中 return 值即中断请求，不再执行后续插件和路由处理 |
+| 服务层解耦 | 插件仅做薄封装，业务逻辑应委托给 `services/` 下的对应模块 |
+| 类型扩展 | 使用 `declare module 'elysia'` 扩展 `DocumentDecoration` 实现路由配置类型安全 |

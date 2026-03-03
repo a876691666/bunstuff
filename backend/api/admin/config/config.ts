@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'config',
   permissions: [
     { code: 'config:admin:list', name: '查看配置列表', description: '获取系统配置列表' },
@@ -19,5 +19,9 @@ export default definePolicy({
     { role: 'admin', table: 'sys_config', permission: 'config:admin:delete', rule: 'isBuiltin = 0', description: '管理员不可删除内置配置' },
     { role: 'user', table: 'sys_config', permission: 'config:admin:list', rule: 'isBuiltin = 1', description: '仅查看内置公共配置' },
     { role: 'user', table: 'sys_config', permission: 'config:admin:read', rule: 'isBuiltin = 1', description: '仅查看内置公共配置' },
+  ],
+  menus: [
+    { name: '系统管理', path: '/system', icon: 'setting', type: 1, sort: 1 },
+    { name: '参数配置', path: '/system/configs', parent: '/system', component: 'admin/system/Configs', icon: 'config', sort: 8, permCode: 'config:admin:list' },
   ],
 })

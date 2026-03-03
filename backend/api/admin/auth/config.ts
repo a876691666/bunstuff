@@ -1,6 +1,6 @@
-import { definePolicy } from '@/core/policy'
+import { defineConfig } from '@/core/policy'
 
-export default definePolicy({
+export default defineConfig({
   module: 'auth',
   permissions: [
     { code: 'auth:admin:stats', name: '查看认证统计', description: '获取认证统计信息' },
@@ -12,4 +12,9 @@ export default definePolicy({
     'super-admin': '*',
     'admin': '*',
   },
+  menus: [
+    { name: '控制台', path: '/dashboard', component: 'Dashboard', icon: 'home', type: 2, sort: 0 },
+    { name: '权限配置', path: '/rbac', icon: 'security', type: 1, sort: 2, redirect: '/rbac/sessions' },
+    { name: '会话管理', path: '/rbac/sessions', parent: '/rbac', component: 'admin/rbac/Sessions', icon: 'session', sort: 1, permCode: 'auth:admin:sessions' },
+  ],
 })
