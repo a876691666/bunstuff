@@ -2,12 +2,11 @@
  * Auth 插件 - 全局认证中间件
  *
  * 默认启用，可通过路由配置禁用。
- * 简化版：仅提供 session/userId/roleId/roleCode，不再加载完整权限信息。
+ * 简化版：仅提供 session/userId/roleId，不再加载完整权限信息。
  */
 
 import { Elysia } from 'elysia'
 import * as session from '../services/session'
-import * as rbacCache from '@/services/rbac-cache'
 
 /** Auth 配置选项 */
 export interface AuthPluginOptions {
@@ -84,18 +83,10 @@ export function authPlugin(options: AuthPluginOptions = {}) {
       const token = extractToken(request)
       const sess = token ? session.verify(token) : null
 
-      // 获取角色编码（轻量查询，无需加载完整权限树）
-      let roleCode: string | null = null
-      if (sess?.roleId) {
-        const role = rbacCache.getRole(sess.roleId)
-        roleCode = role?.code ?? null
-      }
-
       return {
         session: sess,
         userId: sess?.userId ?? null,
         roleId: sess?.roleId ?? null,
-        roleCode,
       }
     })
     .onBeforeHandle({ as: 'global' }, (arg) => {

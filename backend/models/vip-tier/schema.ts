@@ -10,8 +10,8 @@ export default class VipTierSchema extends TimestampSchema {
   name = column.string().default('').description('VIP名称')
   /** VIP 代码 */
   code = column.string().unique().default('').description('VIP代码')
-  /** 默认绑定角色 ID */
-  roleId = column.number().nullable().default(null).description('绑定角色ID')
+  /** 默认绑定角色 ID（角色编码） */
+  roleId = column.string().nullable().default(null).description('绑定角色ID')
   /** 价格 */
   price = column.number().default(0).description('价格')
   /** 有效期天数（0 表示永久） */

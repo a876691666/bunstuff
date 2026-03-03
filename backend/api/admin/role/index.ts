@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import * as roleService from '@/services/role'
-import { idParams, query, tree } from '@/packages/route-model'
+import { query, tree } from '@/packages/route-model'
 import {
   R,
   PagedResponse,
@@ -48,10 +48,8 @@ export default new Elysia({ tags: ['管理 - 角色'] })
         200: SuccessResponse(
           t.Array(
             tree({
-              id: t.Number({ description: '角色ID' }),
-              parentId: t.Nullable(t.Number({ description: '父角色ID' })),
+              id: t.String({ description: '角色编码' }),
               name: t.String({ description: '角色名称' }),
-              code: t.String({ description: '角色编码' }),
               status: t.Number({ description: '状态：1启用 0禁用' }),
               sort: t.Number({ description: '排序值' }),
               description: t.Nullable(t.String({ description: '角色描述' })),
@@ -77,14 +75,14 @@ export default new Elysia({ tags: ['管理 - 角色'] })
       return R.ok(data)
     },
     {
-      params: idParams({ label: '角色ID' }),
+      params: t.Object({ id: t.String({ description: '角色编码' }) }),
       response: {
         200: SuccessResponse(roleService.getSchema(), '角色详情数据'),
         404: ErrorResponse,
       },
       detail: {
         summary: '获取角色详情',
-        description: '根据角色ID获取角色详细信息\n\n🔐 **所需权限**: `role:admin:read`',
+        description: '根据角色编码获取角色详细信息\n\n🔐 **所需权限**: `role:admin:read`',
         security: [{ bearerAuth: [] }],
         rbac: { scope: { permissions: ['role:admin:read'] } },
       },
@@ -94,13 +92,13 @@ export default new Elysia({ tags: ['管理 - 角色'] })
   .post(
     '/',
     async (ctx) => {
-      const existing = await roleService.findByCode(ctx.body.code)
+      const existing = await roleService.findById(ctx.body.id)
       if (existing) return R.badRequest('角色编码已存在')
       const data = await roleService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
-      body: roleService.getSchema({ exclude: ['id'], required: ['name', 'code'] }),
+      body: roleService.getSchema({ required: ['id', 'name'] }),
       response: {
         200: SuccessResponse(roleService.getSchema(), '新创建的角色信息'),
         400: ErrorResponse,
@@ -120,15 +118,11 @@ export default new Elysia({ tags: ['管理 - 角色'] })
     async (ctx) => {
       const existing = await roleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('角色')
-      if (ctx.body.code && ctx.body.code !== existing.code) {
-        const codeExists = await roleService.findByCode(ctx.body.code)
-        if (codeExists) return R.badRequest('角色编码已存在')
-      }
       const data = await roleService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
-      params: idParams({ label: '角色ID' }),
+      params: t.Object({ id: t.String({ description: '角色编码' }) }),
       body: roleService.getSchema({ exclude: ['id'], partial: true }),
       response: {
         200: SuccessResponse(roleService.getSchema(), '更新后的角色信息'),
@@ -154,7 +148,7 @@ export default new Elysia({ tags: ['管理 - 角色'] })
       return R.success('删除成功')
     },
     {
-      params: idParams({ label: '角色ID' }),
+      params: t.Object({ id: t.String({ description: '角色编码' }) }),
       response: { 200: MessageResponse, 404: ErrorResponse },
       detail: {
         summary: '删除角色',

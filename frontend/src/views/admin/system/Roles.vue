@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, onMounted, shallowRef } from 'vue'
+import { h } from 'vue'
 import {
   NButton,
   NTag,
@@ -9,26 +9,22 @@ import {
   NFormItem,
   NInput,
   NSelect,
-  NTreeSelect,
 } from 'naive-ui'
-import type { DataTableColumns, TreeSelectOption } from 'naive-ui'
+import type { DataTableColumns } from 'naive-ui'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
 import { useTable, useModal } from '@/composables'
 import { roleApi } from '@/api'
-import type { Role, RoleTree, CreateRoleRequest, UpdateRoleRequest } from '@/types'
+import type { Role, CreateRoleRequest, UpdateRoleRequest } from '@/types'
 import { Op } from '@/utils/ssql'
 
 defineOptions({ name: 'SystemRoles' })
 
 const message = useMessage()
 
-// 角色树
-const roleTree = shallowRef<RoleTree[]>([])
-
 // 搜索字段配置
 const searchFields: SearchField[] = [
   { key: 'name', label: '角色名称', type: 'input' },
-  { key: 'code', label: '角色编码', type: 'input' },
+  { key: 'id', label: '角色编码', type: 'input' },
   {
     key: 'status',
     label: '状态',
@@ -41,23 +37,22 @@ const searchFields: SearchField[] = [
 ]
 
 // 使用 useTable
-const table = useTable<Role, { name?: string; code?: string; status?: number }>({
+const table = useTable<Role, { name?: string; id?: string; status?: number }>({
   api: (params) => roleApi.list(params),
-  opMap: { name: Op.Like, code: Op.Like, status: Op.Eq },
+  opMap: { name: Op.Like, id: Op.Like, status: Op.Eq },
 })
 
 // 使用 useModal
-const modal = useModal<CreateRoleRequest & { id?: number }>({
+const modal = useModal<CreateRoleRequest & { id?: string }, string>({
   defaultData: {
+    id: '',
     name: '',
-    code: '',
-    parentId: null,
     description: '',
     status: 1,
   },
   validate: (data) => {
     if (!data.name) return '请输入角色名称'
-    if (!data.code) return '请输入角色编码'
+    if (!data.id) return '请输入角色编码'
     return null
   },
   createApi: (data) => roleApi.create(data),
@@ -65,17 +60,14 @@ const modal = useModal<CreateRoleRequest & { id?: number }>({
   onSuccess: () => {
     message.success(modal.isEdit.value ? '更新成功' : '创建成功')
     table.reload()
-    loadRoleTree()
   },
   onError: (err) => message.error(err.message || '操作失败'),
 })
 
 // 表格列定义
 const columns: DataTableColumns<Role> = [
-  { title: 'ID', key: 'id', width: 80 },
+  { title: '角色编码', key: 'id', width: 150 },
   { title: '角色名称', key: 'name', width: 150 },
-  { title: '角色编码', key: 'code', width: 150 },
-  { title: '父角色ID', key: 'parentId', width: 100, render: (row) => row.parentId ?? '-' },
   {
     title: '描述',
     key: 'description',
@@ -111,49 +103,25 @@ const columns: DataTableColumns<Role> = [
   },
 ]
 
-// 转换角色树为TreeSelect选项
-function convertToTreeOptions(roles: RoleTree[]): TreeSelectOption[] {
-  return roles.map((role) => ({
-    label: role.name,
-    key: role.id,
-    children: role.children ? convertToTreeOptions(role.children) : undefined,
-  }))
-}
-
+// 转换角色为选项
 function handleEdit(row: Role) {
   modal.edit(row.id, {
+    id: row.id,
     name: row.name,
-    code: row.code,
-    parentId: row.parentId,
     description: row.description || '',
     status: row.status,
   })
 }
 
-async function handleDelete(id: number) {
+async function handleDelete(id: string) {
   try {
     await roleApi.delete(id)
     message.success('删除成功')
     table.reload()
-    loadRoleTree()
   } catch (err: unknown) {
     message.error((err as Error).message || '删除失败')
   }
 }
-
-// 加载角色树
-async function loadRoleTree() {
-  try {
-    const res = await roleApi.tree()
-    roleTree.value = res
-  } catch (err) {
-    console.error('加载角色树失败', err)
-  }
-}
-
-onMounted(() => {
-  loadRoleTree()
-})
 </script>
 
 <template>
@@ -191,23 +159,15 @@ onMounted(() => {
       @confirm="modal.save"
     >
       <NForm label-placement="left" label-width="80">
-        <NFormItem label="角色名称" required>
-          <NInput v-model:value="modal.formData.name" placeholder="请输入角色名称" />
-        </NFormItem>
         <NFormItem label="角色编码" required>
           <NInput
-            v-model:value="modal.formData.code"
+            v-model:value="modal.formData.id"
             placeholder="请输入角色编码"
             :disabled="modal.isEdit.value"
           />
         </NFormItem>
-        <NFormItem label="父角色">
-          <NTreeSelect
-            v-model:value="modal.formData.parentId"
-            :options="convertToTreeOptions(roleTree)"
-            placeholder="请选择父角色"
-            clearable
-          />
+        <NFormItem label="角色名称" required>
+          <NInput v-model:value="modal.formData.name" placeholder="请输入角色名称" />
         </NFormItem>
         <NFormItem label="描述">
           <NInput

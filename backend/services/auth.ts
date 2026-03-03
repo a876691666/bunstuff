@@ -19,7 +19,7 @@ export interface LoginResult {
     nickname: string | null
     email: string | null
     avatar: string | null
-    roleId: number
+    roleId: string
   }
 }
 
@@ -94,7 +94,7 @@ export async function register(data: {
   nickname?: string
   email?: string
   phone?: string
-  roleId?: number
+  roleId?: string
 }): Promise<RegisterResult> {
   // 检查用户名是否已存在
   const existing = await User.findOne({
@@ -126,7 +126,7 @@ export async function register(data: {
     phone: data.phone ?? null,
     avatar: null,
     status: 1,
-    roleId: data.roleId ?? 1, // 默认角色 ID
+    roleId: data.roleId ?? 'user', // 默认角色
   }
 
   const user = await User.create(userData)

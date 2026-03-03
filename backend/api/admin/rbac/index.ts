@@ -25,9 +25,8 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
         200: SuccessResponse(
           t.Array(
             t.Object({
-              id: t.Number({ description: '角色ID' }),
+              id: t.String({ description: '角色编码' }),
               name: t.String({ description: '角色名称' }),
-              code: t.String({ description: '角色编码' }),
               status: t.Number({ description: '状态' }),
               sort: t.Number({ description: '排序' }),
               description: t.Nullable(t.String({ description: '描述' })),
@@ -52,11 +51,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const codes = await rbacService.getRolePermissionCodes(role.code)
+      const codes = await rbacService.getRolePermissionCodes(ctx.params.roleId)
       return R.ok(codes)
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       response: {
         200: SuccessResponse(
           t.Array(t.String({ description: '权限编码' })),
@@ -79,11 +78,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const hasPermission = await rbacService.hasPermission(role.code, ctx.body.permissionCode)
+      const hasPermission = await rbacService.hasPermission(ctx.params.roleId, ctx.body.permissionCode)
       return R.ok({ hasPermission })
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       body: t.Object({ permissionCode: t.String({ description: '要检查的权限编码' }) }),
       response: {
         200: SuccessResponse(
@@ -107,11 +106,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const hasPermission = await rbacService.hasAnyPermission(role.code, ctx.body.permissionCodes)
+      const hasPermission = await rbacService.hasAnyPermission(ctx.params.roleId, ctx.body.permissionCodes)
       return R.ok({ hasPermission })
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       body: t.Object({ permissionCodes: t.Array(t.String({ description: '权限编码' })) }),
       response: {
         200: SuccessResponse(
@@ -134,11 +133,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const hasPermission = await rbacService.hasAllPermissions(role.code, ctx.body.permissionCodes)
+      const hasPermission = await rbacService.hasAllPermissions(ctx.params.roleId, ctx.body.permissionCodes)
       return R.ok({ hasPermission })
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       body: t.Object({ permissionCodes: t.Array(t.String({ description: '权限编码' })) }),
       response: {
         200: SuccessResponse(
@@ -163,11 +162,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const data = await rbacService.getRoleMenus(role.code)
+      const data = await rbacService.getRoleMenus(ctx.params.roleId)
       return R.ok(data)
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       response: {
         200: SuccessResponse(t.Array(t.Any()), '角色菜单平铺列表'),
         404: ErrorResponse,
@@ -187,11 +186,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const data = await rbacService.getRoleMenuTree(role.code)
+      const data = await rbacService.getRoleMenuTree(ctx.params.roleId)
       return R.ok(data)
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       response: {
         200: SuccessResponse(
           t.Array(
@@ -232,11 +231,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const scopes = await rbacService.getRoleScopes(role.code)
+      const scopes = await rbacService.getRoleScopes(ctx.params.roleId)
       return R.ok(scopes)
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       response: {
         200: SuccessResponse(
           t.Array(t.Object({
@@ -263,11 +262,11 @@ export default new Elysia({ tags: ['管理 - RBAC权限'] })
     async (ctx) => {
       const role = rbacCache.getRole(ctx.params.roleId)
       if (!role) return R.notFound('角色')
-      const data = await rbacService.getRoleSsqlRules(role.code, ctx.query.tableName)
+      const data = await rbacService.getRoleSsqlRules(ctx.params.roleId, ctx.query.tableName)
       return R.ok(data)
     },
     {
-      params: t.Object({ roleId: t.Numeric({ description: '角色ID' }) }),
+      params: t.Object({ roleId: t.String({ description: '角色编码' }) }),
       query: t.Object({ tableName: t.String({ description: '目标表名' }) }),
       response: {
         200: SuccessResponse(t.Array(t.String({ description: 'SSQL规则表达式' })), 'SSQL规则列表'),

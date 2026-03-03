@@ -24,15 +24,13 @@ export interface CachedRole extends Row<typeof Role> {
 
 interface CacheState {
   initialized: boolean
-  roles: Map<number, CachedRole>
-  roleCodeIndex: Map<string, number>
+  roles: Map<string, CachedRole>
   menus: Map<number, MenuRow>
 }
 
 const state: CacheState = {
   initialized: false,
   roles: new Map(),
-  roleCodeIndex: new Map(),
   menus: new Map(),
 }
 
@@ -61,14 +59,12 @@ async function loadLocalCache(): Promise<void> {
   ])
 
   state.roles.clear()
-  state.roleCodeIndex.clear()
   state.menus.clear()
 
   for (const role of roles) {
-    const permissionCodes = await casbin.getRolePermissionCodes(role.code)
+    const permissionCodes = await casbin.getRolePermissionCodes(role.id)
     const cached: CachedRole = { ...role, permissionCodes }
     state.roles.set(role.id, cached)
-    state.roleCodeIndex.set(role.code, role.id)
   }
 
   for (const menu of menus) {
@@ -80,15 +76,14 @@ async function loadLocalCache(): Promise<void> {
 
 // ============ 角色查询 ============
 
-export function getRole(roleId: number): CachedRole | undefined {
+export function getRole(roleId: string): CachedRole | undefined {
   ensureInitialized()
   return state.roles.get(roleId)
 }
 
 export function getRoleByCode(code: string): CachedRole | undefined {
   ensureInitialized()
-  const roleId = state.roleCodeIndex.get(code)
-  return roleId !== undefined ? state.roles.get(roleId) : undefined
+  return state.roles.get(code)
 }
 
 export function getAllRoles(): CachedRole[] {

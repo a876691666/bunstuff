@@ -75,7 +75,7 @@ export default new Elysia({ tags: ['管理 - 认证'] })
               tokenPrefix: t.String({ description: '令牌前缀（脱敏）' }),
               userId: t.Number({ description: '用户ID' }),
               username: t.String({ description: '用户名' }),
-              roleId: t.Number({ description: '角色ID' }),
+              roleId: t.String({ description: '角色编码' }),
               createdAt: t.String({ description: '创建时间' }),
               expiresAt: t.String({ description: '过期时间' }),
               lastActiveAt: t.String({ description: '最后活跃时间' }),

@@ -4,21 +4,21 @@ import { model } from '@/core/model'
 /** 默认角色数据 */
 const defaultRoles = [
   {
-    code: 'super-admin',
+    id: 'super-admin',
     name: '超级管理员',
     status: 1,
     sort: 0,
     description: '系统超级管理员，拥有所有权限',
   },
   {
-    code: 'admin',
+    id: 'admin',
     name: '管理员',
     status: 1,
     sort: 1,
     description: '系统管理员，拥有大部分管理权限',
   },
   {
-    code: 'user',
+    id: 'user',
     name: '普通用户',
     status: 1,
     sort: 2,

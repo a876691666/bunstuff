@@ -18,8 +18,8 @@ export interface Session {
   userId: number
   /** 用户名 */
   username: string
-  /** 角色 ID */
-  roleId: number
+  /** 角色 ID（角色编码） */
+  roleId: string
   /** 创建时间 */
   createdAt: Date
   /** 过期时间 */
@@ -161,7 +161,7 @@ export async function init(): Promise<void> {
 export async function create(data: {
   userId: number
   username: string
-  roleId: number
+  roleId: string
   ip?: string
   userAgent?: string
   ttl?: number

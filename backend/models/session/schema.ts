@@ -12,8 +12,8 @@ export default class SessionSchema extends Schema {
   userId = column.number().default(0)
   /** 用户名 */
   username = column.string().default('')
-  /** 角色 ID */
-  roleId = column.number().default(0)
+  /** 角色 ID（角色编码） */
+  roleId = column.string().default('')
   /** IP 地址 */
   ip = column.string().nullable().default(null)
   /** User-Agent */

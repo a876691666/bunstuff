@@ -18,12 +18,8 @@ export async function findAll(query: PageQuery, ctx?: CrudContext) {
   })
 }
 
-export async function findById(id: number, ctx?: CrudContext) {
-  return Role.findOne({ where: buildWhere(Role.tableName, `id = ${id}`, ctx) })
-}
-
-export async function findByCode(code: string) {
-  return Role.findOne({ where: `code = '${code}'` })
+export async function findById(id: string, ctx?: CrudContext) {
+  return Role.findOne({ where: buildWhere(Role.tableName, `id = '${id}'`, ctx) })
 }
 
 export async function create(data: Insert<typeof Role>, ctx?: CrudContext) {
@@ -33,8 +29,8 @@ export async function create(data: Insert<typeof Role>, ctx?: CrudContext) {
   return result
 }
 
-export async function update(id: number, data: Update<typeof Role>, ctx?: CrudContext) {
-  const w = buildWhere(Role.tableName, `id = ${id}`, ctx)
+export async function update(id: string, data: Update<typeof Role>, ctx?: CrudContext) {
+  const w = buildWhere(Role.tableName, `id = '${id}'`, ctx)
   if (!w) return null
   const n = await Role.updateMany(w, data)
   if (n === 0) return null
@@ -43,12 +39,12 @@ export async function update(id: number, data: Update<typeof Role>, ctx?: CrudCo
   return result
 }
 
-export async function remove(id: number, ctx?: CrudContext) {
-  const usersWithRole = await User.findMany({ where: `roleId = ${id}` })
+export async function remove(id: string, ctx?: CrudContext) {
+  const usersWithRole = await User.findMany({ where: `roleId = '${id}'` })
   if (usersWithRole.length > 0) {
     throw new Error(`无法删除角色：有 ${usersWithRole.length} 个用户正在使用该角色`)
   }
-  const w = buildWhere(Role.tableName, `id = ${id}`, ctx)
+  const w = buildWhere(Role.tableName, `id = '${id}'`, ctx)
   if (!w) return false
   const ok = (await Role.deleteMany(w)) > 0
   if (ok) await reload()

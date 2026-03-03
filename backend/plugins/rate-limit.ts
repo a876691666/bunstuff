@@ -12,7 +12,6 @@
 import { Elysia } from 'elysia'
 import { rateLimitCache, rateLimitCounter, autoBlock } from '@/services/rate-limit'
 import * as session from '@/services/session'
-import { getRole } from '@/services/rbac-cache'
 
 /** 白名单 IP，不走限流 */
 const WHITELISTED_IPS = new Set(['127.0.0.1', 'localhost', '::1', '::ffff:127.0.0.1'])
@@ -89,8 +88,7 @@ export function rateLimitPlugin() {
         const token = authHeader.slice(7)
         const sess = session.verify(token)
         if (sess) {
-          const role = getRole(sess.roleId)
-          if (role && BYPASS_ROLE_CODES.has(role.code)) return
+          if (BYPASS_ROLE_CODES.has(sess.roleId)) return
         }
       }
 

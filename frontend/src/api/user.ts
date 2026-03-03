@@ -5,7 +5,7 @@ export interface UserQueryParams extends PageParams {
   username?: string
   nickname?: string
   status?: number
-  roleId?: number
+  roleId?: string
   [key: string]: unknown
 }
 

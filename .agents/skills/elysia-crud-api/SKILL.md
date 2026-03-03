@@ -18,9 +18,9 @@ import {
   SuccessResponse,
   MessageResponse,
   ErrorResponse,
-} from '@/modules/response'
-import { authPlugin } from '@/modules/auth'
-import { rbacPlugin } from '@/modules/rbac'
+} from '@/services/response'
+import { authPlugin } from '@/plugins/auth'
+import { rbacPlugin } from '@/plugins/rbac'
 import MyModel from '@/models/my-model'
 
 export const myController = new Elysia({ prefix: '/items', tags: ['业务模块'] })
@@ -268,9 +268,9 @@ import {
   SuccessResponse,
   MessageResponse,
   ErrorResponse,
-} from '@/modules/response'
-import { authPlugin } from '@/modules/auth'
-import { rbacPlugin } from '@/modules/rbac'
+} from '@/services/response'
+import { authPlugin } from '@/plugins/auth'
+import { rbacPlugin } from '@/plugins/rbac'
 import User from '@/models/users'
 
 export const userController = new Elysia({ prefix: '/users', tags: ['管理 - 用户'] })

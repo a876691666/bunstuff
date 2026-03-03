@@ -19,7 +19,7 @@ const message = useMessage()
 // 角色列表
 const roles = shallowRef<Role[]>([])
 const roleLoading = shallowRef(false)
-const selectedRoleId = shallowRef<number | null>(null)
+const selectedRoleId = shallowRef<string | null>(null)
 
 // 权限列表
 const permissions = shallowRef<Permission[]>([])
@@ -57,7 +57,7 @@ async function loadPermissions() {
 }
 
 // 加载角色的权限
-async function loadRolePermissions(roleId: number) {
+async function loadRolePermissions(roleId: string) {
   permissionLoading.value = true
   try {
     const res = await rolePermissionApi.getPermissionIds(roleId)
@@ -71,7 +71,7 @@ async function loadRolePermissions(roleId: number) {
 }
 
 // 选择角色
-function handleSelectRole(roleId: number) {
+function handleSelectRole(roleId: string) {
   selectedRoleId.value = roleId
   loadRolePermissions(roleId)
 }
@@ -182,7 +182,7 @@ onMounted(() => {
               @click="handleSelectRole(role.id)"
             >
               <span class="role-name">{{ role.name }}</span>
-              <NTag v-if="role.code" size="small" :bordered="false">{{ role.code }}</NTag>
+              <NTag size="small" :bordered="false">{{ role.id }}</NTag>
             </div>
             <NEmpty v-if="!roleLoading && roles.length === 0" description="暂无角色" />
           </div>

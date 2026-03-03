@@ -38,7 +38,7 @@ export async function init(): Promise<void> {
 
 // ============ 角色相关 ============
 
-export function getRole(roleId: number): CachedRole | undefined {
+export function getRole(roleId: string): CachedRole | undefined {
   return rbacCache.getRole(roleId)
 }
 
@@ -104,10 +104,10 @@ export async function getUserPermissionInfo(userId: number): Promise<UserPermiss
   const role = rbacCache.getRole(user.roleId) || null
   if (!role) return { userId, role: null, permissionCodes: [], menus: [], menuTree: [], scopes: [] }
 
-  const permissionCodes = await casbin.getRolePermissionCodes(role.code)
-  const menus = await rbacCache.getRoleMenus(role.code)
+  const permissionCodes = await casbin.getRolePermissionCodes(user.roleId)
+  const menus = await rbacCache.getRoleMenus(user.roleId)
   const menuTree = buildMenuTree(menus)
-  const scopes = await casbin.getRoleScopes(role.code)
+  const scopes = await casbin.getRoleScopes(user.roleId)
 
   return { userId, role, permissionCodes, menus, menuTree, scopes }
 }
@@ -115,9 +115,8 @@ export async function getUserPermissionInfo(userId: number): Promise<UserPermiss
 export async function userHasPermission(userId: number, permissionCode: string): Promise<boolean> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return false
-  const role = rbacCache.getRole(user.roleId)
-  if (!role) return false
-  return casbin.enforce(role.code, permissionCode)
+  if (!rbacCache.getRole(user.roleId)) return false
+  return casbin.enforce(user.roleId, permissionCode)
 }
 
 export async function userHasAnyPermission(
@@ -126,17 +125,15 @@ export async function userHasAnyPermission(
 ): Promise<boolean> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return false
-  const role = rbacCache.getRole(user.roleId)
-  if (!role) return false
-  return casbin.hasAnyPermission(role.code, permissionCodes)
+  if (!rbacCache.getRole(user.roleId)) return false
+  return casbin.hasAnyPermission(user.roleId, permissionCodes)
 }
 
 export async function getUserMenuTree(userId: number): Promise<MenuTreeNode[]> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return []
-  const role = rbacCache.getRole(user.roleId)
-  if (!role) return []
-  return getRoleMenuTree(role.code)
+  if (!rbacCache.getRole(user.roleId)) return []
+  return getRoleMenuTree(user.roleId)
 }
 
 export async function getUserScopesForTable(
@@ -146,9 +143,8 @@ export async function getUserScopesForTable(
 ): Promise<string[]> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) return []
-  const role = rbacCache.getRole(user.roleId)
-  if (!role) return []
-  return casbin.getRoleSsqlRules(role.code, tableName, permCode)
+  if (!rbacCache.getRole(user.roleId)) return []
+  return casbin.getRoleSsqlRules(user.roleId, tableName, permCode)
 }
 
 // ============ 缓存管理 ============

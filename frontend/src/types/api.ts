@@ -26,7 +26,7 @@ export interface User {
   nickname: string | null
   email: string | null
   phone: string | null
-  roleId: number
+  roleId: string
   status: number
   createdAt?: string
   updatedAt?: string
@@ -34,10 +34,8 @@ export interface User {
 
 /** 角色类型 */
 export interface Role {
-  id: number
+  id: string
   name: string
-  code: string
-  parentId: number | null
   description: string | null
   status: number
   createdAt?: string
@@ -99,7 +97,7 @@ export interface MenuTree extends Menu {
 /** 角色菜单关联 */
 export interface RoleMenu {
   id: number
-  roleId: number
+  roleId: string
   menuId: number
   createdAt?: string
 }
@@ -107,7 +105,7 @@ export interface RoleMenu {
 /** 角色权限关联 */
 export interface RolePermission {
   id: number
-  roleId: number
+  roleId: string
   permissionId: number
   permissionScopeId: number | null
   createdAt?: string
@@ -118,7 +116,7 @@ export interface VipTier {
   id: number
   name: string
   code: string
-  roleId: number | null
+  roleId: string | null
   price: number
   durationDays: number
   status: number
@@ -146,7 +144,7 @@ export interface UserVip {
   expireTime: string | null
   status: number
   bindingStatus: number
-  originalRoleId: number | null
+  originalRoleId: string | null
   createdAt?: string
   updatedAt?: string
 }
@@ -187,7 +185,7 @@ export interface Session {
   tokenPrefix: string
   userId: number
   username: string
-  roleId: number
+  roleId: string
   createdAt: string
   expiresAt: string
   lastActiveAt: string
@@ -218,7 +216,7 @@ export interface LoginResponse {
     id: number
     username: string
     nickname: string | null
-    roleId: number
+    roleId: string
   }
 }
 
@@ -244,7 +242,7 @@ export interface CreateUserRequest {
   nickname?: string
   email?: string
   phone?: string
-  roleId?: number
+  roleId?: string
   status?: number
 }
 
@@ -253,16 +251,15 @@ export interface UpdateUserRequest {
   nickname?: string
   email?: string
   phone?: string
-  roleId?: number
+  roleId?: string
   status?: number
   password?: string
 }
 
 /** 创建角色请求 */
 export interface CreateRoleRequest {
+  id: string
   name: string
-  code: string
-  parentId?: number | null
   description?: string
   status?: number
 }
@@ -270,8 +267,6 @@ export interface CreateRoleRequest {
 /** 更新角色请求 */
 export interface UpdateRoleRequest {
   name?: string
-  code?: string
-  parentId?: number | null
   description?: string
   status?: number
 }
@@ -343,7 +338,7 @@ export interface UpdateMenuRequest {
 export interface CreateVipTierRequest {
   name: string
   code: string
-  roleId?: number | null
+  roleId?: string | null
   price?: number
   durationDays?: number
   status?: number
@@ -354,7 +349,7 @@ export interface CreateVipTierRequest {
 export interface UpdateVipTierRequest {
   name?: string
   code?: string
-  roleId?: number | null
+  roleId?: string | null
   price?: number
   durationDays?: number
   status?: number

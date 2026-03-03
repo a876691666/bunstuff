@@ -11,7 +11,7 @@ const defaultUsers = [
     phone: '13800000000',
     avatar: null,
     status: 1,
-    roleId: 1, // super-admin 角色
+    roleId: 'super-admin',
   },
   {
     username: 'manager',
@@ -21,7 +21,7 @@ const defaultUsers = [
     phone: '13800000001',
     avatar: null,
     status: 1,
-    roleId: 2, // admin 角色
+    roleId: 'admin',
   },
   {
     username: 'user',
@@ -31,7 +31,7 @@ const defaultUsers = [
     phone: '13800000002',
     avatar: null,
     status: 1,
-    roleId: 3, // user 角色
+    roleId: 'user'
   },
 ]
 

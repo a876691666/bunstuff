@@ -8,7 +8,7 @@ import { shallowRef, reactive, type Ref, type UnwrapRef } from 'vue'
 // ============ 类型定义 ============
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface UseModalOptions<T extends Record<string, any>> {
+export interface UseModalOptions<T extends Record<string, any>, Id = number> {
   /** 初始表单数据 */
   defaultData: T
   /** 保存前验证 */
@@ -16,7 +16,7 @@ export interface UseModalOptions<T extends Record<string, any>> {
   /** 创建 API */
   createApi?: (data: T) => Promise<unknown>
   /** 更新 API */
-  updateApi?: (id: number, data: Partial<T>) => Promise<unknown>
+  updateApi?: (id: Id, data: Partial<T>) => Promise<unknown>
   /** 保存成功后回调 */
   onSuccess?: () => void
   /** 保存失败后回调 */
@@ -24,18 +24,18 @@ export interface UseModalOptions<T extends Record<string, any>> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface UseModalReturn<T extends Record<string, any>> {
+export interface UseModalReturn<T extends Record<string, any>, Id = number> {
   // 状态
   visible: Ref<boolean>
   loading: Ref<boolean>
   title: Ref<string>
-  editingId: Ref<number | null>
+  editingId: Ref<Id | null>
   formData: UnwrapRef<T>
   isEdit: Ref<boolean>
 
   // 方法
   open: (title?: string) => void
-  edit: (id: number, data: Partial<T>, title?: string) => void
+  edit: (id: Id, data: Partial<T>, title?: string) => void
   close: () => void
   save: () => Promise<boolean>
   resetForm: () => void
@@ -44,16 +44,16 @@ export interface UseModalReturn<T extends Record<string, any>> {
 // ============ 组合式函数 ============
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useModal<T extends Record<string, any>>(
-  options: UseModalOptions<T>,
-): UseModalReturn<T> {
+export function useModal<T extends Record<string, any>, Id = number>(
+  options: UseModalOptions<T, Id>,
+): UseModalReturn<T, Id> {
   const { defaultData, validate, createApi, updateApi, onSuccess, onError } = options
 
   // 状态
   const visible = shallowRef(false)
   const loading = shallowRef(false)
   const title = shallowRef('')
-  const editingId = shallowRef<number | null>(null)
+  const editingId = shallowRef<Id | null>(null)
   const formData = reactive<T>({ ...defaultData }) as UnwrapRef<T>
   const isEdit = shallowRef(false)
 
@@ -72,8 +72,8 @@ export function useModal<T extends Record<string, any>>(
   }
 
   // 打开编辑弹窗
-  function edit(id: number, data: Partial<T>, modalTitle = '编辑'): void {
-    editingId.value = id
+  function edit(id: Id, data: Partial<T>, modalTitle = '编辑'): void {
+    editingId.value = id as any
     isEdit.value = true
     title.value = modalTitle
     resetForm()

@@ -2,7 +2,7 @@ import { http } from '@/utils'
 import type { RoleMenu, PageParams } from '@/types'
 
 export interface RoleMenuQueryParams extends PageParams {
-  roleId?: number
+  roleId?: string
   menuId?: number
   [key: string]: unknown
 }
@@ -14,17 +14,17 @@ export const roleMenuApi = {
     http.getPage<RoleMenu>('/admin/role-menu', params as Record<string, unknown>),
 
   /** 获取角色的菜单ID列表 */
-  getMenuIds: (roleId: number) => http.get<number[]>(`/admin/role-menu/role/${roleId}/menus`),
+  getMenuIds: (roleId: string) => http.get<number[]>(`/admin/role-menu/role/${roleId}/menus`),
 
   /** 获取角色菜单关联详情 */
   get: (id: number) => http.get<RoleMenu>(`/admin/role-menu/${id}`),
 
   /** 创建角色菜单关联 */
-  create: (data: { roleId: number; menuId: number }) =>
+  create: (data: { roleId: string; menuId: number }) =>
     http.post<RoleMenu>('/admin/role-menu', data),
 
   /** 批量设置角色菜单 */
-  batchSet: (roleId: number, menuIds: number[]) =>
+  batchSet: (roleId: string, menuIds: number[]) =>
     http.post<RoleMenu[]>('/admin/role-menu/batch', { roleId, menuIds }),
 
   /** 删除角色菜单关联 */

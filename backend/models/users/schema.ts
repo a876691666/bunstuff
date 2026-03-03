@@ -24,6 +24,6 @@ export default class UsersSchema extends TimestampSchema {
   avatar = column.string().nullable().default(null).description('头像URL')
   /** 状态: 0-禁用 1-启用 */
   status = UsersSchema.status(1).description('状态：1启用 0禁用')
-  /** 角色ID (外键) */
-  roleId = column.number().default(0).description('角色ID')
+  /** 角色ID (外键，对应角色编码) */
+  roleId = column.string().default('').description('角色ID')
 }

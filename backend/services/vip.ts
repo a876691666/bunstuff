@@ -19,8 +19,8 @@ export type VipBindingCallback = (params: {
   userId: number
   userVipId: number
   vipTierId: number
-  roleId: number | null
-  originalRoleId: number | null
+  roleId: string | null
+  originalRoleId: string | null
   action: 'bind' | 'unbind' | 'confirm' | 'cancel'
 }) => Promise<void>
 

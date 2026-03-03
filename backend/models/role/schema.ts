@@ -4,12 +4,10 @@ export const tableName = 'role'
 
 /** 角色表 Schema (扁平结构, 无继承) */
 export default class RoleSchema extends TimestampSchema {
-  /** 角色 ID */
-  id = column.number().primaryKey().autoIncrement().description('角色ID')
+  /** 角色编码（主键） */
+  id = column.string().primaryKey().description('角色编码')
   /** 角色名称 */
   name = column.string().default('').description('角色名称')
-  /** 角色编码 */
-  code = column.string().unique().default('').description('角色编码')
   /** 状态: 0-禁用 1-启用 */
   status = RoleSchema.status(1).description('状态：1启用 0禁用')
   /** 排序 */

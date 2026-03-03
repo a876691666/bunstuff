@@ -16,6 +16,6 @@ export default class UserVipSchema extends TimestampSchema {
   status = UserVipSchema.status(1).description('状态：1启用 0禁用')
   /** 绑定回调状态: 0-待确认 1-已确认 */
   bindingStatus = column.number().default(0).description('绑定状态：0待确认 1已确认')
-  /** 绑定时用户原角色ID（用于回滚） */
-  originalRoleId = column.number().nullable().default(null).description('原角色ID')
+  /** 绑定时用户原角色ID（角色编码，用于回滚） */
+  originalRoleId = column.string().nullable().default(null).description('原角色ID')
 }

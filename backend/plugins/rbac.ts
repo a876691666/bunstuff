@@ -43,7 +43,7 @@ export function rbacPlugin() {
       })
     })
     .derive({ as: 'global' }, async ({ request, route, ...ctx }) => {
-      const roleId = (ctx as any).roleId as number | null
+      const roleId = (ctx as any).roleId as string | null
 
       const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {}
       const routeConfig = hooks?.detail?.rbac || {}
@@ -53,14 +53,14 @@ export function rbacPlugin() {
         return { dataScope: null as DataScope | null }
       }
 
-      // 通过 roleId 查找 roleCode
+      // roleId 现在就是角色编码，直接用于 Casbin 查询
       const role = rbacCache.getRole(roleId)
       if (!role) {
         return { dataScope: null as DataScope | null }
       }
 
       // 从 Casbin 获取该角色的全部数据域规则
-      const allScopes = await casbin.getRoleScopes(role.code)
+      const allScopes = await casbin.getRoleScopes(roleId)
       const routePerms = new Set(scope.permissions || [])
 
       const dataScope: DataScope = {
@@ -75,7 +75,7 @@ export function rbacPlugin() {
       return { dataScope }
     })
     .onBeforeHandle({ as: 'global' }, async ({ set, request, route, ...ctx }) => {
-      const roleId = (ctx as any).roleId as number | null
+      const roleId = (ctx as any).roleId as string | null
 
       const hooks = routerHooksMap.get(`${request.method}:::${route}`) || {}
       const routeConfig = hooks?.detail?.rbac || {}
@@ -94,9 +94,9 @@ export function rbacPlugin() {
         return { code: 403, message: '无权访问：角色不存在' }
       }
 
-      // 角色编码匹配
+      // 角色编码匹配（roleId 就是角色编码）
       if (scope.roles && scope.roles.length > 0) {
-        if (!scope.roles.includes(role.code)) {
+        if (!scope.roles.includes(roleId)) {
           set.status = 403
           return { code: 403, message: '无权访问：角色不匹配' }
         }
@@ -104,7 +104,7 @@ export function rbacPlugin() {
 
       // 权限检查 (通过 Casbin)
       if (scope.permissions && scope.permissions.length > 0) {
-        const hasAll = await casbin.hasAllPermissions(role.code, scope.permissions)
+        const hasAll = await casbin.hasAllPermissions(roleId, scope.permissions)
         if (!hasAll) {
           set.status = 403
           return { code: 403, message: '无权访问：缺少权限', required: scope.permissions }

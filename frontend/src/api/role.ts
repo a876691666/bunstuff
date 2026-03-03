@@ -3,7 +3,6 @@ import type { Role, RoleTree, CreateRoleRequest, UpdateRoleRequest, PageParams }
 
 export interface RoleQueryParams extends PageParams {
   name?: string
-  code?: string
   status?: number
   [key: string]: unknown
 }
@@ -18,14 +17,14 @@ export const roleApi = {
   tree: () => http.get<RoleTree[]>('/admin/role/tree'),
 
   /** 获取角色详情 */
-  get: (id: number) => http.get<Role>(`/admin/role/${id}`),
+  get: (id: string) => http.get<Role>(`/admin/role/${id}`),
 
   /** 创建角色 */
   create: (data: CreateRoleRequest) => http.post<Role>('/admin/role', data),
 
   /** 更新角色 */
-  update: (id: number, data: UpdateRoleRequest) => http.put<Role>(`/admin/role/${id}`, data),
+  update: (id: string, data: UpdateRoleRequest) => http.put<Role>(`/admin/role/${id}`, data),
 
   /** 删除角色 */
-  delete: (id: number) => http.delete(`/admin/role/${id}`),
+  delete: (id: string) => http.delete(`/admin/role/${id}`),
 }

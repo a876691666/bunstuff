@@ -10,7 +10,7 @@ const message = useMessage()
 // 角色列表
 const roles = shallowRef<Role[]>([])
 const roleLoading = shallowRef(false)
-const selectedRoleId = shallowRef<number | null>(null)
+const selectedRoleId = shallowRef<string | null>(null)
 
 // 菜单树
 const menuTree = shallowRef<MenuTree[]>([])
@@ -58,7 +58,7 @@ async function loadMenuTree() {
 }
 
 // 加载角色的菜单
-async function loadRoleMenus(roleId: number) {
+async function loadRoleMenus(roleId: string) {
   menuLoading.value = true
   try {
     const res = await roleMenuApi.getMenuIds(roleId)
@@ -72,7 +72,7 @@ async function loadRoleMenus(roleId: number) {
 }
 
 // 选择角色
-function handleSelectRole(roleId: number) {
+function handleSelectRole(roleId: string) {
   selectedRoleId.value = roleId
   loadRoleMenus(roleId)
 }
@@ -153,7 +153,7 @@ onMounted(() => {
               @click="handleSelectRole(role.id)"
             >
               <span class="role-name">{{ role.name }}</span>
-              <NTag v-if="role.code" size="small" :bordered="false">{{ role.code }}</NTag>
+              <NTag size="small" :bordered="false">{{ role.id }}</NTag>
             </div>
             <NEmpty v-if="!roleLoading && roles.length === 0" description="暂无角色" />
           </div>

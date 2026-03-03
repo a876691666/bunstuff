@@ -59,8 +59,7 @@ export interface CrudContext {
   query?: Record<string, any>
   cookie?: Record<string, any>
   userId?: number | null
-  roleId?: number | null
-  roleCode?: string | null
+  roleId?: string | null
   session?: any
   dataScope?: DataScope | null
   [key: string]: any
@@ -84,7 +83,6 @@ const ELYSIA_INTERNAL_KEYS = new Set([
   'error',
   'userId',
   'roleId',
-  'roleCode',
   'session',
   'dataScope',
   'vip',
@@ -139,7 +137,7 @@ export function buildVelocityContext(ctx?: CrudContext): Record<string, any> {
     auth: {
       userId: ctx.userId ?? null,
       roleId: ctx.roleId ?? null,
-      roleCode: ctx.roleCode ?? null,
+      roleCode: ctx.roleId ?? null,
       username: ctx.session?.username ?? null,
       session: ctx.session ?? null,
     },
