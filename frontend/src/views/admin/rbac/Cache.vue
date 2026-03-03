@@ -15,17 +15,12 @@ import {
   NEmpty,
 } from 'naive-ui'
 import { rbacAdminApi } from '@/api'
+import type { RbacCacheStatus } from '@/api/rbac'
 
 const message = useMessage()
 
 // 缓存状态
-const cacheStatus = shallowRef<{
-  roleCount: number
-  permissionCount: number
-  menuCount: number
-  scopeCount: number
-  lastUpdated: string
-} | null>(null)
+const cacheStatus = shallowRef<RbacCacheStatus | null>(null)
 const loading = shallowRef(false)
 const refreshing = shallowRef(false)
 
@@ -76,17 +71,17 @@ onMounted(() => {
         </NGi>
         <NGi>
           <NCard>
-            <NStatistic label="缓存权限数" :value="cacheStatus?.permissionCount ?? 0" />
+            <NStatistic label="权限策略数" :value="cacheStatus?.permCount ?? 0" />
           </NCard>
         </NGi>
         <NGi>
           <NCard>
-            <NStatistic label="缓存菜单数" :value="cacheStatus?.menuCount ?? 0" />
+            <NStatistic label="菜单缓存数" :value="cacheStatus?.localMenuCount ?? 0" />
           </NCard>
         </NGi>
         <NGi>
           <NCard>
-            <NStatistic label="数据权限缓存数" :value="cacheStatus?.scopeCount ?? 0" />
+            <NStatistic label="数据域策略数" :value="cacheStatus?.scopeCount ?? 0" />
           </NCard>
         </NGi>
       </NGrid>
@@ -104,6 +99,9 @@ onMounted(() => {
 
         <div v-if="cacheStatus">
           <NDescriptions label-placement="left" :column="2">
+            <NDescriptionsItem label="初始化状态">
+              {{ cacheStatus.initialized ? '已初始化' : '未初始化' }}
+            </NDescriptionsItem>
             <NDescriptionsItem label="最后更新时间">
               {{
                 cacheStatus.lastUpdated
@@ -112,12 +110,23 @@ onMounted(() => {
               }}
             </NDescriptionsItem>
             <NDescriptionsItem label="角色缓存"> {{ cacheStatus.roleCount }} 条 </NDescriptionsItem>
-            <NDescriptionsItem label="权限缓存">
-              {{ cacheStatus.permissionCount }} 条
+            <NDescriptionsItem label="菜单缓存">
+              {{ cacheStatus.localMenuCount }} 条
             </NDescriptionsItem>
-            <NDescriptionsItem label="菜单缓存"> {{ cacheStatus.menuCount }} 条 </NDescriptionsItem>
-            <NDescriptionsItem label="数据权限缓存">
+            <NDescriptionsItem label="Casbin策略总数">
+              {{ cacheStatus.policyCount }} 条
+            </NDescriptionsItem>
+            <NDescriptionsItem label="权限策略">
+              {{ cacheStatus.permCount }} 条
+            </NDescriptionsItem>
+            <NDescriptionsItem label="数据域策略">
               {{ cacheStatus.scopeCount }} 条
+            </NDescriptionsItem>
+            <NDescriptionsItem label="策略模块数">
+              {{ cacheStatus.moduleCount }} 个
+            </NDescriptionsItem>
+            <NDescriptionsItem label="权限定义总数">
+              {{ cacheStatus.permissionDefCount }} 条
             </NDescriptionsItem>
           </NDescriptions>
         </div>

@@ -1,66 +1,55 @@
 import { http } from '@/utils'
-import type { MenuTree, RbacCacheStatus } from '@/types'
+import type { MenuTree } from '@/types'
 
-/** 角色权限信息 */
-export interface RolePermissionInfo {
+/** 角色信息（来自 /admin/rbac/roles） */
+export interface RbacRole {
   id: string
   name: string
-  resource: string | null
-}
-
-/** 角色链信息 */
-export interface RoleChainItem {
-  id: string
-  name: string
-  parentId: string | null
-}
-
-/** 角色树节点 */
-export interface RoleTreeNode {
-  id: string
-  name: string
-  parentId: string | null
-  permissions: string[]
-  children?: RoleTreeNode[]
+  status: number
+  sort: number
+  description: string | null
 }
 
 /** 数据权限规则 */
 export interface ScopeRule {
-  id: number
-  tableName: string
-  ruleName: string
-  ssql: string
-  description: string | null
+  table: string
+  permission: string
+  rule: string
 }
 
 /** 用户权限信息 */
 export interface UserPermissionInfo {
   userId: number
-  roleId: string
-  roleName: string
   permissionCodes: string[]
   menus: MenuTree[]
-  scopes: Record<string, ScopeRule[]>
+  scopes: ScopeRule[]
+}
+
+/** RBAC 缓存状态（与后端 Casbin 版一致） */
+export interface RbacCacheStatus {
+  initialized: boolean
+  roleCount: number
+  localMenuCount: number
+  policyCount: number
+  permCount: number
+  scopeCount: number
+  moduleCount: number
+  permissionDefCount: number
+  lastUpdated: string
 }
 
 /** 管理端 RBAC API（路径前缀: /api/admin/rbac） */
 export const rbacAdminApi = {
   // ============ 角色相关 ============
 
-  /** 获取角色树 */
-  getRoleTree: () => http.get<RoleTreeNode[]>('/admin/rbac/roles/tree'),
-
-  /** 获取角色父级链 */
-  getRoleChain: (roleId: string) => http.get<RoleChainItem[]>(`/admin/rbac/roles/${roleId}/chain`),
-
-  /** 获取子角色ID列表 */
-  getChildRoleIds: (roleId: string) => http.get<string[]>(`/admin/rbac/roles/${roleId}/children`),
+  /** 获取角色列表（扁平列表） */
+  getRoles: () => http.get<RbacRole[]>('/admin/rbac/roles'),
 
   // ============ 角色权限相关 ============
 
-  /** 获取角色权限列表 */
+  /** 获取角色权限编码列表 */
   getRolePermissions: (roleId: string) =>
-    http.get<RolePermissionInfo[]>(`/admin/rbac/roles/${roleId}/permissions`),
+    http.get<string[]>(`/admin/rbac/roles/${roleId}/permissions`),
 
   /** 检查角色是否拥有指定权限 */
   checkPermission: (roleId: string, permissionCode: string) =>
@@ -82,7 +71,7 @@ export const rbacAdminApi = {
 
   // ============ 角色菜单相关 ============
 
-  /** 获取角色菜单列表 */
+  /** 获取角色菜单列表（平铺） */
   getRoleMenus: (roleId: string) => http.get<MenuTree[]>(`/admin/rbac/roles/${roleId}/menus`),
 
   /** 获取角色菜单树 */
@@ -91,15 +80,11 @@ export const rbacAdminApi = {
 
   // ============ 角色数据权限相关 ============
 
-  /** 获取角色数据权限 */
+  /** 获取角色数据权限规则列表 */
   getRoleScopes: (roleId: string) =>
-    http.get<Record<string, ScopeRule[]>>(`/admin/rbac/roles/${roleId}/scopes`),
+    http.get<ScopeRule[]>(`/admin/rbac/roles/${roleId}/scopes`),
 
-  /** 获取角色对指定表的数据权限 */
-  getRoleScopesForTable: (roleId: string, tableName: string) =>
-    http.get<ScopeRule[]>(`/admin/rbac/roles/${roleId}/scopes/table`, { tableName }),
-
-  /** 获取SSQL过滤规则 */
+  /** 获取角色SSQL过滤规则 */
   getRoleSsqlRules: (roleId: string, tableName: string) =>
     http.get<string[]>(`/admin/rbac/roles/${roleId}/scopes/ssql`, { tableName }),
 
@@ -127,19 +112,12 @@ export const rbacAdminApi = {
 
   /** 获取用户对指定表的数据权限 */
   getUserScopesForTable: (userId: number, tableName: string) =>
-    http.get<ScopeRule[]>(`/admin/rbac/users/${userId}/scopes/table`, { tableName }),
+    http.get<string[]>(`/admin/rbac/users/${userId}/scopes/table`, { tableName }),
 
   // ============ 缓存管理 ============
 
   /** 获取缓存状态 */
-  getCacheStatus: () =>
-    http.get<{
-      roleCount: number
-      permissionCount: number
-      menuCount: number
-      scopeCount: number
-      lastUpdated: string
-    }>('/admin/rbac/cache/status'),
+  getCacheStatus: () => http.get<RbacCacheStatus>('/admin/rbac/cache/status'),
 
   /** 刷新缓存 */
   reloadCache: () => http.post<void>('/admin/rbac/cache/reload'),

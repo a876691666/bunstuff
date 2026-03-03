@@ -47,68 +47,21 @@ export interface RoleTree extends Role {
   children?: RoleTree[]
 }
 
-/** 权限类型 */
-export interface Permission {
+/** 菜单类型（来自后端 RBAC 菜单树） */
+export interface MenuTree {
   id: number
-  name: string
-  code: string
-  resource: string | null
-  description: string | null
-  createdAt?: string
-  updatedAt?: string
-}
-
-/** 权限范围类型 */
-export interface PermissionScope {
-  id: number
-  permissionId: number
-  name: string
-  tableName: string
-  ssqlRule: string
-  description: string | null
-  createdAt?: string
-  updatedAt?: string
-}
-
-/** 菜单类型 */
-export interface Menu {
-  id: number
-  parentId: number | null
   name: string
   path: string
   component: string | null
   icon: string | null
+  sort: number
+  parentId: number | null
   type: number
   visible: number
-  status: number
-  redirect: string | null
-  sort: number
   permCode: string | null
-  createdAt?: string
-  updatedAt?: string
-}
-
-/** 菜单树类型 */
-export interface MenuTree extends Menu {
+  redirect?: string | null
   isHidden?: boolean
   children?: MenuTree[]
-}
-
-/** 角色菜单关联 */
-export interface RoleMenu {
-  id: number
-  roleId: string
-  menuId: number
-  createdAt?: string
-}
-
-/** 角色权限关联 */
-export interface RolePermission {
-  id: number
-  roleId: string
-  permissionId: number
-  permissionScopeId: number | null
-  createdAt?: string
 }
 
 /** VIP 等级 */
@@ -271,68 +224,7 @@ export interface UpdateRoleRequest {
   status?: number
 }
 
-/** 创建权限请求 */
-export interface CreatePermissionRequest {
-  name: string
-  code: string
-  resource?: string
-  description?: string
-}
 
-/** 更新权限请求 */
-export interface UpdatePermissionRequest {
-  name?: string
-  code?: string
-  resource?: string
-  description?: string
-}
-
-/** 创建权限范围请求 */
-export interface CreatePermissionScopeRequest {
-  permissionId: number
-  name: string
-  tableName: string
-  ssqlRule: string
-  description?: string
-}
-
-/** 更新权限范围请求 */
-export interface UpdatePermissionScopeRequest {
-  name?: string
-  tableName?: string
-  ssqlRule?: string
-  description?: string
-}
-
-/** 创建菜单请求 */
-export interface CreateMenuRequest {
-  name: string
-  path: string
-  parentId?: number | null
-  component?: string | null
-  icon?: string | null
-  type?: number
-  visible?: number
-  status?: number
-  redirect?: string | null
-  sort?: number
-  permCode?: string | null
-}
-
-/** 更新菜单请求 */
-export interface UpdateMenuRequest {
-  name?: string
-  path?: string
-  parentId?: number | null
-  component?: string | null
-  icon?: string | null
-  type?: number
-  visible?: number
-  status?: number
-  redirect?: string | null
-  sort?: number
-  permCode?: string | null
-}
 
 /** 创建VIP等级请求 */
 export interface CreateVipTierRequest {
@@ -378,12 +270,16 @@ export interface UpgradeVipRequest {
   expireTime?: string
 }
 
-/** RBAC 缓存状态 */
+/** RBAC 缓存状态（Casbin 版） */
 export interface RbacCacheStatus {
+  initialized: boolean
   roleCount: number
-  permissionCount: number
-  menuCount: number
+  localMenuCount: number
+  policyCount: number
+  permCount: number
   scopeCount: number
+  moduleCount: number
+  permissionDefCount: number
   lastUpdated: string
 }
 
