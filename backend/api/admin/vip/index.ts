@@ -1,8 +1,3 @@
-/**
- * VIP 管理控制器（管理端）
- * 从 modules/vip/main/api_admin.ts 迁移
- */
-
 import { Elysia, t } from 'elysia'
 import * as vipService from '@/services/vip'
 import { idParams, query } from '@/packages/route-model'

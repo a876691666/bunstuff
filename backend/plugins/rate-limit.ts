@@ -1,14 +1,3 @@
-/**
- * 限流插件 - 作为全局中间件使用
- * 从 modules/system/rate-limit/plugin.ts 迁移
- *
- * 工作流程:
- * 1. 检查IP黑名单
- * 2. 匹配限流规则（按优先级排序）
- * 3. 根据规则的限流模式执行检查
- * 4. 触发阈值时自动封禁IP
- */
-
 import { Elysia } from 'elysia'
 import { rateLimitCache, rateLimitCounter, autoBlock } from '@/services/rate-limit'
 import * as session from '@/services/session'

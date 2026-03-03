@@ -1,7 +1,3 @@
-/**
- * 任务日志服务 - 独立函数形式
- */
-
 import { model } from '@/core/model'
 import { buildWhere, type CrudContext, type PageQuery } from '@/core/crud'
 

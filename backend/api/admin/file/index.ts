@@ -14,7 +14,6 @@ import { vipPlugin } from '@/plugins/vip'
 import { filePlugin } from '@/plugins/file'
 import { operLogPlugin } from '@/plugins/oper-log'
 
-/** 文件管理控制器（管理端） */
 export default new Elysia({ tags: ['管理 - 文件管理'] })
   .use(authPlugin())
   .use(rbacPlugin())

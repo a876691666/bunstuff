@@ -14,7 +14,6 @@ import { vipPlugin } from '@/plugins/vip'
 import { noticePlugin } from '@/plugins/notice'
 import { operLogPlugin } from '@/plugins/oper-log'
 
-/** 通知公告管理控制器（管理端） */
 export default new Elysia({ tags: ['管理 - 通知公告'] })
   .use(authPlugin())
   .use(rbacPlugin())

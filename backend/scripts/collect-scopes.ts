@@ -1,9 +1,3 @@
-/**
- * 收集所有 scope permissions 的去重集合
- *
- * 使用方式: bun run backend/scripts/collect-scopes.ts
- */
-
 import { Glob } from 'bun'
 import { resolve, relative } from 'path'
 import { mkdir } from 'fs/promises'

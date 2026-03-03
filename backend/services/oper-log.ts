@@ -1,8 +1,3 @@
-/**
- * 操作日志服务
- * 从 modules/system/oper-log/service.ts 迁移
- */
-
 import { model } from '@/core/model'
 import { buildWhere, type CrudContext, type PageQuery } from '@/core/crud'
 

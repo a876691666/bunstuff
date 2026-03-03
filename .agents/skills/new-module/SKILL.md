@@ -7,6 +7,12 @@ description: 构建新模块的完整最佳实践。从 Schema 定义、Seed 数
 
 以「**文章管理**」为例，演示从 0 到 1 搭建一个带 CRUD、权限、数据域、操作日志的完整模块。
 
+## 架构原则
+
+- **显式代码 > 工厂封装**：每个文件显式编写完整 CRUD，确保可控可修改
+- **禁止文件头部注释**：不写 `/** ... */` 描述文件用途，直接以 `import` 开头
+- **security 统一声明**：在 Elysia 构造器 `detail` 中声明，单个路由不重复
+
 ## 目录结构（需要创建的文件）
 
 ```
@@ -195,7 +201,10 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { operLogPlugin } from '@/plugins/oper-log'
 
-export default new Elysia({ tags: ['管理 - 文章'] })
+export default new Elysia({
+  tags: ['管理 - 文章'],
+  detail: { security: [{ bearerAuth: [] }] },
+})
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())
@@ -210,8 +219,6 @@ export default new Elysia({ tags: ['管理 - 文章'] })
     response: { 200: PagedResponse(articleService.getSchema(), '文章列表') },
     detail: {
       summary: '获取文章列表',
-      description: '分页获取文章列表\n\n🔐 **所需权限**: `article:admin:list`',
-      security: [{ bearerAuth: [] }],
       rbac: { scope: { permissions: ['article:admin:list'] } },
     },
   })
@@ -226,8 +233,6 @@ export default new Elysia({ tags: ['管理 - 文章'] })
     response: { 200: SuccessResponse(articleService.getSchema()), 404: ErrorResponse },
     detail: {
       summary: '获取文章详情',
-      description: '根据ID获取文章详情\n\n🔐 **所需权限**: `article:admin:read`',
-      security: [{ bearerAuth: [] }],
       rbac: { scope: { permissions: ['article:admin:read'] } },
     },
   })
@@ -241,8 +246,6 @@ export default new Elysia({ tags: ['管理 - 文章'] })
     response: { 200: SuccessResponse(articleService.getSchema()), 400: ErrorResponse },
     detail: {
       summary: '创建文章',
-      description: '创建新文章\n\n🔐 **所需权限**: `article:admin:create`',
-      security: [{ bearerAuth: [] }],
       rbac: { scope: { permissions: ['article:admin:create'] } },
       operLog: { title: '文章管理', type: 'create' },
     },
@@ -260,8 +263,6 @@ export default new Elysia({ tags: ['管理 - 文章'] })
     response: { 200: SuccessResponse(articleService.getSchema()), 404: ErrorResponse },
     detail: {
       summary: '更新文章',
-      description: '更新文章信息\n\n🔐 **所需权限**: `article:admin:update`',
-      security: [{ bearerAuth: [] }],
       rbac: { scope: { permissions: ['article:admin:update'] } },
       operLog: { title: '文章管理', type: 'update' },
     },
@@ -278,8 +279,6 @@ export default new Elysia({ tags: ['管理 - 文章'] })
     response: { 200: MessageResponse, 404: ErrorResponse },
     detail: {
       summary: '删除文章',
-      description: '删除文章\n\n🔐 **所需权限**: `article:admin:delete`',
-      security: [{ bearerAuth: [] }],
       rbac: { scope: { permissions: ['article:admin:delete'] } },
       operLog: { title: '文章管理', type: 'delete' },
     },
@@ -289,9 +288,11 @@ export default new Elysia({ tags: ['管理 - 文章'] })
 **要点**：
 - `export default new Elysia(...)` 直接导出（代码生成依赖默认导出）
 - `tags` 对应 `backend/index.ts` 中的 OpenAPI tags 分组
+- `detail: { security }` 在构造器统一声明，单个路由不重复写
 - Schema 全部使用 `service.getSchema(...)` 内联生成，不预定义变量
 - handler 参数用 `ctx` 整体传递给 service（`CrudContext` 兼容）
 - `operLog: { title, type }` 自动记录操作日志
+- 不写文件头部注释，直接以 `import` 开头
 
 ### 路由配置速查
 
@@ -306,11 +307,15 @@ response: { 200: MessageResponse, 404: ErrorResponse }
 // 插件链（管理端标准组合）
 .use(authPlugin()).use(rbacPlugin()).use(vipPlugin()).use(operLogPlugin())
 
-// detail 配置
+// 构造器配置（security 统一声明）
+new Elysia({
+  tags: ['管理 - XX'],
+  detail: { security: [{ bearerAuth: [] }] },
+})
+
+// detail 配置（单个路由无需 security）
 detail: {
   summary: '简短标题',
-  description: '详细说明\n\n🔐 **所需权限**: `xxx:admin:list`',
-  security: [{ bearerAuth: [] }],
   rbac: { scope: { permissions: ['xxx:admin:list'] } },
   operLog: { title: '模块名', type: 'create' | 'update' | 'delete' },
 }
@@ -394,7 +399,10 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 
-export default new Elysia({ tags: ['客户端 - 文章'] })
+export default new Elysia({
+  tags: ['客户端 - 文章'],
+  detail: { security: [{ bearerAuth: [] }] },
+})
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())

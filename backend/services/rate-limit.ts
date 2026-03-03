@@ -1,8 +1,3 @@
-/**
- * 限流服务
- * 从 modules/system/rate-limit/service.ts 迁移
- */
-
 import type { Insert, Update } from '@/packages/orm'
 import { model } from '@/core/model'
 import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '@/core/crud'

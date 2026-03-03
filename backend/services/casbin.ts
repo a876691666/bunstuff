@@ -1,17 +1,3 @@
-/**
- * Casbin 服务 - 基于硬编码配置文件的权限引擎
- *
- * 从各 API 模块的 config.ts 收集配置定义，加载到 Casbin 引擎。
- * 配置只读，运行时不可修改。
- *
- * 策略格式 (4字段):
- *   p = sub, dom, obj, act
- *
- * 策略约定:
- *   - 权限授予:  p, <roleCode>, perm,  <permCode>,   allow,      allow
- *   - 数据域:    p, <roleCode>, scope, <tableName>,   <permCode>, <ssqlRule>
- */
-
 import { newEnforcer, newModel, type Enforcer } from 'casbin'
 import { allConfigs } from '@/_generated/configs.generated'
 import { resolvePolicies, collectPermissions, type PermissionDef } from '@/core/policy'

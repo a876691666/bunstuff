@@ -12,7 +12,6 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { operLogPlugin } from '@/plugins/oper-log'
 
-/** 任务日志管理控制器（管理端） */
 export default new Elysia({ tags: ['管理 - 任务日志'] })
   .use(authPlugin())
   .use(rbacPlugin())

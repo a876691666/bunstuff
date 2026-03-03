@@ -1,8 +1,3 @@
-/**
- * 配置插件 - 提供参数配置访问能力
- * 从 modules/system/config/plugin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as configService from '@/services/sys-config'
 

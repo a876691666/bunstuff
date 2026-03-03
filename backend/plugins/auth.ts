@@ -1,10 +1,3 @@
-/**
- * Auth 插件 - 全局认证中间件
- *
- * 默认启用，可通过路由配置禁用。
- * 简化版：仅提供 session/userId/roleId，不再加载完整权限信息。
- */
-
 import { Elysia } from 'elysia'
 import * as session from '../services/session'
 

@@ -1,8 +1,3 @@
-/**
- * 定时任务服务 - 独立函数形式
- * 支持：全局注册任务处理函数、Cron调度、手动触发
- */
-
 import { Cron } from 'croner'
 import { model } from '@/core/model'
 import type { Insert } from '@/packages/orm'

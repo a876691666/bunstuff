@@ -1,8 +1,3 @@
-/**
- * Seed 自动注册 - 使用编译时生成的静态导入
- * 替代原先基于 Glob 的运行时扫描
- */
-
 import type { SeedDefinition } from '@/services/seed'
 import * as seedService from '@/services/seed'
 

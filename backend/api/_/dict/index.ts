@@ -1,8 +1,3 @@
-/**
- * 字典客户端控制器
- * 从 modules/system/dict/api_client.ts 迁移
- */
-
 import { Elysia, t } from 'elysia'
 import * as dictService from '@/services/dict'
 import { R, SuccessResponse } from '@/services/response'

@@ -1,8 +1,3 @@
-/**
- * Seed 服务
- * 从 modules/seed/main/service.ts 迁移
- */
-
 import { model } from '@/core/model'
 
 const SeedLog = model.seed_log

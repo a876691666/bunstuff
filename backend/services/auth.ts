@@ -1,7 +1,3 @@
-/**
- * 认证服务
- */
-
 import type { Insert } from '@/packages/orm'
 import { model } from '@/core/model'
 import * as session from './session'

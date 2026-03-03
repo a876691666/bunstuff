@@ -1,10 +1,3 @@
-/**
- * RBAC 插件 - 基于 Casbin 的权限检查中间件
- *
- * 使用角色编码 (roleCode) 通过 Casbin 检查权限，
- * 同时提供 DataScope 上下文用于数据级过滤 (ssqlRule)。
- */
-
 import { Elysia } from 'elysia'
 import * as casbin from '@/services/casbin'
 import * as rbacCache from '@/services/rbac-cache'

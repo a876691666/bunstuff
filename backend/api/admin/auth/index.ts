@@ -7,7 +7,6 @@ import { loginLogPlugin } from '@/plugins/login-log'
 import { operLogPlugin } from '@/plugins/oper-log'
 import * as session from '@/services/session'
 
-/** Auth 管理控制器（管理端） */
 export default new Elysia({ tags: ['管理 - 认证'] })
   .use(authPlugin())
   .use(rbacPlugin())

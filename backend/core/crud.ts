@@ -1,22 +1,3 @@
-/**
- * CRUD 工具模块
- *
- * 提供数据权限 (DataScope) 相关的 SSQL 渲染、求值及 WHERE 合并工具，
- * 供各 Service 配合 ORM Model 直接使用。
- *
- * @example
- * ```ts
- * import { model } from '@/core/model'
- * import { buildWhere, type CrudContext } from '@/core/crud'
- *
- * const User = model.users
- *
- * export async function findAll(query: PageQuery, ctx?: CrudContext) {
- *   return User.page({ where: buildWhere(User.tableName, query?.filter, ctx), page: query?.page, pageSize: query?.pageSize })
- * }
- * ```
- */
-
 import type { DataScope } from '@/plugins/rbac'
 import { render } from 'velocityjs'
 import {

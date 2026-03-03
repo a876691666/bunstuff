@@ -1,7 +1,3 @@
-/**
- * 通知公告插件 - 提供通知发布和已读标记能力
- */
-
 import { Elysia } from 'elysia'
 import type { Insert } from '@/packages/orm'
 import { model } from '@/core/model'

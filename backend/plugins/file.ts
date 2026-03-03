@@ -1,7 +1,3 @@
-/**
- * 文件插件 - 提供文件访问能力
- */
-
 import { Elysia } from 'elysia'
 import type { Row } from '@/packages/orm'
 import * as fileService from '@/services/file'

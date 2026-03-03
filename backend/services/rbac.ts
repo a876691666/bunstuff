@@ -1,9 +1,3 @@
-/**
- * RBAC 服务 - 基于 Casbin 的权限查询（无角色继承）
- *
- * 权限检查通过 Casbin enforcer，角色/菜单对象从 rbac-cache 获取。
- */
-
 import { type ResolvedMenu } from '@/core/policy'
 import { model } from '@/core/model'
 import * as casbin from '@/services/casbin'

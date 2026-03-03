@@ -1,8 +1,3 @@
-/**
- * Route Model 工具包
- *
- * 提供标准化的 Elysia 路由模型生成函数
- */
 import { t, type TSchema } from 'elysia'
 import type { TObject, TProperties, TOptional } from '@sinclair/typebox'
 import type { SchemaDefinition, ColumnBuilder } from '@pkg/orm'

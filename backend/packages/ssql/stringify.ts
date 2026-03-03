@@ -1,8 +1,3 @@
-/**
- * 对象序列化为 SSQL 字符串
- * 负责将表达式对象转换为 SSQL 语法字符串
- */
-
 import {
   Op,
   type Value,

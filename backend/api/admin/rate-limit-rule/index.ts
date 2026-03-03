@@ -1,8 +1,3 @@
-/**
- * 限流规则管理控制器（管理端）
- * 从 modules/system/rate-limit/api_rule_admin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as rateLimitService from '@/services/rate-limit'
 import { idParams, query } from '@/packages/route-model'

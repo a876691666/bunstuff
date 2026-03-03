@@ -1,8 +1,3 @@
-/**
- * 字典插件 - 提供字典数据访问能力
- * 从 modules/system/dict/plugin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as dictService from '@/services/dict'
 

@@ -1,7 +1,3 @@
-/**
- * 通知公告服务 - 独立函数形式
- */
-
 import type { Row, Insert, Update } from '@/packages/orm'
 import { model } from '@/core/model'
 import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '@/core/crud'

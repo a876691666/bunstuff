@@ -1,8 +1,3 @@
-/**
- * 用户服务
- * 从 modules/auth/users/service.ts 迁移
- */
-
 import { model } from '@/core/model'
 import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '@/core/crud'
 import type { Insert, Update } from '@/packages/orm'

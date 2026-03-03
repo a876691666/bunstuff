@@ -1,8 +1,3 @@
-/**
- * 登录日志管理控制器（管理端）
- * 从 modules/system/login-log/api_admin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as loginLogService from '@/services/login-log'
 import { idParams, query } from '@/packages/route-model'

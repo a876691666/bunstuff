@@ -1,8 +1,3 @@
-/**
- * 统一响应包装工具
- * 提供简洁的 API 响应构建函数
- */
-
 import { t, type TSchema } from 'elysia'
 
 /** 基础响应结构 */

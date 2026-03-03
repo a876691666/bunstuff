@@ -1,8 +1,3 @@
-/**
- * 文件服务 - 独立函数形式
- * 提供文件上传、下载、删除等功能
- */
-
 import type { Row, Insert } from '@/packages/orm'
 import { model } from '@/core/model'
 import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '@/core/crud'

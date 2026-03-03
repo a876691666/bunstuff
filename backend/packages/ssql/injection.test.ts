@@ -1,7 +1,3 @@
-/**
- * SQL 注入防护实际测试
- * 使用 Bun.sql 和 SQLite 内存数据库进行真实 SQL 执行测试
- */
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test'
 import { SQL } from 'bun'
 import { where, parse, toSQL, sqlite, FieldValidationError } from './index'

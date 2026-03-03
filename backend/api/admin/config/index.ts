@@ -1,8 +1,3 @@
-/**
- * 参数配置管理控制器（管理端）
- * 从 modules/system/config/api_admin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as configService from '@/services/sys-config'
 import { idParams, query } from '@/packages/route-model'

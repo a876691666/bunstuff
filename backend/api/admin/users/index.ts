@@ -1,8 +1,3 @@
-/**
- * 用户管理控制器（管理端）
- * 从 modules/auth/users/api_admin.ts 迁移
- */
-
 import { Elysia, t } from 'elysia'
 import * as userService from '@/services/user'
 import { idParams, query } from '@/packages/route-model'

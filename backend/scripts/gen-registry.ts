@@ -1,21 +1,3 @@
-/**
- * Registry 生成脚本 & 编译时插件
- *
- * 扫描 models下的schema.ts / seed.ts 以及 api下的所有ts文件
- * 自动生成静态 import 注册表文件，替代运行时 Glob
- *
- * 生成产物：
- *   _generated/model.generated.ts     — Model 类型定义（type-only）
- *   _generated/schemas.generated.ts   — Schema 运行时导入注册表
- *   _generated/routes.generated.ts    — API 路由运行时导入注册表
- *   _generated/seeds.generated.ts     — Seed 运行时导入注册表
- *   _generated/configs.generated.ts   — 模块配置运行时导入注册表
- *
- * 使用方式：
- *   bun run scripts/gen-registry.ts        # 直接执行
- *   import { generateRegistry } from '...' # 在 build.ts 中作为编译时插件调用
- */
-
 import { Glob } from 'bun'
 import { join, resolve } from 'path'
 

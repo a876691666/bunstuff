@@ -6,7 +6,6 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 
-/** RBAC 管理模块控制器（管理端） - Casbin 版 */
 export default new Elysia({ tags: ['管理 - RBAC权限'] })
   .use(authPlugin())
   .use(rbacPlugin())

@@ -1,7 +1,3 @@
-/**
- * 会话管理 - 内存中管理登录 token，同时持久化到数据库
- */
-
 import { randomBytes } from 'crypto'
 import { where } from '@pkg/ssql'
 import { model, type SessionRow, type SessionInsert, type SessionUpdate } from '@/core/model'

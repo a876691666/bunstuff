@@ -1,8 +1,3 @@
-/**
- * Seed 管理控制器（管理端）
- * 从 modules/seed/index.ts 迁移
- */
-
 import { Elysia, t } from 'elysia'
 import * as seedService from '@/services/seed'
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/services/response'

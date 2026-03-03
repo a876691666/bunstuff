@@ -1,10 +1,3 @@
-/**
- * VIP 插件 - VIP 等级和资源限制校验中间件
- * 从 modules/vip/main/plugin.ts 迁移
- *
- * 默认不启用，通过路由配置 vip.scope 来启用 VIP 检查
- */
-
 import { Elysia } from 'elysia'
 import * as vipService from '@/services/vip'
 

@@ -1,7 +1,3 @@
-/**
- * 角色服务（简化版：无继承）
- */
-
 import type { Insert, Update } from '@/packages/orm'
 import { model } from '@/core/model'
 import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '@/core/crud'

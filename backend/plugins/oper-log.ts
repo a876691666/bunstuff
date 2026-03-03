@@ -1,12 +1,3 @@
-/**
- * 操作日志插件 - 提供操作日志自动记录能力
- * 从 modules/system/oper-log/plugin.ts 迁移
- *
- * 支持两种使用方式：
- * 1. 自动记录：通过路由配置 detail.operLog 自动记录
- * 2. 手动记录：在路由中调用 operLog.log()
- */
-
 import { Elysia } from 'elysia'
 import * as operLogService from '@/services/oper-log'
 import type { OperType } from '@/services/oper-log'

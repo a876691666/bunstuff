@@ -1,8 +1,3 @@
-/**
- * 字典管理控制器（管理端）
- * 从 modules/system/dict/api_admin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as dictService from '@/services/dict'
 import { idParams, query } from '@/packages/route-model'

@@ -1,12 +1,3 @@
-/**
- * RBAC 缓存层
- *
- * 委托 Casbin 服务处理权限/数据域策略，
- * 本地缓存角色对象和菜单对象。
- * 菜单从模块配置（config.ts）收集，不再依赖数据库表。
- * 菜单可见性从角色权限编码自动派生（无需 role_menu 表）。
- */
-
 import { model } from '@/core/model'
 import { type ResolvedMenu, collectAllMenus } from '@/core/policy'
 import { allConfigs } from '@/_generated/configs.generated'

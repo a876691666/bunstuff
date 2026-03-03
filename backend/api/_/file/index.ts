@@ -7,7 +7,6 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { filePlugin } from '@/plugins/file'
 
-/** 文件客户端控制器 */
 export default new Elysia({ tags: ['客户端 - 文件'] })
   .use(authPlugin())
   .use(rbacPlugin())

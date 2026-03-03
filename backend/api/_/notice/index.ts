@@ -13,7 +13,6 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { noticePlugin } from '@/plugins/notice'
 
-/** 通知公告客户端控制器 */
 export default new Elysia({ tags: ['客户端 - 通知公告'] })
   .use(authPlugin())
   .use(rbacPlugin())

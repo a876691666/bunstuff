@@ -1,7 +1,3 @@
-/**
- * 定时任务插件 - 提供任务触发能力
- */
-
 import { Elysia } from 'elysia'
 import * as jobService from '@/services/job'
 import type { JobResult } from '@/services/job'

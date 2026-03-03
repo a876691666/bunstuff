@@ -1,8 +1,3 @@
-/**
- * 登录日志插件 - 提供登录日志记录能力
- * 从 modules/system/login-log/plugin.ts 迁移
- */
-
 import { Elysia } from 'elysia'
 import * as loginLogService from '@/services/login-log'
 import type { LoginAction } from '@/services/login-log'
