@@ -11,6 +11,9 @@
 			"name": "dev",
 			"program": "index.ts",
 			"cwd": "${workspaceFolder}/backend",
+			"env": {
+				"BUNSTUFF_DEV": "1"
+			},
 			"stopOnEntry": false,
 			"watchMode": true,
 			"preLaunchTask": "generate"

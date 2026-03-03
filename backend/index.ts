@@ -14,8 +14,10 @@ import { rateLimitPlugin } from '@/plugins/rate-limit'
 import * as jobService from '@/services/job'
 import { runSeeds } from '@/core/seed'
 
+const rootPath = Bun.env.BUNSTUFF_DEV ? resolve(process.cwd(), '..') : process.cwd()
+
 // 自动创建必要目录
-const uploadsDir = resolve(process.cwd(), 'uploads')
+const uploadsDir = resolve(rootPath, 'uploads')
 if (!existsSync(uploadsDir)) {
   mkdirSync(uploadsDir, { recursive: true })
   console.log('📁 Created uploads directory')
@@ -109,25 +111,25 @@ const app = new Elysia()
   // 配置前端静态文件服务
   .use(
     staticPlugin({
-      assets: resolve(process.cwd(), 'client'),
+      assets: resolve(rootPath, 'client'),
       prefix: '/',
       alwaysStatic: true,
       indexHTML: false,
       ignorePatterns: ['/api', '/uploads', '/openapi', '/_admin'],
     }),
   )
-  .get('/*', (c) => Bun.file(resolve(process.cwd(), 'client', 'index.html')))
+  .get('/*', (c) => Bun.file(resolve(rootPath, 'client', 'index.html')))
   .use(
     staticPlugin({
-      assets: resolve(process.cwd(), 'frontend'),
+      assets: resolve(rootPath, 'frontend'),
       prefix: '/_admin',
       alwaysStatic: true,
       indexHTML: false,
       ignorePatterns: ['/api', '/uploads', '/openapi'],
     }),
   )
-  .get('/_admin', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
-  .get('/_admin/*', (c) => Bun.file(resolve(process.cwd(), 'frontend', 'index.html')))
+  .get('/_admin', (c) => Bun.file(resolve(rootPath, 'frontend', 'index.html')))
+  .get('/_admin/*', (c) => Bun.file(resolve(rootPath, 'frontend', 'index.html')))
   // 全局使用自定义的限流插件，应用于所有路由
   .use(rateLimitPlugin())
   .get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
