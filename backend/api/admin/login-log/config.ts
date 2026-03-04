@@ -11,12 +11,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['loginLog:admin:list', 'loginLog:admin:read'],
   },
-  scopes: [
-    { role: 'user', table: 'login_log', permission: 'loginLog:admin:list', rule: 'userId = $auth.userId', description: '仅查看本人登录日志' },
-    { role: 'user', table: 'login_log', permission: 'loginLog:admin:read', rule: 'userId = $auth.userId', description: '仅查看本人登录日志' },
-  ],
   menus: [
     { name: '日志管理', path: '/log', icon: 'log', type: 1, sort: 6 },
     { name: '登录日志', path: '/log/login', parent: '/log', component: 'admin/system/LoginLogs', icon: 'login', sort: 2, permCode: 'loginLog:admin:list' },

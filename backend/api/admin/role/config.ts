@@ -13,13 +13,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['role:admin:list', 'role:admin:tree', 'role:admin:read'],
   },
-  scopes: [
-    { role: 'user', table: 'role', permission: 'role:admin:list', rule: 'status = 1', description: '仅查看启用角色' },
-    { role: 'user', table: 'role', permission: 'role:admin:tree', rule: 'status = 1', description: '仅查看启用角色' },
-    { role: 'user', table: 'role', permission: 'role:admin:read', rule: 'status = 1', description: '仅查看启用角色' },
-  ],
   menus: [
     { name: '系统管理', path: '/system', icon: 'setting', type: 1, sort: 1 },
     { name: '角色管理', path: '/system/roles', parent: '/system', component: 'admin/system/Roles', icon: 'peoples', sort: 2, permCode: 'role:admin:list' },

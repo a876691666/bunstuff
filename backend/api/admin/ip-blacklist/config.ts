@@ -12,12 +12,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['rateLimit:admin:blacklist:list', 'rateLimit:admin:blacklist:read'],
   },
-  scopes: [
-    { role: 'user', table: 'ip_blacklist', permission: 'rateLimit:admin:blacklist:list', rule: 'status = 1', description: '仅查看生效中黑名单' },
-    { role: 'user', table: 'ip_blacklist', permission: 'rateLimit:admin:blacklist:read', rule: 'status = 1', description: '仅查看生效中黑名单' },
-  ],
   menus: [
     { name: '限流保护', path: '/rate-limit', icon: 'shield', type: 1, sort: 8 },
     { name: 'IP黑名单', path: '/rate-limit/blacklist', parent: '/rate-limit', component: 'admin/rate-limit/IpBlacklist', icon: 'lock', sort: 2, permCode: 'rateLimit:admin:blacklist:list' },

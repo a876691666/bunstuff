@@ -12,13 +12,10 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['config:admin:list', 'config:admin:read'],
   },
   scopes: [
     { role: 'admin', table: 'sys_config', permission: 'config:admin:update', rule: 'isBuiltin = 0', description: '管理员不可修改内置配置' },
     { role: 'admin', table: 'sys_config', permission: 'config:admin:delete', rule: 'isBuiltin = 0', description: '管理员不可删除内置配置' },
-    { role: 'user', table: 'sys_config', permission: 'config:admin:list', rule: 'isBuiltin = 1', description: '仅查看内置公共配置' },
-    { role: 'user', table: 'sys_config', permission: 'config:admin:read', rule: 'isBuiltin = 1', description: '仅查看内置公共配置' },
   ],
   menus: [
     { name: '系统管理', path: '/system', icon: 'setting', type: 1, sort: 1 },

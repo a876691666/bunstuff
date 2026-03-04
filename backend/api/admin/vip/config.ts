@@ -29,17 +29,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': [
-      'vip:admin:tier:list', 'vip:admin:tier:read',
-      'vip:admin:user:list', 'vip:admin:user:read',
-    ],
   },
-  scopes: [
-    { role: 'user', table: 'vip_tier', permission: 'vip:admin:tier:list', rule: 'status = 1', description: '仅查看启用VIP等级' },
-    { role: 'user', table: 'vip_tier', permission: 'vip:admin:tier:read', rule: 'status = 1', description: '仅查看启用VIP等级' },
-    { role: 'user', table: 'user_vip', permission: 'vip:admin:user:list', rule: 'userId = $auth.userId', description: '仅查看本人VIP信息' },
-    { role: 'user', table: 'user_vip', permission: 'vip:admin:user:read', rule: 'userId = $auth.userId', description: '仅查看本人VIP信息' },
-  ],
   menus: [
     { name: 'VIP管理', path: '/vip', icon: 'vip', type: 1, sort: 3, redirect: '/vip/tiers' },
     { name: 'VIP等级', path: '/vip/tiers', parent: '/vip', component: 'admin/vip/Tiers', icon: 'tier', sort: 1, permCode: 'vip:admin:tier:list' },

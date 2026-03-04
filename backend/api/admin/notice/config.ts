@@ -12,13 +12,10 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['notice:admin:list', 'notice:admin:read'],
   },
   scopes: [
     { role: 'admin', table: 'notice', permission: 'notice:admin:update', rule: 'createBy = $auth.userId', description: '管理员只能修改自己的通知' },
     { role: 'admin', table: 'notice', permission: 'notice:admin:delete', rule: 'createBy = $auth.userId', description: '管理员只能删除自己的通知' },
-    { role: 'user', table: 'notice', permission: 'notice:admin:list', rule: 'status = 1', description: '仅查看已发布通知' },
-    { role: 'user', table: 'notice', permission: 'notice:admin:read', rule: 'status = 1', description: '仅查看已发布通知' },
   ],
   menus: [
     { name: '通知公告', path: '/notice', icon: 'notice', type: 1, sort: 4, redirect: '/notice/list' },

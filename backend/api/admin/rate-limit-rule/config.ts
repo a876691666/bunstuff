@@ -12,12 +12,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['rateLimit:admin:rule:list', 'rateLimit:admin:rule:read'],
   },
-  scopes: [
-    { role: 'user', table: 'rate_limit_rule', permission: 'rateLimit:admin:rule:list', rule: 'status = 1', description: '仅查看启用限流规则' },
-    { role: 'user', table: 'rate_limit_rule', permission: 'rateLimit:admin:rule:read', rule: 'status = 1', description: '仅查看启用限流规则' },
-  ],
   menus: [
     { name: '限流保护', path: '/rate-limit', icon: 'shield', type: 1, sort: 8, redirect: '/rate-limit/rules' },
     { name: '限流规则', path: '/rate-limit/rules', parent: '/rate-limit', component: 'admin/rate-limit/RateLimitRules', icon: 'setting', sort: 1, permCode: 'rateLimit:admin:rule:list' },

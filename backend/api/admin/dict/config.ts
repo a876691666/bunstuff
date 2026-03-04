@@ -17,17 +17,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': [
-      'dict:admin:type:list', 'dict:admin:type:read',
-      'dict:admin:data:list', 'dict:admin:data:read',
-    ],
   },
-  scopes: [
-    { role: 'user', table: 'dict_type', permission: 'dict:admin:type:list', rule: 'status = 1', description: '仅查看启用字典类型' },
-    { role: 'user', table: 'dict_type', permission: 'dict:admin:type:read', rule: 'status = 1', description: '仅查看启用字典类型' },
-    { role: 'user', table: 'dict_data', permission: 'dict:admin:data:list', rule: 'status = 1', description: '仅查看启用字典数据' },
-    { role: 'user', table: 'dict_data', permission: 'dict:admin:data:read', rule: 'status = 1', description: '仅查看启用字典数据' },
-  ],
   menus: [
     { name: '系统管理', path: '/system', icon: 'setting', type: 1, sort: 1 },
     { name: '字典类型', path: '/system/dict-types', parent: '/system', component: 'admin/system/DictTypes', icon: 'dict', sort: 6, permCode: 'dict:admin:type:list' },

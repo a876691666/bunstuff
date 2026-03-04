@@ -11,12 +11,7 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['jobLog:admin:list', 'jobLog:admin:read'],
   },
-  scopes: [
-    { role: 'user', table: 'job_log', permission: 'jobLog:admin:list', rule: 'status = 1', description: '仅查看成功任务日志' },
-    { role: 'user', table: 'job_log', permission: 'jobLog:admin:read', rule: 'status = 1', description: '仅查看成功任务日志' },
-  ],
   menus: [
     { name: '日志管理', path: '/log', icon: 'log', type: 1, sort: 6 },
     { name: '任务日志', path: '/log/job', parent: '/log', component: 'admin/job/JobLogs', icon: 'log', sort: 3, permCode: 'jobLog:admin:list' },

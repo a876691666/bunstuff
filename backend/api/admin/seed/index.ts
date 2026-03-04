@@ -1,8 +1,12 @@
 import { Elysia, t } from 'elysia'
 import * as seedService from '@/services/seed'
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/services/response'
+import { authPlugin } from '@/plugins/auth'
+import { rbacPlugin } from '@/plugins/rbac'
 
 export default new Elysia({ tags: ['管理 - Seed'] })
+  .use(authPlugin())
+  .use(rbacPlugin())
   /** 获取所有 Seed 日志 */
   .get(
     '/logs',

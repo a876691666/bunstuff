@@ -11,12 +11,9 @@ export default defineConfig({
   roles: {
     'super-admin': '*',
     'admin': '*',
-    'user': ['file:admin:list', 'file:admin:read'],
   },
   scopes: [
     { role: 'admin', table: 'sys_file', permission: 'file:admin:delete', rule: 'uploadBy = $auth.userId', description: '管理员只能删除自己的文件' },
-    { role: 'user', table: 'sys_file', permission: 'file:admin:list', rule: 'uploadBy = $auth.userId', description: '仅查看本人文件' },
-    { role: 'user', table: 'sys_file', permission: 'file:admin:read', rule: 'uploadBy = $auth.userId', description: '仅查看本人文件' },
   ],
   menus: [
     { name: '文件管理', path: '/file', icon: 'file', type: 1, sort: 5, redirect: '/file/list' },
