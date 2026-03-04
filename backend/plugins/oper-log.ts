@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
-import * as operLogService from '@/services/oper-log'
-import type { OperType } from '@/services/oper-log'
+import * as operLogService from '@/services/log/oper'
+import type { OperType } from '@/services/log/oper'
 
 /** 操作日志上下文 */
 export interface OperLogContext {

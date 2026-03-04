@@ -128,7 +128,7 @@ export default new Elysia({ tags: ['管理 - 参数配置'] })
   .post(
     '/refresh-cache',
     async () => {
-      await configService.initCache()
+      await configService.init()
       return R.success('缓存刷新成功')
     },
     {

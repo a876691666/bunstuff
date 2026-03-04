@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import * as rbacService from '@/services/rbac'
-import * as rbacCache from '@/services/rbac-cache'
+import * as rbacCache from '@/services/rbac/cache'
 import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/services/response'
 import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'

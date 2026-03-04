@@ -1,53 +1,16 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { staticPlugin } from '@elysiajs/static'
-import { createApi } from './core'
 import { openapi } from '@elysiajs/openapi'
-import { mkdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
-import * as session from '@/services/session'
-import * as rbacService from '@/services/rbac'
-import * as dictService from '@/services/dict'
-import * as configService from '@/services/sys-config'
-import * as rateLimitService from '@/services/rate-limit'
 import { rateLimitPlugin } from '@/plugins/rate-limit'
-import * as jobService from '@/services/job'
-import { runSeeds } from '@/core/seed'
+import { bootstrap, printServerUrls } from '@/core/bootstrap'
 
-const rootPath = Bun.env.BUNSTUFF_DEV ? resolve(process.cwd(), '..') : process.cwd()
+// ===== 执行初始化流程：目录 → Seeds → Services → API =====
+const { api, rootPath } = await bootstrap()
 
-// 自动创建必要目录
+// ===== 构建 Elysia 应用并启动 =====
 const uploadsDir = resolve(rootPath, 'uploads')
-if (!existsSync(uploadsDir)) {
-  mkdirSync(uploadsDir, { recursive: true })
-  console.log('📁 Created uploads directory')
-}
-
-// 从环境变量或命令行参数读取配置
-const SEED_AUTO_RUN = process.env.SEED_AUTO_RUN === 'true' || Bun.argv.includes('--seed')
-
-// ===== 阶段1: 执行 Seed（确保数据库基础数据就绪） =====
-await runSeeds({ autoRun: SEED_AUTO_RUN || true })
-
-// ===== 阶段2: 初始化所有缓存（基于 seed 后的数据） =====
-await session.init()
-
-await rbacService.init()
-console.log('✅ RBAC cache initialized')
-
-await dictService.initCache()
-console.log('✅ Dict cache initialized')
-
-await configService.initCache()
-console.log('✅ Config cache initialized')
-
-await rateLimitService.initCache()
-console.log('✅ RateLimit cache initialized')
-
-// ===== 阶段3: 构建 Elysia 应用并启动 =====
-await jobService.start()
-
-const api = createApi()
 
 const app = new Elysia()
   .use(cors())
@@ -136,4 +99,4 @@ const app = new Elysia()
   .use(api)
   .listen(3000)
 
-console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
+printServerUrls(app.server?.hostname ?? 'localhost', app.server?.port ?? 3000)

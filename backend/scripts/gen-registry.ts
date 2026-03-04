@@ -121,6 +121,31 @@ export async function generateRegistry(backendDir?: string) {
   }
   apiFiles.sort((a, b) => a.file.localeCompare(b.file))
 
+  // ===== 4. 扫描 services 中导出 init 函数的文件 =====
+  // 扫描 services/*.ts（扁平文件）和 services/*/index.ts（文件夹入口）
+  const servicesDir = join(dir, 'services')
+  const services: { file: string; varName: string; name: string }[] = []
+
+  const servicePaths = [
+    ...Array.from(new Glob('*.ts').scanSync({ cwd: servicesDir })),
+    ...Array.from(new Glob('*/index.ts').scanSync({ cwd: servicesDir })),
+  ]
+
+  for (const file of servicePaths) {
+    const normalFile = file.replace(/\\/g, '/')
+    const content = await Bun.file(join(servicesDir, normalFile)).text()
+    // 匹配 export async function init 或 export function init
+    if (!/export\s+(async\s+)?function\s+init\s*\(/.test(content)) continue
+    // services/rate-limit.ts → "rate-limit", services/rbac/index.ts → "rbac"
+    const name = normalFile.replace(/\/index\.ts$/, '').replace(/\.ts$/, '')
+    services.push({
+      file: normalFile,
+      name,
+      varName: 'svc_' + kebabToCamel(name),
+    })
+  }
+  services.sort((a, b) => a.name.localeCompare(b.name))
+
   // ===== 生成 _generated/model.generated.ts（类型定义） =====
   {
     const lines = header()
@@ -252,6 +277,26 @@ export async function generateRegistry(backendDir?: string) {
     await Bun.write(join(generatedDir, 'configs.generated.ts'), lines.join('\n'))
     console.log(
       `✅ Generated config registry → _generated/configs.generated.ts (${configFiles.length} configs)`,
+    )
+  }
+
+  // ===== 生成 _generated/services.generated.ts（Service init 注册表） =====
+  {
+    const lines = header()
+    for (const { name, varName } of services) {
+      lines.push(`import { init as ${varName} } from '@/services/${name}'`)
+    }
+    lines.push('')
+    lines.push('// Service 初始化注册表 — 自动生成自 services{/}*.ts（导出 init 函数的文件）')
+    lines.push('export const serviceInits: { name: string; init: () => Promise<void> | void }[] = [')
+    for (const { name, varName } of services) {
+      lines.push(`  { name: '${name}', init: ${varName} },`)
+    }
+    lines.push(']')
+    lines.push('')
+    await Bun.write(join(generatedDir, 'services.generated.ts'), lines.join('\n'))
+    console.log(
+      `✅ Generated service inits → _generated/services.generated.ts (${services.length} services)`,
     )
   }
 }

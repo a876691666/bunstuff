@@ -116,8 +116,8 @@ export function getHandlerNames(): string[] {
 
 // ============ 调度器 ============
 
-/** 启动调度器 */
-export async function start() {
+/** 初始化调度器 */
+export async function init() {
   if (started) return
   started = true
 
@@ -127,7 +127,6 @@ export async function start() {
   for (const job of jobs) {
     scheduleJob(job)
   }
-  console.log(`✅ Job scheduler started: ${jobs.length} jobs`)
 }
 
 /** 停止调度器 */

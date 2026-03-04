@@ -63,7 +63,6 @@ for (const mod of seedModules) {
 // 拓扑排序后注册
 const sorted = topoSort(allSeeds)
 seedService.registerMany(sorted)
-console.log(`✅ Seeds registered (${sorted.length} from registry)`)
 
 /** Seed 模块配置 */
 export interface SeedModuleOptions {
@@ -73,14 +72,15 @@ export interface SeedModuleOptions {
 
 /**
  * 执行 Seeds（注册已在模块加载时通过 glob 自动完成）
+ * 返回执行结果供 bootstrap 统一打印
  */
 export async function runSeeds(options: SeedModuleOptions = {}) {
   if (options.autoRun) {
     try {
-      await seedService.autoRun()
-      console.log('✅ Seeds executed')
+      return await seedService.autoRun()
     } catch (err) {
-      console.error('[Seed] 自动执行失败:', err)
+      console.error('[Seed] 自动执行失败 auto-run failed:', err)
     }
   }
+  return null
 }

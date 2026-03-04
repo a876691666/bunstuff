@@ -1,7 +1,7 @@
 import type { Insert, Update } from '@/packages/orm'
 import { model } from '@/core/model'
 import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '@/core/crud'
-import { reload } from '@/services/rbac-cache'
+import { reload } from './cache'
 
 const Role = model.role
 const User = model.users

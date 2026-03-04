@@ -1,8 +1,8 @@
 import { type ResolvedMenu } from '@/core/policy'
 import { model } from '@/core/model'
-import * as casbin from '@/services/casbin'
-import * as rbacCache from '@/services/rbac-cache'
-import type { CachedRole } from '@/services/rbac-cache'
+import * as casbin from './casbin'
+import * as rbacCache from './cache'
+import type { CachedRole } from './cache'
 
 const User = model.users
 

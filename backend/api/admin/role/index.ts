@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import * as roleService from '@/services/role'
+import * as roleService from '@/services/rbac/role'
 import { query, tree } from '@/packages/route-model'
 import {
   R,

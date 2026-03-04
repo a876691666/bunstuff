@@ -22,6 +22,7 @@ m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
 let enforcer: Enforcer | null = null
 let lastUpdated: Date | null = null
+let initialized = false
 
 /** 所有权限定义（来自策略文件，只读） */
 let allPermissionDefs: PermissionDef[] = []
@@ -35,6 +36,8 @@ function getEnforcer(): Enforcer {
 
 /** 初始化 Casbin enforcer 并从策略文件加载全部策略 */
 export async function init(): Promise<void> {
+  if (initialized) return
+  initialized = true
   const m = newModel()
   m.loadModelFromText(CASBIN_MODEL)
   enforcer = await newEnforcer(m)
@@ -51,8 +54,6 @@ export async function reload(): Promise<void> {
 
 async function loadPolicies(): Promise<void> {
   const e = getEnforcer()
-  console.log('[Casbin] 开始加载策略...')
-  const start = Date.now()
 
   // 清空现有策略
   e.clearPolicy()
@@ -68,10 +69,6 @@ async function loadPolicies(): Promise<void> {
   }
 
   lastUpdated = new Date()
-  const elapsed = Date.now() - start
-  console.log(
-    `[Casbin] 策略加载完成: ${policies.length} 条策略 (来自 ${allConfigs.length} 个模块), 耗时 ${elapsed}ms`,
-  )
 }
 
 // ============ 权限检查 ============

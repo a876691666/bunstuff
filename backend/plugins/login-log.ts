@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
-import * as loginLogService from '@/services/login-log'
-import type { LoginAction } from '@/services/login-log'
+import * as loginLogService from '@/services/log/login'
+import type { LoginAction } from '@/services/log/login'
 
 /** 登录日志上下文 */
 export interface LoginLogContext {

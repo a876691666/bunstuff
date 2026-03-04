@@ -125,7 +125,6 @@ async function cleanupDatabase(): Promise<number> {
 export async function init(): Promise<void> {
   if (initialized) return
 
-  console.log('📦 正在从数据库加载会话数据...')
   const now = new Date()
 
   // 先清理数据库中的过期会话
@@ -150,7 +149,6 @@ export async function init(): Promise<void> {
   }
 
   initialized = true
-  console.log(`✅ 已加载 ${rows.length} 个会话到内存`)
 }
 
 /** 创建会话 */

@@ -1,7 +1,7 @@
 import { model } from '@/core/model'
 import { type ResolvedMenu, collectAllMenus } from '@/core/policy'
 import { allConfigs } from '@/_generated/configs.generated'
-import * as casbin from '@/services/casbin'
+import * as casbin from './casbin'
 import type { Row } from '@/packages/orm'
 
 const Role = model.role

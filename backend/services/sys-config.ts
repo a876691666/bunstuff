@@ -17,7 +17,7 @@ async function reloadCache() {
   }
 }
 
-export async function initCache() {
+export async function init() {
   if (initialized) return
   await reloadCache()
   initialized = true

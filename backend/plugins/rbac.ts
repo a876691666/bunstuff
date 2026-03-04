@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
-import * as casbin from '@/services/casbin'
-import * as rbacCache from '@/services/rbac-cache'
+import * as casbin from '@/services/rbac/casbin'
+import * as rbacCache from '@/services/rbac/cache'
 
 /** RBAC Scope 配置 */
 export interface RbacScope {

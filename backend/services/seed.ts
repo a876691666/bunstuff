@@ -126,19 +126,6 @@ export async function resetSeed(name: string): Promise<boolean> {
   return false
 }
 
-export async function autoRun(): Promise<void> {
-  console.log('[Seed] 开始自动执行 Seeds...')
-  const result = await runAll(false)
-  console.log(
-    `[Seed] 执行完成: 总计 ${result.total}, 成功 ${result.success}, 失败 ${result.failed}`,
-  )
-  for (const r of result.results) {
-    if (r.skipped) {
-      console.log(`  - ${r.name}: 跳过（已执行）`)
-    } else if (r.success) {
-      console.log(`  - ${r.name}: ✓ 成功`)
-    } else {
-      console.log(`  - ${r.name}: ✗ 失败 - ${r.message}`)
-    }
-  }
+export async function autoRun() {
+  return await runAll(false)
 }

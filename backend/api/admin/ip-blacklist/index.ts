@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
-import * as rateLimitService from '@/services/rate-limit'
+import * as blacklistService from '@/services/rate-limit/blacklist'
+import { rateLimitCache } from '@/services/rate-limit'
 import { idParams, query } from '@/packages/route-model'
 import {
   R,
@@ -23,12 +24,12 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .get(
     '/',
     async (ctx) => {
-      const result = await rateLimitService.findAllBlacklist(ctx.query, ctx)
+      const result = await blacklistService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
       query: query(),
-      response: { 200: PagedResponse(rateLimitService.getBlacklistSchema(), 'IP黑名单列表') },
+      response: { 200: PagedResponse(blacklistService.getSchema(), 'IP黑名单列表') },
       detail: {
         summary: '获取IP黑名单列表',
         description: '分页获取IP黑名单\n\n🔐 **所需权限**: `rateLimit:admin:blacklist:list`',
@@ -42,14 +43,14 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .get(
     '/:id',
     async (ctx) => {
-      const data = await rateLimitService.findBlacklistById(ctx.params.id, ctx)
+      const data = await blacklistService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('黑名单记录')
       return R.ok(data)
     },
     {
       params: idParams({ label: 'IP黑名单ID' }),
       response: {
-        200: SuccessResponse(rateLimitService.getBlacklistSchema(), 'IP黑名单详情'),
+        200: SuccessResponse(blacklistService.getSchema(), 'IP黑名单详情'),
         404: ErrorResponse,
       },
       detail: {
@@ -65,9 +66,9 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .post(
     '/',
     async (ctx) => {
-      const existing = await rateLimitService.findByIp(ctx.body.ip)
+      const existing = await blacklistService.findByIp(ctx.body.ip)
       if (existing) return R.badRequest('该IP已在黑名单中')
-      const data = await rateLimitService.createBlacklist(
+      const data = await blacklistService.create(
         {
           ...ctx.body,
           source: 'manual',
@@ -78,12 +79,12 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
       return R.ok(data, '添加成功')
     },
     {
-      body: rateLimitService.getBlacklistSchema({
+      body: blacklistService.getSchema({
         exclude: ['id', 'source', 'ruleId', 'triggerCount'],
         required: ['ip'],
       }),
       response: {
-        200: SuccessResponse(rateLimitService.getBlacklistSchema(), '新增的黑名单记录'),
+        200: SuccessResponse(blacklistService.getSchema(), '新增的黑名单记录'),
         400: ErrorResponse,
       },
       detail: {
@@ -100,19 +101,19 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .put(
     '/:id',
     async (ctx) => {
-      const existing = await rateLimitService.findBlacklistById(ctx.params.id, ctx)
+      const existing = await blacklistService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('黑名单记录')
-      const data = await rateLimitService.updateBlacklist(ctx.params.id, ctx.body, ctx)
+      const data = await blacklistService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
       params: idParams({ label: 'IP黑名单ID' }),
-      body: rateLimitService.getBlacklistSchema({
+      body: blacklistService.getSchema({
         exclude: ['id', 'source', 'ruleId', 'triggerCount'],
         partial: true,
       }),
       response: {
-        200: SuccessResponse(rateLimitService.getBlacklistSchema(), '更新后的黑名单记录'),
+        200: SuccessResponse(blacklistService.getSchema(), '更新后的黑名单记录'),
         404: ErrorResponse,
       },
       detail: {
@@ -129,9 +130,9 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .delete(
     '/:id',
     async (ctx) => {
-      const existing = await rateLimitService.findBlacklistById(ctx.params.id, ctx)
+      const existing = await blacklistService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('黑名单记录')
-      await rateLimitService.removeBlacklist(ctx.params.id, ctx)
+      await blacklistService.remove(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {
@@ -151,7 +152,7 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .post(
     '/:id/unblock',
     async ({ params }) => {
-      const result = await rateLimitService.unblock(params.id)
+      const result = await blacklistService.unblock(params.id)
       if (!result) return R.notFound('黑名单记录')
       return R.success('解封成功')
     },
@@ -172,7 +173,7 @@ export default new Elysia({ tags: ['管理 - IP黑名单'] })
   .post(
     '/reload',
     async () => {
-      await rateLimitService.rateLimitCache.reloadBlacklist()
+      await rateLimitCache.reloadBlacklist()
       return R.success('黑名单缓存已重载')
     },
     {

@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import * as jobLogService from '@/services/job-log'
+import * as jobLogService from '@/services/job/log'
 import { idParams, query } from '@/packages/route-model'
 import {
   R,

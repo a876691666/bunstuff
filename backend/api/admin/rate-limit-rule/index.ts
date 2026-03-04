@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
-import * as rateLimitService from '@/services/rate-limit'
+import * as ruleService from '@/services/rate-limit/rule'
+import { rateLimitCache, getStats } from '@/services/rate-limit'
 import { idParams, query } from '@/packages/route-model'
 import {
   R,
@@ -23,12 +24,12 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .get(
     '/',
     async (ctx) => {
-      const result = await rateLimitService.findAll(ctx.query, ctx)
+      const result = await ruleService.findAll(ctx.query, ctx)
       return R.page(result)
     },
     {
       query: query(),
-      response: { 200: PagedResponse(rateLimitService.getRuleSchema(), '限流规则列表') },
+      response: { 200: PagedResponse(ruleService.getSchema(), '限流规则列表') },
       detail: {
         summary: '获取限流规则列表',
         description: '分页获取限流规则列表\n\n🔐 **所需权限**: `rateLimit:admin:rule:list`',
@@ -42,7 +43,7 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .get(
     '/stats',
     async () => {
-      const stats = rateLimitService.getStats()
+      const stats = getStats()
       return R.ok(stats)
     },
     {
@@ -59,14 +60,14 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .get(
     '/:id',
     async (ctx) => {
-      const data = await rateLimitService.findById(ctx.params.id, ctx)
+      const data = await ruleService.findById(ctx.params.id, ctx)
       if (!data) return R.notFound('限流规则')
       return R.ok(data)
     },
     {
       params: idParams({ label: '限流规则ID' }),
       response: {
-        200: SuccessResponse(rateLimitService.getRuleSchema(), '限流规则详情'),
+        200: SuccessResponse(ruleService.getSchema(), '限流规则详情'),
         404: ErrorResponse,
       },
       detail: {
@@ -82,18 +83,18 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .post(
     '/',
     async (ctx) => {
-      const existing = await rateLimitService.findByCode(ctx.body.code)
+      const existing = await ruleService.findByCode(ctx.body.code)
       if (existing) return R.badRequest('规则编码已存在')
-      const data = await rateLimitService.create(ctx.body, ctx)
+      const data = await ruleService.create(ctx.body, ctx)
       return R.ok(data, '创建成功')
     },
     {
-      body: rateLimitService.getRuleSchema({
+      body: ruleService.getSchema({
         exclude: ['id'],
         required: ['name', 'code', 'mode', 'pathPattern'],
       }),
       response: {
-        200: SuccessResponse(rateLimitService.getRuleSchema(), '新创建的限流规则'),
+        200: SuccessResponse(ruleService.getSchema(), '新创建的限流规则'),
         400: ErrorResponse,
       },
       detail: {
@@ -110,20 +111,20 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .put(
     '/:id',
     async (ctx) => {
-      const existing = await rateLimitService.findById(ctx.params.id, ctx)
+      const existing = await ruleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('限流规则')
       if (ctx.body.code && ctx.body.code !== existing.code) {
-        const codeExists = await rateLimitService.findByCode(ctx.body.code)
+        const codeExists = await ruleService.findByCode(ctx.body.code)
         if (codeExists) return R.badRequest('规则编码已存在')
       }
-      const data = await rateLimitService.update(ctx.params.id, ctx.body, ctx)
+      const data = await ruleService.update(ctx.params.id, ctx.body, ctx)
       return R.ok(data, '更新成功')
     },
     {
       params: idParams({ label: '限流规则ID' }),
-      body: rateLimitService.getRuleSchema({ exclude: ['id'], partial: true }),
+      body: ruleService.getSchema({ exclude: ['id'], partial: true }),
       response: {
-        200: SuccessResponse(rateLimitService.getRuleSchema(), '更新后的限流规则'),
+        200: SuccessResponse(ruleService.getSchema(), '更新后的限流规则'),
         400: ErrorResponse,
         404: ErrorResponse,
       },
@@ -141,9 +142,9 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .delete(
     '/:id',
     async (ctx) => {
-      const existing = await rateLimitService.findById(ctx.params.id, ctx)
+      const existing = await ruleService.findById(ctx.params.id, ctx)
       if (!existing) return R.notFound('限流规则')
-      await rateLimitService.remove(ctx.params.id, ctx)
+      await ruleService.remove(ctx.params.id, ctx)
       return R.success('删除成功')
     },
     {
@@ -163,7 +164,7 @@ export default new Elysia({ tags: ['管理 - 限流规则'] })
   .post(
     '/reload',
     async () => {
-      await rateLimitService.rateLimitCache.reloadRules()
+      await rateLimitCache.reloadRules()
       return R.success('缓存已重载')
     },
     {
