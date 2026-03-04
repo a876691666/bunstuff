@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'login-log',
+  name: '管理 - 登录日志',
+  description: '登录日志管理接口',
   permissions: [
     { code: 'loginLog:admin:list', name: '查看登录日志列表', description: '获取登录日志列表' },
     { code: 'loginLog:admin:read', name: '查看登录日志详情', description: '获取登录日志详情' },

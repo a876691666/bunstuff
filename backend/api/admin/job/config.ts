@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'job',
+  name: '管理 - 定时任务',
+  description: '定时任务管理接口',
   permissions: [
     { code: 'job:admin:list', name: '查看任务列表', description: '获取定时任务列表' },
     { code: 'job:admin:read', name: '查看任务详情', description: '获取定时任务详情' },

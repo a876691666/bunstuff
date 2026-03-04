@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'file',
+  name: '管理 - 文件管理',
+  description: '文件上传和管理接口',
   permissions: [
     { code: 'file:admin:list', name: '查看文件列表', description: '获取文件列表' },
     { code: 'file:admin:read', name: '查看文件详情', description: '获取文件详情' },

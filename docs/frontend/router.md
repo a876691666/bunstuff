@@ -6,13 +6,13 @@
 
 ## 📋 静态路由
 
-| 路径 | 组件 | 说明 |
-|------|------|------|
-| `/login` | `Login.vue` | 登录/注册页 |
-| `/dashboard` | `Dashboard.vue` | 仪表盘首页 |
-| `/profile` | `Profile.vue` | 个人资料 |
-| `/change-password` | `ChangePassword.vue` | 修改密码 |
-| `/:pathMatch(.*)*` | `NotFound.vue` | 404 兜底页 |
+| 路径               | 组件                 | 说明        |
+| ------------------ | -------------------- | ----------- |
+| `/login`           | `Login.vue`          | 登录/注册页 |
+| `/dashboard`       | `Dashboard.vue`      | 仪表盘首页  |
+| `/profile`         | `Profile.vue`        | 个人资料    |
+| `/change-password` | `ChangePassword.vue` | 修改密码    |
+| `/:pathMatch(.*)*` | `NotFound.vue`       | 404 兜底页  |
 
 ```ts
 const staticRoutes: RouteRecordRaw[] = [
@@ -20,18 +20,26 @@ const staticRoutes: RouteRecordRaw[] = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/auth/Login.vue'),
-    meta: { requiresAuth: false }
+    meta: { requiresAuth: false },
   },
   {
     path: '/',
     component: AdminLayout,
     children: [
-      { path: 'dashboard', name: 'Dashboard', component: () => import('../views/dashboard/Index.vue') },
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/dashboard/Index.vue'),
+      },
       { path: 'profile', name: 'Profile', component: () => import('../views/auth/Profile.vue') },
-      { path: 'change-password', name: 'ChangePassword', component: () => import('../views/auth/ChangePassword.vue') },
-    ]
+      {
+        path: 'change-password',
+        name: 'ChangePassword',
+        component: () => import('../views/auth/ChangePassword.vue'),
+      },
+    ],
   },
-  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/NotFound.vue') }
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/NotFound.vue') },
 ]
 ```
 
@@ -41,11 +49,11 @@ const staticRoutes: RouteRecordRaw[] = [
 
 ### 菜单类型
 
-| type | 含义 | 路由处理 |
-|------|------|----------|
-| 1 | 目录 | 生成嵌套路由容器 |
-| 2 | 页面 | 生成叶子路由，懒加载对应组件 |
-| 3 | 按钮 | **跳过**，不生成路由 |
+| type | 含义 | 路由处理                     |
+| ---- | ---- | ---------------------------- |
+| 1    | 目录 | 生成嵌套路由容器             |
+| 2    | 页面 | 生成叶子路由，懒加载对应组件 |
+| 3    | 按钮 | **跳过**，不生成路由         |
 
 ### 生成流程
 
@@ -79,16 +87,17 @@ function resolveComponent(path: string) {
 ```ts
 function generateRoutes(menuTree: MenuItem[]): RouteRecordRaw[] {
   return menuTree
-    .filter(item => item.type !== 3) // 跳过按钮类型
-    .map(item => {
+    .filter((item) => item.type !== 3) // 跳过按钮类型
+    .map((item) => {
       const route: RouteRecordRaw = {
         path: item.path,
         name: item.name,
         meta: { title: item.title, icon: item.icon },
-        component: item.type === 1
-          ? () => import('../layouts/RouterView.vue')  // 目录 → 容器
-          : resolveComponent(item.component),           // 页面 → 实际组件
-        children: item.children ? generateRoutes(item.children) : []
+        component:
+          item.type === 1
+            ? () => import('../layouts/RouterView.vue') // 目录 → 容器
+            : resolveComponent(item.component), // 页面 → 实际组件
+        children: item.children ? generateRoutes(item.children) : [],
       }
       return route
     })

@@ -7,7 +7,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { filePlugin } from '@/plugins/file'
 
-export default new Elysia({ tags: ['客户端 - 文件'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())

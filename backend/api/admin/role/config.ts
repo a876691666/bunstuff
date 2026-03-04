@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'role',
+  name: '管理 - 角色',
+  description: '角色管理接口',
   permissions: [
     { code: 'role:admin:list', name: '查看角色列表', description: '获取角色列表' },
     { code: 'role:admin:tree', name: '查看角色树', description: '获取角色树形结构' },

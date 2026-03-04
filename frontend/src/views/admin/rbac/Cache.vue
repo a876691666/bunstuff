@@ -116,9 +116,7 @@ onMounted(() => {
             <NDescriptionsItem label="Casbin策略总数">
               {{ cacheStatus.policyCount }} 条
             </NDescriptionsItem>
-            <NDescriptionsItem label="权限策略">
-              {{ cacheStatus.permCount }} 条
-            </NDescriptionsItem>
+            <NDescriptionsItem label="权限策略"> {{ cacheStatus.permCount }} 条 </NDescriptionsItem>
             <NDescriptionsItem label="数据域策略">
               {{ cacheStatus.scopeCount }} 条
             </NDescriptionsItem>

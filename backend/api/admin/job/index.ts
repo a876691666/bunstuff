@@ -12,7 +12,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { operLogPlugin } from '@/plugins/oper-log'
 
-export default new Elysia({ tags: ['管理 - 定时任务'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   .use(operLogPlugin())

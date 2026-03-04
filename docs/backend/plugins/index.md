@@ -4,19 +4,19 @@ Bunstuff 后端采用 Elysia 插件模式组织横切关注点。所有插件均
 
 ## 🎯 插件一览
 
-| 插件 | 文件 | 类型 | 注入上下文 | 说明 |
-|------|------|------|----------|------|
-| `authPlugin` | `plugins/auth.ts` | 拦截 + 注入 | `session`, `userId`, `roleId` | 认证校验 |
-| `rbacPlugin` | `plugins/rbac.ts` | 拦截 + 注入 | `dataScope` | 权限校验 |
-| `vipPlugin` | `plugins/vip.ts` | 拦截 + 注入 | `vip` | VIP 等级 / 资源检查 |
-| `operLogPlugin` | `plugins/oper-log.ts` | 钩子 + 注入 | `operLog` | 操作日志自动记录 |
-| `loginLogPlugin` | `plugins/login-log.ts` | 注入 | `loginLog` | 登录日志记录 |
-| `rateLimitPlugin` | `plugins/rate-limit.ts` | 拦截 + 注入 | `rateLimit` | 限流与黑名单 |
-| `filePlugin` | `plugins/file.ts` | 注入 | `file` | 文件读写访问 |
-| `noticePlugin` | `plugins/notice.ts` | 注入 | `notice` | 通知推送 |
-| `dictPlugin` | `plugins/dict.ts` | 注入 | `dict` | 字典数据 |
-| `configPlugin` | `plugins/config.ts` | 注入 | `config` | 系统配置 |
-| `jobPlugin` | `plugins/job.ts` | 注入 | `job` | 任务触发 |
+| 插件              | 文件                    | 类型        | 注入上下文                    | 说明                |
+| ----------------- | ----------------------- | ----------- | ----------------------------- | ------------------- |
+| `authPlugin`      | `plugins/auth.ts`       | 拦截 + 注入 | `session`, `userId`, `roleId` | 认证校验            |
+| `rbacPlugin`      | `plugins/rbac.ts`       | 拦截 + 注入 | `dataScope`                   | 权限校验            |
+| `vipPlugin`       | `plugins/vip.ts`        | 拦截 + 注入 | `vip`                         | VIP 等级 / 资源检查 |
+| `operLogPlugin`   | `plugins/oper-log.ts`   | 钩子 + 注入 | `operLog`                     | 操作日志自动记录    |
+| `loginLogPlugin`  | `plugins/login-log.ts`  | 注入        | `loginLog`                    | 登录日志记录        |
+| `rateLimitPlugin` | `plugins/rate-limit.ts` | 拦截 + 注入 | `rateLimit`                   | 限流与黑名单        |
+| `filePlugin`      | `plugins/file.ts`       | 注入        | `file`                        | 文件读写访问        |
+| `noticePlugin`    | `plugins/notice.ts`     | 注入        | `notice`                      | 通知推送            |
+| `dictPlugin`      | `plugins/dict.ts`       | 注入        | `dict`                        | 字典数据            |
+| `configPlugin`    | `plugins/config.ts`     | 注入        | `config`                      | 系统配置            |
+| `jobPlugin`       | `plugins/job.ts`        | 注入        | `job`                         | 任务触发            |
 
 ## 📦 插件分类
 
@@ -53,7 +53,7 @@ app.get('/download/:id', async ({ file, params }) => {
 // operLogPlugin 在请求结束后自动记录日志
 app.use(operLogPlugin())
 app.post('/users', handler, {
-  detail: { operLog: { title: '用户管理', type: 'create' } }
+  detail: { operLog: { title: '用户管理', type: 'create' } },
 })
 ```
 
@@ -71,15 +71,15 @@ app.post('/sensitive-action', handler, {
       scope: {
         permissions: ['action:admin:create'],
         roles: ['super-admin', 'admin'],
-      }
+      },
     },
     // VIP 配置
     vip: {
-      scope: { minTier: 'pro', resource: 'api_calls' }
+      scope: { minTier: 'pro', resource: 'api_calls' },
     },
     // 操作日志配置
     operLog: { title: '敏感操作', type: 'create' },
-  }
+  },
 })
 ```
 
@@ -92,20 +92,20 @@ app.post('/sensitive-action', handler, {
 ```typescript
 const app = new Elysia()
   // 1. 全局中间件
-  .use(rateLimitPlugin())        // 限流（最外层）
+  .use(rateLimitPlugin()) // 限流（最外层）
   // 2. 认证相关
-  .use(authPlugin())             // 认证
-  .use(loginLogPlugin())         // 登录日志
+  .use(authPlugin()) // 认证
+  .use(loginLogPlugin()) // 登录日志
   // 3. 权限相关
-  .use(rbacPlugin())             // RBAC 权限
-  .use(vipPlugin())              // VIP 校验
+  .use(rbacPlugin()) // RBAC 权限
+  .use(vipPlugin()) // VIP 校验
   // 4. 功能插件
-  .use(operLogPlugin())          // 操作日志
-  .use(filePlugin())             // 文件
-  .use(noticePlugin())           // 通知
-  .use(dictPlugin())             // 字典
-  .use(configPlugin())           // 配置
-  .use(jobPlugin())              // 任务
+  .use(operLogPlugin()) // 操作日志
+  .use(filePlugin()) // 文件
+  .use(noticePlugin()) // 通知
+  .use(dictPlugin()) // 字典
+  .use(configPlugin()) // 配置
+  .use(jobPlugin()) // 任务
 ```
 
 ::: warning 注意

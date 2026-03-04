@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'oper-log',
+  name: '管理 - 操作日志',
+  description: '操作日志管理接口',
   permissions: [
     { code: 'operLog:admin:list', name: '查看操作日志列表', description: '获取操作日志列表' },
     { code: 'operLog:admin:read', name: '查看操作日志详情', description: '获取操作日志详情' },

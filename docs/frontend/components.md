@@ -23,37 +23,31 @@
 />
 ```
 
-| Props | 类型 | 说明 |
-|-------|------|------|
-| `columns` | `DataTableColumn[]` | 表格列定义 |
-| `data` | `any[]` | 表格数据 |
-| `loading` | `boolean` | 加载状态 |
-| `total` | `number` | 总记录数 |
-| `page` | `number` | 当前页码 |
-| `pageSize` | `number` | 每页条数 |
+| Props      | 类型                | 说明       |
+| ---------- | ------------------- | ---------- |
+| `columns`  | `DataTableColumn[]` | 表格列定义 |
+| `data`     | `any[]`             | 表格数据   |
+| `loading`  | `boolean`           | 加载状态   |
+| `total`    | `number`            | 总记录数   |
+| `page`     | `number`            | 当前页码   |
+| `pageSize` | `number`            | 每页条数   |
 
 ### FormModal
 
 表单弹窗，封装 `NModal` + `NForm`，内置提交和关闭逻辑。
 
 ```vue
-<FormModal
-  :visible="visible"
-  :title="title"
-  :loading="loading"
-  @close="close"
-  @submit="save"
->
+<FormModal :visible="visible" :title="title" :loading="loading" @close="close" @submit="save">
   <NFormItem label="用户名" path="username">
     <NInput v-model:value="formData.username" />
   </NFormItem>
 </FormModal>
 ```
 
-| Props | 类型 | 说明 |
-|-------|------|------|
-| `visible` | `boolean` | 是否显示 |
-| `title` | `string` | 弹窗标题 |
+| Props     | 类型      | 说明         |
+| --------- | --------- | ------------ |
+| `visible` | `boolean` | 是否显示     |
+| `title`   | `string`  | 弹窗标题     |
 | `loading` | `boolean` | 提交加载状态 |
 
 ### FormField
@@ -86,10 +80,7 @@
 确认操作按钮，点击后弹出确认对话框，确认后执行操作。
 
 ```vue
-<ConfirmButton
-  content="确定要删除该记录吗？"
-  @confirm="handleDelete(row.id)"
->
+<ConfirmButton content="确定要删除该记录吗？" @confirm="handleDelete(row.id)">
   <NButton type="error" size="small">删除</NButton>
 </ConfirmButton>
 ```
@@ -103,10 +94,7 @@ CRUD 组件是通用组件的上层封装，专为增删改查场景优化。
 整合 PageTable，自动关联 `useTable` composable。
 
 ```vue
-<CrudTable
-  :use-table="table"
-  :columns="columns"
->
+<CrudTable :use-table="table" :columns="columns">
   <template #toolbar>
     <NButton @click="modal.open()">新增</NButton>
   </template>
@@ -125,9 +113,9 @@ CRUD 组件是通用组件的上层封装，专为增删改查场景优化。
 <CrudSearch :fields="searchFields" :use-table="table" />
 ```
 
-| Props | 类型 | 说明 |
-|-------|------|------|
-| `fields` | `SearchField[]` | 搜索字段配置 |
+| Props      | 类型             | 说明                  |
+| ---------- | ---------------- | --------------------- |
+| `fields`   | `SearchField[]`  | 搜索字段配置          |
 | `useTable` | `UseTableReturn` | table composable 实例 |
 
 ### CrudModal

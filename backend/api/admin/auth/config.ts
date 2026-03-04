@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'auth',
+  name: '管理 - 认证',
+  description: '认证管理相关接口',
   permissions: [
     { code: 'auth:admin:stats', name: '查看认证统计', description: '获取认证统计信息' },
     { code: 'auth:admin:sessions', name: '查看会话列表', description: '获取所有会话列表' },

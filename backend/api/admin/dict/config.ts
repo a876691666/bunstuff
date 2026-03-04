@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'dict',
+  name: '管理 - 字典',
+  description: '字典类型和数据管理接口',
   permissions: [
     { code: 'dict:admin:type:list', name: '查看字典类型列表', description: '获取字典类型列表' },
     { code: 'dict:admin:type:read', name: '查看字典类型详情', description: '获取字典类型详情' },

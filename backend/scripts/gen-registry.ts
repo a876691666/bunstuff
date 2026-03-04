@@ -91,10 +91,11 @@ export async function generateRegistry(backendDir?: string) {
       continue
     }
     // className 基于 tableName 生成（下划线分隔 → PascalCase + Schema）
-    const className = tableName
-      .split('_')
-      .map((w) => w[0]!.toUpperCase() + w.slice(1))
-      .join('') + 'Schema'
+    const className =
+      tableName
+        .split('_')
+        .map((w) => w[0]!.toUpperCase() + w.slice(1))
+        .join('') + 'Schema'
     schemas.push({ folder, tableName, className })
   }
   schemas.sort((a, b) => a.tableName.localeCompare(b.tableName))
@@ -107,7 +108,12 @@ export async function generateRegistry(backendDir?: string) {
     const normalFile = file.replace(/\\/g, '/')
     const folder = normalFile.replace(/\/seed\.ts$/, '')
     // varName: 将路径分段用 _ 连接并 camelCase，如 topology/project → seed_topology_project
-    const varName = 'seed_' + folder.split('/').map((seg) => kebabToCamel(seg)).join('_')
+    const varName =
+      'seed_' +
+      folder
+        .split('/')
+        .map((seg) => kebabToCamel(seg))
+        .join('_')
     seeds.push({ folder, varName })
   }
   seeds.sort((a, b) => a.folder.localeCompare(b.folder))
@@ -184,14 +190,20 @@ export async function generateRegistry(backendDir?: string) {
       lines.push('')
     }
     await Bun.write(join(generatedDir, 'model.generated.ts'), lines.join('\n'))
-    console.log(`✅ Generated model types → _generated/model.generated.ts (${schemas.length} models)`)
+    console.log(
+      `✅ Generated model types → _generated/model.generated.ts (${schemas.length} models)`,
+    )
   }
 
   // ===== 生成 _generated/schemas.generated.ts（运行时 Schema 导入） =====
   {
     const lines = header()
     for (const { folder, className } of schemas) {
-      const varTable = folder.split('/').map((seg) => kebabToCamel(seg)).join('_') + '_tableName'
+      const varTable =
+        folder
+          .split('/')
+          .map((seg) => kebabToCamel(seg))
+          .join('_') + '_tableName'
       lines.push(
         `import ${className}, { tableName as ${varTable} } from '@/models/${folder}/schema'`,
       )
@@ -200,7 +212,11 @@ export async function generateRegistry(backendDir?: string) {
     lines.push('// Schema 模块注册表 — 自动生成自 models/**/schema.ts')
     lines.push('export const schemaModules = [')
     for (const { className, folder } of schemas) {
-      const varTable = folder.split('/').map((seg) => kebabToCamel(seg)).join('_') + '_tableName'
+      const varTable =
+        folder
+          .split('/')
+          .map((seg) => kebabToCamel(seg))
+          .join('_') + '_tableName'
       lines.push(`  { tableName: ${varTable}, Schema: ${className} },`)
     }
     lines.push(']')
@@ -247,13 +263,16 @@ export async function generateRegistry(backendDir?: string) {
     lines.push(']')
     lines.push('')
     await Bun.write(join(generatedDir, 'seeds.generated.ts'), lines.join('\n'))
-    console.log(`✅ Generated seed registry → _generated/seeds.generated.ts (${seeds.length} seeds)`)
+    console.log(
+      `✅ Generated seed registry → _generated/seeds.generated.ts (${seeds.length} seeds)`,
+    )
   }
 
   // ===== 生成 _generated/configs.generated.ts（模块配置导入注册表） =====
   {
     const configGlob = new Glob('**/config.ts')
-    const configFiles: { file: string; varName: string }[] = []
+    const moduleConfigs: { file: string; varName: string; dir: string }[] = []
+    const groupConfigs: { file: string; varName: string; dir: string }[] = []
 
     for await (const file of configGlob.scan({ cwd: apiDir })) {
       const normalFile = file.replace(/\\/g, '/')
@@ -264,28 +283,54 @@ export async function generateRegistry(backendDir?: string) {
           .split('/')
           .map((seg) => (seg === '_' ? '$' : kebabToCamel(seg)))
           .join('_')
-      configFiles.push({ file: normalFile, varName })
+      // 生成与路由 prefix 匹配的 dir key（去掉 _ 段）
+      const dir = normalFile
+        .replace(/\/config\.ts$/, '')
+        .split('/')
+        .filter((seg) => seg !== '_')
+        .join('/')
+
+      // 读取文件内容判断是 GroupConfig 还是 ModuleConfig
+      const content = await Bun.file(join(apiDir, file)).text()
+      const isGroup = content.includes('defineGroupConfig')
+
+      if (isGroup) {
+        groupConfigs.push({ file: normalFile, varName, dir })
+      } else {
+        moduleConfigs.push({ file: normalFile, varName, dir })
+      }
     }
-    configFiles.sort((a, b) => a.file.localeCompare(b.file))
+    moduleConfigs.sort((a, b) => a.file.localeCompare(b.file))
+    groupConfigs.sort((a, b) => a.file.localeCompare(b.file))
+    const allConfigFiles = [...moduleConfigs, ...groupConfigs].sort((a, b) =>
+      a.file.localeCompare(b.file),
+    )
 
     const lines = header()
-    lines.push("import type { ModuleConfig } from '@/core/policy'")
+    lines.push("import type { ModuleConfig, GroupConfig } from '@/core/policy'")
     lines.push('')
-    for (const { file, varName } of configFiles) {
+    for (const { file, varName } of allConfigFiles) {
       const importPath = file.replace(/\.ts$/, '')
       lines.push(`import ${varName} from '@/api/${importPath}'`)
     }
     lines.push('')
-    lines.push('// 模块配置注册表 — 自动生成自 api{/}**/config.ts')
+    lines.push('// 模块配置注册表 — 自动生成自 api{/}**/config.ts（不含分组配置）')
     lines.push('export const allConfigs: ModuleConfig[] = [')
-    for (const { varName } of configFiles) {
+    for (const { varName } of moduleConfigs) {
       lines.push(`  ${varName},`)
     }
     lines.push(']')
     lines.push('')
+    lines.push('// 配置目录映射（含分组配置）— 用于 OpenAPI Tag 生成')
+    lines.push('export const configByDir: Record<string, ModuleConfig | GroupConfig> = {')
+    for (const { varName, dir } of allConfigFiles) {
+      lines.push(`  '${dir}': ${varName},`)
+    }
+    lines.push('}')
+    lines.push('')
     await Bun.write(join(generatedDir, 'configs.generated.ts'), lines.join('\n'))
     console.log(
-      `✅ Generated config registry → _generated/configs.generated.ts (${configFiles.length} configs)`,
+      `✅ Generated config registry → _generated/configs.generated.ts (${moduleConfigs.length} modules, ${groupConfigs.length} groups)`,
     )
   }
 
@@ -297,7 +342,9 @@ export async function generateRegistry(backendDir?: string) {
     }
     lines.push('')
     lines.push('// Service 初始化注册表 — 自动生成自 services{/}*.ts（导出 init 函数的文件）')
-    lines.push('export const serviceInits: { name: string; init: () => Promise<void> | void }[] = [')
+    lines.push(
+      'export const serviceInits: { name: string; init: () => Promise<void> | void }[] = [',
+    )
     for (const { name, varName } of services) {
       lines.push(`  { name: '${name}', init: ${varName} },`)
     }

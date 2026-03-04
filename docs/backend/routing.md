@@ -52,14 +52,14 @@ import { authPlugin } from '@/plugins/auth'
 
 export function createApi() {
   return new Elysia({ prefix: '/api/_' })
-    .use(authPlugin)          // 认证插件（注入 session/userId/roleId）
-    .use(authRoute)           // /api/_/auth
-    .use(rbacRoute)           // /api/_/rbac
-    .use(dictRoute)           // /api/_/dict
-    .use(configRoute)         // /api/_/config
-    .use(noticeRoute)         // /api/_/notice
-    .use(fileRoute)           // /api/_/file
-    .use(crudRoute)           // /api/_/crud
+    .use(authPlugin) // 认证插件（注入 session/userId/roleId）
+    .use(authRoute) // /api/_/auth
+    .use(rbacRoute) // /api/_/rbac
+    .use(dictRoute) // /api/_/dict
+    .use(configRoute) // /api/_/config
+    .use(noticeRoute) // /api/_/notice
+    .use(fileRoute) // /api/_/file
+    .use(crudRoute) // /api/_/crud
 }
 ```
 
@@ -70,16 +70,16 @@ export function createApi() {
 ```typescript
 export function createAdminApi() {
   return new Elysia({ prefix: '/api/admin' })
-    .use(authPlugin)          // 认证插件
-    .use(rbacPlugin)          // 权限插件（校验权限 + 注入数据权限）
-    .use(operLogPlugin)       // 操作日志插件
-    .use(usersRoute)          // /api/admin/users
-    .use(roleRoute)           // /api/admin/role
-    .use(menuRoute)           // /api/admin/menu
-    .use(rbacRoute)           // /api/admin/rbac
-    .use(dictRoute)           // /api/admin/dict
-    .use(configRoute)         // /api/admin/config
-    // ... 其他管理端路由
+    .use(authPlugin) // 认证插件
+    .use(rbacPlugin) // 权限插件（校验权限 + 注入数据权限）
+    .use(operLogPlugin) // 操作日志插件
+    .use(usersRoute) // /api/admin/users
+    .use(roleRoute) // /api/admin/role
+    .use(menuRoute) // /api/admin/menu
+    .use(rbacRoute) // /api/admin/rbac
+    .use(dictRoute) // /api/admin/dict
+    .use(configRoute) // /api/admin/config
+  // ... 其他管理端路由
 }
 ```
 
@@ -132,17 +132,17 @@ export function createAdminApi() {
 
 ### `detail` 配置项
 
-| 配置项 | 类型 | 说明 |
-|--------|------|------|
-| `tags` | `string[]` | OpenAPI 分组标签 |
-| `summary` | `string` | 接口摘要 |
-| `security` | `object[]` | 安全策略（bearerAuth） |
-| `auth.skipAuth` | `boolean` | 跳过认证检查 |
-| `rbac.permissions` | `string[]` | 需要的权限列表 |
-| `rbac.roles` | `string[]` | 需要的角色列表 |
-| `rbac.scope` | `string` | 数据权限标识 |
-| `operLog.title` | `string` | 操作日志模块名 |
-| `operLog.type` | `string` | 操作类型：list/create/update/delete/export |
+| 配置项             | 类型       | 说明                                       |
+| ------------------ | ---------- | ------------------------------------------ |
+| `tags`             | `string[]` | OpenAPI 分组标签                           |
+| `summary`          | `string`   | 接口摘要                                   |
+| `security`         | `object[]` | 安全策略（bearerAuth）                     |
+| `auth.skipAuth`    | `boolean`  | 跳过认证检查                               |
+| `rbac.permissions` | `string[]` | 需要的权限列表                             |
+| `rbac.roles`       | `string[]` | 需要的角色列表                             |
+| `rbac.scope`       | `string`   | 数据权限标识                               |
+| `operLog.title`    | `string`   | 操作日志模块名                             |
+| `operLog.type`     | `string`   | 操作类型：list/create/update/delete/export |
 
 ## 🔄 Schema 自动生成
 
@@ -180,15 +180,15 @@ export function createAdminApi() {
 
 文档按标签分组，覆盖所有客户端和管理端接口：
 
-| 分组 | 说明 |
-|------|------|
-| 客户端 - 认证 | 登录、注册、登出等 |
-| 客户端 - RBAC权限 | 当前用户权限查询 |
-| 客户端 - 字典 | 字典数据查询 |
-| 客户端 - 通知公告 | 通知查询、SSE |
-| 客户端 - 文件 | 文件上传下载 |
-| 管理 - 用户 | 用户 CRUD |
-| 管理 - 角色 | 角色 CRUD |
-| 管理 - 菜单 | 菜单 CRUD |
-| 管理 - 权限 | 权限管理 |
-| ... | 共 25+ 分组 |
+| 分组              | 说明               |
+| ----------------- | ------------------ |
+| 客户端 - 认证     | 登录、注册、登出等 |
+| 客户端 - RBAC权限 | 当前用户权限查询   |
+| 客户端 - 字典     | 字典数据查询       |
+| 客户端 - 通知公告 | 通知查询、SSE      |
+| 客户端 - 文件     | 文件上传下载       |
+| 管理 - 用户       | 用户 CRUD          |
+| 管理 - 角色       | 角色 CRUD          |
+| 管理 - 菜单       | 菜单 CRUD          |
+| 管理 - 权限       | 权限管理           |
+| ...               | 共 25+ 分组        |

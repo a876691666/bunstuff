@@ -68,6 +68,10 @@ export interface ResolvedMenu {
 export interface ModuleConfig {
   /** 模块名称（用于日志和调试） */
   module: string
+  /** OpenAPI Tag 显示名称，如 '管理 - 用户' */
+  name?: string
+  /** OpenAPI Tag 描述 */
+  description?: string
   /** 权限列表 */
   permissions: PermissionDef[]
   /** 角色权限分配：'*' 表示该模块所有权限，string[] 指定具体权限编码 */
@@ -76,6 +80,19 @@ export interface ModuleConfig {
   scopes?: ScopeDef[]
   /** 菜单定义（可选，扁平结构，通过 parent 关联父菜单） */
   menus?: MenuDef[]
+}
+
+/** 分组配置定义（用于父级目录如 topology/config.ts） */
+export interface GroupConfig {
+  /** 分组显示名称（用于 OpenAPI Tag） */
+  name: string
+  /** 分组描述 */
+  description?: string
+}
+
+/** 定义分组配置（类型辅助，原样返回） */
+export function defineGroupConfig(config: GroupConfig): GroupConfig {
+  return config
 }
 
 /** @deprecated 使用 ModuleConfig 代替 */
@@ -197,4 +214,48 @@ export function collectAllMenus(configs: ModuleConfig[]): ResolvedMenu[] {
       permCode: menu.permCode ?? null,
     }
   })
+}
+
+// ============ OpenAPI Tags 收集 ============
+
+/**
+ * 从 configByDir 中收集有序的 OpenAPI Tags 列表。
+ * 按目录路径排序，确保父分组在子模块之前：
+ *   【admin/topology】  → 管理 - 拓扑图（父分组）
+ *   【admin/topology/icons】  → 管理 - 拓扑图图标（子模块）
+ */
+export function collectOpenApiTags(
+  configByDir: Record<string, ModuleConfig | GroupConfig>,
+): { name: string; description?: string }[] {
+  const tags: { name: string; description?: string }[] = []
+  const seen = new Set<string>()
+
+  // 按路径排序：短路径（父级）先于长路径（子级），同级按字母序
+  const entries = Object.entries(configByDir).sort((a, b) => a[0].localeCompare(b[0]))
+  const dirs = new Set(entries.map(([dir]) => dir))
+
+  // 检测哪些目录是父级（有子目录存在于 configByDir 中）
+  const parentDirs = new Set<string>()
+  for (const dir of dirs) {
+    for (const other of dirs) {
+      if (other !== dir && other.startsWith(dir + '/')) {
+        parentDirs.add(dir)
+        break
+      }
+    }
+  }
+
+  for (const [dir, config] of entries) {
+    if (!config.name) continue
+    // 有子集的父级名称套【】括号，有父级的子集增加 >>>> 前缀
+    const isParent = parentDirs.has(dir)
+    const isChild = [...parentDirs].some((p) => dir.startsWith(p + '/'))
+    const name = isParent ? `【${config.name}】` : isChild ? `${config.name}` : config.name
+    if (!seen.has(name)) {
+      tags.push({ name, description: config.description })
+      seen.add(name)
+    }
+  }
+
+  return tags
 }

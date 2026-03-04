@@ -29,27 +29,27 @@ export default class UsersSchema extends TimestampSchema {
 
 `column` 提供以下类型构造器：
 
-| 构造器 | SQL 类型 | TypeScript 类型 | 说明 |
-|--------|---------|-----------------|------|
-| `column.string()` | `TEXT` | `string` | 字符串 |
-| `column.number()` | `INTEGER` | `number` | 数值 |
-| `column.boolean()` | `INTEGER` | `boolean` | 布尔值（0/1） |
-| `column.date()` | `TEXT` | `Date` | 日期时间 |
-| `column.blob()` | `BLOB` | `Buffer` | 二进制数据 |
+| 构造器             | SQL 类型  | TypeScript 类型 | 说明          |
+| ------------------ | --------- | --------------- | ------------- |
+| `column.string()`  | `TEXT`    | `string`        | 字符串        |
+| `column.number()`  | `INTEGER` | `number`        | 数值          |
+| `column.boolean()` | `INTEGER` | `boolean`       | 布尔值（0/1） |
+| `column.date()`    | `TEXT`    | `Date`          | 日期时间      |
+| `column.blob()`    | `BLOB`    | `Buffer`        | 二进制数据    |
 
 ## 🔗 链式修饰符
 
 每个字段支持链式调用修饰符：
 
-| 修饰符 | 说明 | 示例 |
-|--------|------|------|
-| `.primaryKey()` | 主键 | `column.number().primaryKey()` |
-| `.autoIncrement()` | 自增 | `column.number().primaryKey().autoIncrement()` |
-| `.nullable()` | 允许 NULL | `column.string().nullable()` |
-| `.unique()` | 唯一约束 | `column.string().unique()` |
-| `.default(value)` | 默认值 | `column.number().default(0)` |
-| `.description(text)` | 字段说明（用于 OpenAPI） | `column.string().description('用户名')` |
-| `.deserialize(fn)` | 写入时转换 | `column.string().deserialize(v => hash(v))` |
+| 修饰符               | 说明                     | 示例                                           |
+| -------------------- | ------------------------ | ---------------------------------------------- |
+| `.primaryKey()`      | 主键                     | `column.number().primaryKey()`                 |
+| `.autoIncrement()`   | 自增                     | `column.number().primaryKey().autoIncrement()` |
+| `.nullable()`        | 允许 NULL                | `column.string().nullable()`                   |
+| `.unique()`          | 唯一约束                 | `column.string().unique()`                     |
+| `.default(value)`    | 默认值                   | `column.number().default(0)`                   |
+| `.description(text)` | 字段说明（用于 OpenAPI） | `column.string().description('用户名')`        |
+| `.deserialize(fn)`   | 写入时转换               | `column.string().deserialize(v => hash(v))`    |
 
 ### 链式组合示例
 
@@ -61,7 +61,10 @@ email = column.string().nullable().unique().default(null).description('邮箱')
 id = column.number().primaryKey().autoIncrement().description('ID')
 
 // 写入时加密
-password = column.string().default('').description('密码')
+password = column
+  .string()
+  .default('')
+  .description('密码')
   .deserialize((v) => Bun.password.hash(v))
 ```
 
@@ -69,10 +72,10 @@ password = column.string().default('').description('密码')
 
 `TimestampSchema` 提供了常用的静态方法生成标准字段：
 
-| 方法 | 说明 | 等效写法 |
-|------|------|---------|
+| 方法                     | 说明            | 等效写法                           |
+| ------------------------ | --------------- | ---------------------------------- |
 | `Schema.status(default)` | 状态字段（0/1） | `column.number().default(default)` |
-| `Schema.sort(default)` | 排序字段 | `column.number().default(default)` |
+| `Schema.sort(default)`   | 排序字段        | `column.number().default(default)` |
 
 ```typescript
 export default class RoleSchema extends TimestampSchema {
@@ -150,6 +153,7 @@ bun run generate
 ```
 
 生成器会：
+
 1. 扫描 `models/*/schema.ts`
 2. 生成 `_generated/schemas.generated.ts`（Schema 注册表）
 3. 生成 `_generated/model.generated.ts`（TypeScript 类型定义）

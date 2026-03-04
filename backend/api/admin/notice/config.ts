@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'notice',
+  name: '管理 - 通知公告',
+  description: '通知公告管理接口',
   permissions: [
     { code: 'notice:admin:list', name: '查看通知列表', description: '获取通知列表' },
     { code: 'notice:admin:read', name: '查看通知详情', description: '获取通知详情' },

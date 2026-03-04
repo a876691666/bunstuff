@@ -6,7 +6,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { configPlugin } from '@/plugins/config'
 
-export default new Elysia({ tags: ['客户端 - 参数配置'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())

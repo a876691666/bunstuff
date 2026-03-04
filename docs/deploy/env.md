@@ -4,11 +4,11 @@ Bunstuff 通过环境变量控制运行时行为。
 
 ## 📋 变量列表
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `NODE_ENV` | `development` | 运行环境：`development` / `production` |
-| `SEED_AUTO_RUN` | `false` | 是否启动时自动执行 Seed |
-| `PORT` | `3000` | HTTP 监听端口 |
+| 变量            | 默认值        | 说明                                   |
+| --------------- | ------------- | -------------------------------------- |
+| `NODE_ENV`      | `development` | 运行环境：`development` / `production` |
+| `SEED_AUTO_RUN` | `false`       | 是否启动时自动执行 Seed                |
+| `PORT`          | `3000`        | HTTP 监听端口                          |
 
 ## 🔧 开发环境
 

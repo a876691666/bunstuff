@@ -4,12 +4,12 @@
 
 ## 📖 模块概览
 
-| 组件 | 路径 | 说明 |
-|------|------|------|
-| `authPlugin` | `plugins/auth.ts` | 全局认证中间件，注入 `session`、`userId`、`roleId` |
-| `AuthService` | `services/auth.ts` | 登录、注册、修改密码等业务逻辑 |
-| `SessionStore` | `services/session.ts` | 内存 + 数据库双层会话存储 |
-| `UserService` | `services/user.ts` | 用户 CRUD 服务（基于 `buildWhere` 数据权限） |
+| 组件           | 路径                  | 说明                                               |
+| -------------- | --------------------- | -------------------------------------------------- |
+| `authPlugin`   | `plugins/auth.ts`     | 全局认证中间件，注入 `session`、`userId`、`roleId` |
+| `AuthService`  | `services/auth.ts`    | 登录、注册、修改密码等业务逻辑                     |
+| `SessionStore` | `services/session.ts` | 内存 + 数据库双层会话存储                          |
+| `UserService`  | `services/user.ts`    | 用户 CRUD 服务（基于 `buildWhere` 数据权限）       |
 
 ## 🔌 authPlugin 认证插件
 
@@ -19,9 +19,9 @@
 
 ```typescript
 interface AuthContext {
-  session: Session | null    // 完整会话对象
-  userId: number | null      // 当前用户 ID
-  roleId: string | null      // 当前角色编码
+  session: Session | null // 完整会话对象
+  userId: number | null // 当前用户 ID
+  roleId: string | null // 当前角色编码
 }
 ```
 
@@ -56,12 +56,7 @@ interface AuthPluginOptions {
 默认排除路径：
 
 ```typescript
-const DEFAULT_EXCLUDE_PATHS = [
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/health',
-  '/'
-]
+const DEFAULT_EXCLUDE_PATHS = ['/api/auth/login', '/api/auth/register', '/api/health', '/']
 ```
 
 ### 跳过认证
@@ -72,8 +67,8 @@ const DEFAULT_EXCLUDE_PATHS = [
 app.get('/public', () => 'public data', {
   detail: {
     auth: { skipAuth: true },
-    summary: '公开接口'
-  }
+    summary: '公开接口',
+  },
 })
 ```
 
@@ -89,7 +84,7 @@ app.get('/public', () => 'public data', {
 async function login(
   username: string,
   password: string,
-  options?: { ip?: string; userAgent?: string }
+  options?: { ip?: string; userAgent?: string },
 ): Promise<LoginResult>
 ```
 
@@ -107,14 +102,14 @@ async function login(
 interface LoginResult {
   success: boolean
   message: string
-  token?: string          // 64 位随机令牌
+  token?: string // 64 位随机令牌
   user?: {
     id: number
     username: string
     nickname: string | null
     email: string | null
     avatar: string | null
-    roleId: string        // 角色编码
+    roleId: string // 角色编码
   }
 }
 ```
@@ -128,7 +123,7 @@ async function register(data: {
   nickname?: string
   email?: string
   phone?: string
-  roleId?: string         // 默认 'user'
+  roleId?: string // 默认 'user'
 }): Promise<RegisterResult>
 ```
 
@@ -140,7 +135,7 @@ async function register(data: {
 async function changePassword(
   userId: number,
   oldPassword: string,
-  newPassword: string
+  newPassword: string,
 ): Promise<{ success: boolean; message: string }>
 ```
 
@@ -160,26 +155,26 @@ async function getCurrentUser(token: string): Promise<UserInfo | null>
 
 ### 存储架构
 
-| 层级 | 数据结构 | 说明 |
-|------|----------|------|
-| 内存层 | `Map<token, Session>` | 主要读写层，O(1) 查找 |
+| 层级     | 数据结构                  | 说明                     |
+| -------- | ------------------------- | ------------------------ |
+| 内存层   | `Map<token, Session>`     | 主要读写层，O(1) 查找    |
 | 内存索引 | `Map<userId, Set<token>>` | 用户维度索引，支持踢下线 |
-| 持久层 | `session` 数据表 | 重启后可恢复 |
+| 持久层   | `session` 数据表          | 重启后可恢复             |
 
 ### 会话结构
 
 ```typescript
 interface Session {
-  id: number              // 数据库 ID
-  token: string           // 64 字符随机令牌
-  userId: number          // 用户 ID
-  username: string        // 用户名
-  roleId: string          // 角色编码
-  createdAt: Date         // 创建时间
-  expiresAt: Date         // 过期时间（默认 24 小时）
-  lastActiveAt: Date      // 最后活跃时间
-  ip?: string             // 客户端 IP
-  userAgent?: string      // 客户端 UA
+  id: number // 数据库 ID
+  token: string // 64 字符随机令牌
+  userId: number // 用户 ID
+  username: string // 用户名
+  roleId: string // 角色编码
+  createdAt: Date // 创建时间
+  expiresAt: Date // 过期时间（默认 24 小时）
+  lastActiveAt: Date // 最后活跃时间
+  ip?: string // 客户端 IP
+  userAgent?: string // 客户端 UA
 }
 ```
 
@@ -189,30 +184,30 @@ interface Session {
 import { randomBytes } from 'crypto'
 
 function generateToken(): string {
-  return randomBytes(32).toString('hex')  // 64 个十六进制字符
+  return randomBytes(32).toString('hex') // 64 个十六进制字符
 }
 ```
 
 ### 关键参数
 
-| 参数 | 值 | 说明 |
-|------|-----|------|
-| Token 长度 | 64 字符 | `randomBytes(32).toString('hex')` |
-| 默认 TTL | 24 小时 | `24 * 60 * 60 * 1000` 毫秒 |
-| 清理间隔 | 1 分钟 | `setInterval(() => cleanup(), 60_000)` |
+| 参数       | 值      | 说明                                   |
+| ---------- | ------- | -------------------------------------- |
+| Token 长度 | 64 字符 | `randomBytes(32).toString('hex')`      |
+| 默认 TTL   | 24 小时 | `24 * 60 * 60 * 1000` 毫秒             |
+| 清理间隔   | 1 分钟  | `setInterval(() => cleanup(), 60_000)` |
 
 ### 核心方法
 
-| 方法 | 说明 |
-|------|------|
-| `init()` | 启动时从数据库加载有效会话到内存 |
-| `create(data)` | 创建会话：写数据库 → 存内存 → 关联用户索引 |
-| `verify(token)` | 验证令牌：从内存查找 → 检查过期时间 → 更新活跃时间 |
-| `remove(token)` | 删除会话：清内存 → 清索引 → 删数据库 |
-| `refresh(token)` | 续期会话：重置过期时间（默认续 24h） |
-| `kickUser(userId)` | 踢用户下线：删除该用户所有会话 |
-| `kickSession(token)` | 踢指定会话下线 |
-| `cleanup()` | 清理过期会话（定时器自动执行） |
+| 方法                 | 说明                                               |
+| -------------------- | -------------------------------------------------- |
+| `init()`             | 启动时从数据库加载有效会话到内存                   |
+| `create(data)`       | 创建会话：写数据库 → 存内存 → 关联用户索引         |
+| `verify(token)`      | 验证令牌：从内存查找 → 检查过期时间 → 更新活跃时间 |
+| `remove(token)`      | 删除会话：清内存 → 清索引 → 删数据库               |
+| `refresh(token)`     | 续期会话：重置过期时间（默认续 24h）               |
+| `kickUser(userId)`   | 踢用户下线：删除该用户所有会话                     |
+| `kickSession(token)` | 踢指定会话下线                                     |
+| `cleanup()`          | 清理过期会话（定时器自动执行）                     |
 
 :::warning 注意
 `verify()` 每次调用均会异步更新 `lastActiveAt` 到数据库。这是非阻塞操作，不影响响应速度。
@@ -238,22 +233,22 @@ Argon2id 是 2015 年密码哈希竞赛的冠军算法，兼具抗 GPU 暴力破
 
 ### 客户端接口 (`/api/_/auth`)
 
-| 方法 | 路径 | 说明 | 认证 |
-|------|------|------|------|
-| `POST` | `/login` | 用户登录 | ❌ 跳过 |
-| `POST` | `/register` | 用户注册 | ❌ 跳过 |
-| `POST` | `/logout` | 用户登出 | ❌ 跳过 |
-| `GET` | `/me` | 获取当前用户信息 | ✅ |
-| `POST` | `/refresh` | 刷新令牌有效期 | ✅ |
-| `POST` | `/change-password` | 修改密码 | ✅ |
+| 方法   | 路径               | 说明             | 认证    |
+| ------ | ------------------ | ---------------- | ------- |
+| `POST` | `/login`           | 用户登录         | ❌ 跳过 |
+| `POST` | `/register`        | 用户注册         | ❌ 跳过 |
+| `POST` | `/logout`          | 用户登出         | ❌ 跳过 |
+| `GET`  | `/me`              | 获取当前用户信息 | ✅      |
+| `POST` | `/refresh`         | 刷新令牌有效期   | ✅      |
+| `POST` | `/change-password` | 修改密码         | ✅      |
 
 ### 管理端接口 (`/api/admin/auth`)
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
-| `GET` | `/admin/stats` | 获取在线统计 | `auth:admin:stats` |
-| `GET` | `/admin/sessions` | 获取所有会话 | `auth:admin:sessions` |
-| `POST` | `/admin/kick-user` | 踢用户下线 | `auth:admin:kick-user` |
+| 方法   | 路径                  | 说明           | 权限                      |
+| ------ | --------------------- | -------------- | ------------------------- |
+| `GET`  | `/admin/stats`        | 获取在线统计   | `auth:admin:stats`        |
+| `GET`  | `/admin/sessions`     | 获取所有会话   | `auth:admin:sessions`     |
+| `POST` | `/admin/kick-user`    | 踢用户下线     | `auth:admin:kick-user`    |
 | `POST` | `/admin/kick-session` | 踢指定会话下线 | `auth:admin:kick-session` |
 
 ### 登录请求示例
@@ -293,12 +288,12 @@ curl http://localhost:3000/api/_/auth/me \
 
 ```typescript
 interface OnlineStats {
-  onlineUsers: number       // 有会话的独立用户数
-  totalSessions: number     // 总有效会话数
-  activeSessions: number    // 活跃会话数（30分钟内有活动）
-  activeUsers: number       // 活跃用户数（30分钟内有活动）
-  todayNewSessions: number  // 今日新登录会话数
-  expiringSessions: number  // 即将过期会话数（1小时内）
+  onlineUsers: number // 有会话的独立用户数
+  totalSessions: number // 总有效会话数
+  activeSessions: number // 活跃会话数（30分钟内有活动）
+  activeUsers: number // 活跃用户数（30分钟内有活动）
+  todayNewSessions: number // 今日新登录会话数
+  expiringSessions: number // 即将过期会话数（1小时内）
 }
 ```
 
@@ -322,13 +317,12 @@ export async function findAll(query: PageQuery, ctx?: CrudContext) {
 
 export async function findById(id: number, ctx?: CrudContext) {
   return User.findOne({
-    where: buildWhere(User.tableName, `id = ${id}`, ctx)
+    where: buildWhere(User.tableName, `id = ${id}`, ctx),
   })
 }
 
 export async function create(data: Insert<typeof User>, ctx?: CrudContext) {
-  if (!checkCreateScope(User.tableName, data as Record<string, any>, ctx))
-    return null
+  if (!checkCreateScope(User.tableName, data as Record<string, any>, ctx)) return null
   return User.create(data)
 }
 
@@ -385,23 +379,24 @@ export const getSchema: (typeof User)['getSchema'] = User.getSchema.bind(User)
 ### 自定义 Token 提取
 
 ```typescript
-app.use(authPlugin({
-  extractToken: (request) => {
-    // 从 Cookie 中提取
-    const cookie = request.headers.get('cookie')
-    const match = cookie?.match(/token=([^;]+)/)
-    return match?.[1] ?? null
-  }
-}))
+app.use(
+  authPlugin({
+    extractToken: (request) => {
+      // 从 Cookie 中提取
+      const cookie = request.headers.get('cookie')
+      const match = cookie?.match(/token=([^;]+)/)
+      return match?.[1] ?? null
+    },
+  }),
+)
 ```
 
 ### 添加排除路径
 
 ```typescript
-app.use(authPlugin({
-  excludePaths: [
-    '/api/public/*',
-    '/api/webhook/stripe'
-  ]
-}))
+app.use(
+  authPlugin({
+    excludePaths: ['/api/public/*', '/api/webhook/stripe'],
+  }),
+)
 ```

@@ -14,7 +14,7 @@ import { vipPlugin } from '@/plugins/vip'
 import { dictPlugin } from '@/plugins/dict'
 import { operLogPlugin } from '@/plugins/oper-log'
 
-export default new Elysia({ tags: ['管理 - 字典'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())

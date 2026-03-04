@@ -4,13 +4,13 @@
 
 ## 📖 模块概览
 
-| 组件 | 路径 | 说明 |
-|------|------|------|
-| `rbacPlugin` | `plugins/rbac.ts` | 全局权限检查中间件，注入 `dataScope` |
-| `RbacService` | `services/rbac.ts` | 权限查询、菜单树、用户权限聚合 |
-| `RbacCache` | `services/rbac-cache.ts` | 角色与菜单本地缓存 |
-| `Casbin` | `services/casbin.ts` | Casbin 引擎，存储策略与数据域规则 |
-| `definePolicy` | `core/policy.ts` | 策略定义 DSL |
+| 组件           | 路径                     | 说明                                 |
+| -------------- | ------------------------ | ------------------------------------ |
+| `rbacPlugin`   | `plugins/rbac.ts`        | 全局权限检查中间件，注入 `dataScope` |
+| `RbacService`  | `services/rbac.ts`       | 权限查询、菜单树、用户权限聚合       |
+| `RbacCache`    | `services/rbac-cache.ts` | 角色与菜单本地缓存                   |
+| `Casbin`       | `services/casbin.ts`     | Casbin 引擎，存储策略与数据域规则    |
+| `definePolicy` | `core/policy.ts`         | 策略定义 DSL                         |
 
 ## 🔌 rbacPlugin 权限插件
 
@@ -54,19 +54,20 @@ app.get('/admin/users', handler, {
   detail: {
     rbac: {
       scope: {
-        permissions: ['user:admin:list'],  // 所需权限（全部满足）
-        roles: ['admin']                   // 所需角色（可选，精确匹配）
-      }
-    }
-  }
+        permissions: ['user:admin:list'], // 所需权限（全部满足）
+        roles: ['admin'], // 所需角色（可选，精确匹配）
+      },
+    },
+  },
 })
 ```
 
 :::tip 权限与角色的关系
+
 - `permissions`：通过 Casbin 检查，角色必须拥有**所有**列出的权限
 - `roles`：直接匹配角色编码，适用于需要限定特定角色的场景
 - 两者同时配置时，都需要通过才可访问
-:::
+  :::
 
 ## 📋 策略定义 (Policy)
 
@@ -84,22 +85,22 @@ export default definePolicy({
     { code: 'user:admin:delete', name: '删除用户' },
   ],
   roles: {
-    admin: '*',                            // admin 拥有本模块全部权限
-    editor: ['user:admin:list'],           // editor 仅查看
+    admin: '*', // admin 拥有本模块全部权限
+    editor: ['user:admin:list'], // editor 仅查看
   },
   scopes: [
     {
       role: 'editor',
       table: 'users',
       permission: 'user:admin:list',
-      rule: 'status = 1',                 // 仅可看到正常状态的用户
+      rule: 'status = 1', // 仅可看到正常状态的用户
       description: '编辑者仅查看正常用户',
     },
     {
       role: 'user',
       table: 'users',
       permission: 'user:admin:list',
-      rule: 'id = $auth.userId',          // 仅可看到自己
+      rule: 'id = $auth.userId', // 仅可看到自己
       description: '普通用户仅查看自己',
     },
   ],
@@ -110,24 +111,24 @@ export default definePolicy({
 
 ```typescript
 interface PolicyDefinition {
-  module: string                              // 模块名称（日志用）
-  permissions: PermissionDef[]                // 权限列表
-  roles: Record<string, '*' | string[]>       // 角色权限分配
-  scopes?: ScopeDef[]                         // 数据域规则（可选）
+  module: string // 模块名称（日志用）
+  permissions: PermissionDef[] // 权限列表
+  roles: Record<string, '*' | string[]> // 角色权限分配
+  scopes?: ScopeDef[] // 数据域规则（可选）
 }
 
 interface PermissionDef {
-  code: string           // 权限编码，如 'config:admin:list'
-  name: string           // 权限名称
-  description?: string   // 权限描述
+  code: string // 权限编码，如 'config:admin:list'
+  name: string // 权限名称
+  description?: string // 权限描述
 }
 
 interface ScopeDef {
-  role: string           // 适用角色编码
-  table: string          // 关联表名
-  permission: string     // 关联权限编码
-  rule: string           // SSQL 过滤规则
-  description?: string   // 规则描述
+  role: string // 适用角色编码
+  table: string // 关联表名
+  permission: string // 关联权限编码
+  rule: string // SSQL 过滤规则
+  description?: string // 规则描述
 }
 ```
 
@@ -135,10 +136,10 @@ interface ScopeDef {
 
 `resolvePolicies()` 将声明式策略转换为 Casbin 五元组：
 
-| 类型 | sub | dom | obj | act | eft |
-|------|-----|-----|-----|-----|-----|
-| 权限授予 | `roleCode` | `perm` | `permCode` | `allow` | `allow` |
-| 数据域 | `roleCode` | `scope` | `tableName` | `permCode` | `ssqlRule` |
+| 类型     | sub        | dom     | obj         | act        | eft        |
+| -------- | ---------- | ------- | ----------- | ---------- | ---------- |
+| 权限授予 | `roleCode` | `perm`  | `permCode`  | `allow`    | `allow`    |
+| 数据域   | `roleCode` | `scope` | `tableName` | `permCode` | `ssqlRule` |
 
 ## 🔧 Casbin 引擎
 
@@ -184,14 +185,14 @@ m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
 ### 核心方法
 
-| 方法 | 说明 |
-|------|------|
-| `enforce(roleCode, permCode)` | 检查角色是否拥有指定权限 |
-| `hasAllPermissions(roleCode, permCodes)` | 检查角色是否拥有所有权限 |
-| `hasAnyPermission(roleCode, permCodes)` | 检查角色是否拥有任一权限 |
-| `getRolePermissionCodes(roleCode)` | 获取角色的全部权限编码 |
+| 方法                                       | 说明                           |
+| ------------------------------------------ | ------------------------------ |
+| `enforce(roleCode, permCode)`              | 检查角色是否拥有指定权限       |
+| `hasAllPermissions(roleCode, permCodes)`   | 检查角色是否拥有所有权限       |
+| `hasAnyPermission(roleCode, permCodes)`    | 检查角色是否拥有任一权限       |
+| `getRolePermissionCodes(roleCode)`         | 获取角色的全部权限编码         |
 | `getRoleSsqlRules(roleCode, table, perm?)` | 获取角色在指定表上的 SSQL 规则 |
-| `getRoleScopes(roleCode)` | 获取角色的全部数据域规则 |
+| `getRoleScopes(roleCode)`                  | 获取角色的全部数据域规则       |
 
 ## 📦 RbacCache 缓存层
 
@@ -201,12 +202,12 @@ m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
 ```typescript
 interface CacheState {
-  roles: Map<string, CachedRole>    // roleId → 角色对象（含权限编码列表）
-  menus: Map<number, MenuRow>       // menuId → 菜单对象
+  roles: Map<string, CachedRole> // roleId → 角色对象（含权限编码列表）
+  menus: Map<number, MenuRow> // menuId → 菜单对象
 }
 
 interface CachedRole extends Row<typeof Role> {
-  permissionCodes: string[]         // 该角色拥有的权限编码列表
+  permissionCodes: string[] // 该角色拥有的权限编码列表
 }
 ```
 
@@ -225,21 +226,21 @@ Step 2: 向上传播
 
 ### 缓存管理
 
-| 方法 | 说明 |
-|------|------|
-| `init()` | 初始化缓存（含 Casbin 初始化） |
-| `reload()` | 重新加载缓存 |
-| `getRole(roleId)` | 查询角色 |
-| `getAllRoles()` | 获取全部角色 |
-| `getRoleMenus(roleCode)` | 获取角色可见菜单 |
-| `getStatus()` | 获取缓存统计 |
+| 方法                     | 说明                           |
+| ------------------------ | ------------------------------ |
+| `init()`                 | 初始化缓存（含 Casbin 初始化） |
+| `reload()`               | 重新加载缓存                   |
+| `getRole(roleId)`        | 查询角色                       |
+| `getAllRoles()`          | 获取全部角色                   |
+| `getRoleMenus(roleCode)` | 获取角色可见菜单               |
+| `getStatus()`            | 获取缓存统计                   |
 
 ## 🗂️ 菜单类型
 
-| 值 | 类型 | 说明 |
-|----|------|------|
-| `1` | 目录 | 菜单分组容器，不可访问 |
-| `2` | 页面 | 具体页面，可渲染路由 |
+| 值  | 类型 | 说明                               |
+| --- | ---- | ---------------------------------- |
+| `1` | 目录 | 菜单分组容器，不可访问             |
+| `2` | 页面 | 具体页面，可渲染路由               |
 | `3` | 按钮 | 页面内操作按钮，用于细粒度权限控制 |
 
 ### 菜单树结构
@@ -276,40 +277,46 @@ interface MenuTreeNode extends Row<typeof Menu> {
 
 ### Velocity 模板变量
 
-| 变量 | 说明 | 示例 |
-|------|------|------|
-| `$auth.userId` | 当前用户 ID | `1` |
-| `$auth.roleId` | 当前角色编码 | `'admin'` |
-| `$auth.roleCode` | 同 roleId | `'admin'` |
-| `$auth.username` | 当前用户名 | `'zhangsan'` |
-| `$req.params.xxx` | 路由参数 | `$req.params.id` |
-| `$req.query.xxx` | 查询参数 | `$req.query.deptId` |
-| `$req.body.xxx` | 请求体字段 | `$req.body.status` |
-| `$req.headers.xxx` | 请求头 | `$req.headers.x-tenant-id` |
+| 变量               | 说明         | 示例                       |
+| ------------------ | ------------ | -------------------------- |
+| `$auth.userId`     | 当前用户 ID  | `1`                        |
+| `$auth.roleId`     | 当前角色编码 | `'admin'`                  |
+| `$auth.roleCode`   | 同 roleId    | `'admin'`                  |
+| `$auth.username`   | 当前用户名   | `'zhangsan'`               |
+| `$req.params.xxx`  | 路由参数     | `$req.params.id`           |
+| `$req.query.xxx`   | 查询参数     | `$req.query.deptId`        |
+| `$req.body.xxx`    | 请求体字段   | `$req.body.status`         |
+| `$req.headers.xxx` | 请求头       | `$req.headers.x-tenant-id` |
 
 ### 规则示例
 
 ```typescript
 // 仅查看自己的数据
-{ rule: 'createBy = $auth.userId' }
+{
+  rule: 'createBy = $auth.userId'
+}
 
 // 仅查看本角色的数据
-{ rule: 'roleId = "$auth.roleId"' }
+{
+  rule: 'roleId = "$auth.roleId"'
+}
 
 // 仅查看启用状态
-{ rule: 'status = 1' }
+{
+  rule: 'status = 1'
+}
 
 // 组合条件
-{ rule: 'deptId = $req.params.deptId && status = 1' }
+{
+  rule: 'deptId = $req.params.deptId && status = 1'
+}
 ```
 
 ### 规则合并逻辑
 
 ```typescript
 // 多条 scope 规则用 OR 合并（满足任一规则即可）
-const scopeExpr = rendered.length === 1
-  ? rendered[0]
-  : `(${rendered.join(' || ')})`
+const scopeExpr = rendered.length === 1 ? rendered[0] : `(${rendered.join(' || ')})`
 
 // scope 与用户 filter 用 AND 合并
 if (filter) return `(${filter}) && (${scopeExpr})`
@@ -376,45 +383,45 @@ const rules = await rbacService.getRoleSsqlRules('editor', 'users', 'user:list')
 
 ### 角色管理
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
+| 方法  | 路径     | 说明         | 权限                    |
+| ----- | -------- | ------------ | ----------------------- |
 | `GET` | `/roles` | 获取角色列表 | `rbac:admin:roles-tree` |
 
 ### 角色权限
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
-| `GET` | `/roles/:roleId/permissions` | 获取角色权限列表 | `rbac:admin:role-permissions` |
-| `POST` | `/roles/:roleId/permissions/check` | 检查单个权限 | `rbac:admin:permission-check` |
-| `POST` | `/roles/:roleId/permissions/check-any` | 检查任一权限 | `rbac:admin:permission-check-any` |
-| `POST` | `/roles/:roleId/permissions/check-all` | 检查全部权限 | `rbac:admin:permission-check-all` |
+| 方法   | 路径                                   | 说明             | 权限                              |
+| ------ | -------------------------------------- | ---------------- | --------------------------------- |
+| `GET`  | `/roles/:roleId/permissions`           | 获取角色权限列表 | `rbac:admin:role-permissions`     |
+| `POST` | `/roles/:roleId/permissions/check`     | 检查单个权限     | `rbac:admin:permission-check`     |
+| `POST` | `/roles/:roleId/permissions/check-any` | 检查任一权限     | `rbac:admin:permission-check-any` |
+| `POST` | `/roles/:roleId/permissions/check-all` | 检查全部权限     | `rbac:admin:permission-check-all` |
 
 ### 角色菜单
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
-| `GET` | `/roles/:roleId/menus` | 获取角色菜单（平铺） | `rbac:admin:role-menus` |
-| `GET` | `/roles/:roleId/menus/tree` | 获取角色菜单树 | `rbac:admin:role-menus-tree` |
+| 方法  | 路径                        | 说明                 | 权限                         |
+| ----- | --------------------------- | -------------------- | ---------------------------- |
+| `GET` | `/roles/:roleId/menus`      | 获取角色菜单（平铺） | `rbac:admin:role-menus`      |
+| `GET` | `/roles/:roleId/menus/tree` | 获取角色菜单树       | `rbac:admin:role-menus-tree` |
 
 ### 数据域
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
-| `GET` | `/roles/:roleId/scopes` | 获取角色数据域规则 | `rbac:admin:role-scopes` |
+| 方法  | 路径                           | 说明                   | 权限                     |
+| ----- | ------------------------------ | ---------------------- | ------------------------ |
+| `GET` | `/roles/:roleId/scopes`        | 获取角色数据域规则     | `rbac:admin:role-scopes` |
 | `GET` | `/roles/:roleId/scopes/:table` | 获取角色在指定表的规则 | `rbac:admin:role-scopes` |
 
 ### 用户权限
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
+| 方法  | 路径                        | 说明                 | 权限                          |
+| ----- | --------------------------- | -------------------- | ----------------------------- |
 | `GET` | `/user-permissions/:userId` | 获取用户完整权限信息 | `rbac:admin:user-permissions` |
 
 ### 缓存管理
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
-| `GET` | `/cache/status` | 获取缓存状态 | `rbac:admin:cache` |
-| `POST` | `/cache/reload` | 刷新缓存 | `rbac:admin:cache-reload` |
+| 方法   | 路径            | 说明         | 权限                      |
+| ------ | --------------- | ------------ | ------------------------- |
+| `GET`  | `/cache/status` | 获取缓存状态 | `rbac:admin:cache`        |
+| `POST` | `/cache/reload` | 刷新缓存     | `rbac:admin:cache-reload` |
 
 ## 🔄 权限检查完整流程
 

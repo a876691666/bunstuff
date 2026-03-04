@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'users',
+  name: '管理 - 用户',
+  description: '用户管理接口',
   permissions: [
     { code: 'user:admin:list', name: '查看用户列表', description: '获取用户列表' },
     { code: 'user:admin:read', name: '查看用户详情', description: '获取用户详情' },

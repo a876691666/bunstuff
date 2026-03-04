@@ -11,7 +11,7 @@ import {
 import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 
-export default new Elysia({ tags: ['管理 - 操作日志'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   .get(

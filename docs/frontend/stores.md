@@ -8,13 +8,13 @@
 
 ### State 定义
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `user` | `UserInfo \| null` | 当前登录用户信息 |
-| `permissions` | `string[]` | 用户权限标识列表 |
-| `menuTree` | `MenuItem[]` | 后端返回的菜单树 |
-| `isLoggedIn` | `boolean` | 是否已登录（computed，基于 token 是否存在） |
-| `initialized` | `boolean` | 是否已初始化（用户信息 + 权限 + 菜单已加载） |
+| 字段          | 类型               | 说明                                         |
+| ------------- | ------------------ | -------------------------------------------- |
+| `user`        | `UserInfo \| null` | 当前登录用户信息                             |
+| `permissions` | `string[]`         | 用户权限标识列表                             |
+| `menuTree`    | `MenuItem[]`       | 后端返回的菜单树                             |
+| `isLoggedIn`  | `boolean`          | 是否已登录（computed，基于 token 是否存在）  |
+| `initialized` | `boolean`          | 是否已初始化（用户信息 + 权限 + 菜单已加载） |
 
 ### Token 存储
 
@@ -25,7 +25,9 @@ Token 存储在 `localStorage` 中，通过 HttpClient 的 `setToken` / `getToke
 localStorage.setItem('token', response.token)
 
 // 请求时自动携带
-headers: { Authorization: `Bearer ${getToken()}` }
+headers: {
+  Authorization: `Bearer ${getToken()}`
+}
 
 // 登出时清除
 localStorage.removeItem('token')
@@ -37,17 +39,17 @@ localStorage.removeItem('token')
 
 ### Methods 一览
 
-| 方法 | 说明 | 调用的 API |
-|------|------|-----------|
-| `login(credentials)` | 用户登录，保存 token | `POST /auth/login` |
-| `register(data)` | 用户注册 | `POST /auth/register` |
-| `logout()` | 登出，清除所有状态 | `POST /auth/logout` |
-| `fetchUserInfo()` | 获取当前用户信息 | `GET /auth/me` |
-| `fetchPermissions()` | 获取权限标识列表 | `GET /rbac/my/permissions` |
-| `fetchMenuTree()` | 获取菜单树并注册动态路由 | `GET /rbac/my/menus/tree` |
-| `hasPermission(perm)` | 检查是否拥有某个权限 | - |
-| `hasAnyPermission(perms)` | 检查是否拥有任一权限 | - |
-| `init()` | 初始化：依次加载用户信息、权限、菜单 | - |
+| 方法                      | 说明                                 | 调用的 API                 |
+| ------------------------- | ------------------------------------ | -------------------------- |
+| `login(credentials)`      | 用户登录，保存 token                 | `POST /auth/login`         |
+| `register(data)`          | 用户注册                             | `POST /auth/register`      |
+| `logout()`                | 登出，清除所有状态                   | `POST /auth/logout`        |
+| `fetchUserInfo()`         | 获取当前用户信息                     | `GET /auth/me`             |
+| `fetchPermissions()`      | 获取权限标识列表                     | `GET /rbac/my/permissions` |
+| `fetchMenuTree()`         | 获取菜单树并注册动态路由             | `GET /rbac/my/menus/tree`  |
+| `hasPermission(perm)`     | 检查是否拥有某个权限                 | -                          |
+| `hasAnyPermission(perms)` | 检查是否拥有任一权限                 | -                          |
+| `init()`                  | 初始化：依次加载用户信息、权限、菜单 | -                          |
 
 ### 核心方法实现
 
@@ -90,9 +92,20 @@ export const useAuthStore = defineStore('auth', () => {
   // ...
 
   return {
-    user, permissions, menuTree, isLoggedIn, initialized,
-    login, register, logout, fetchUserInfo, fetchPermissions,
-    fetchMenuTree, hasPermission, hasAnyPermission, init
+    user,
+    permissions,
+    menuTree,
+    isLoggedIn,
+    initialized,
+    login,
+    register,
+    logout,
+    fetchUserInfo,
+    fetchPermissions,
+    fetchMenuTree,
+    hasPermission,
+    hasAnyPermission,
+    init,
   }
 })
 ```
@@ -105,7 +118,7 @@ function hasPermission(perm: string): boolean {
 }
 
 function hasAnyPermission(perms: string[]): boolean {
-  return perms.some(p => permissions.value.includes(p))
+  return perms.some((p) => permissions.value.includes(p))
 }
 ```
 
@@ -114,9 +127,7 @@ function hasAnyPermission(perms: string[]): boolean {
 ```vue
 <template>
   <!-- 按钮级权限控制 -->
-  <NButton v-if="authStore.hasPermission('user:create')" @click="handleCreate">
-    新增用户
-  </NButton>
+  <NButton v-if="authStore.hasPermission('user:create')" @click="handleCreate"> 新增用户 </NButton>
 </template>
 ```
 

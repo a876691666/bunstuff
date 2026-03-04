@@ -93,9 +93,9 @@ export function printServerUrls(hostname: string, port: number) {
   if (network) {
     console.log(`  ${BOLD}➜${RESET}  ${DIM}Network 网络: ${network}/${RESET}`)
   }
-  console.log(`  ${BOLD}➜${RESET}  ${DIM}API 接口:     ${local}/api/${RESET}`)
-  console.log(`  ${BOLD}➜${RESET}  ${DIM}Admin 管理:   ${local}/_admin/${RESET}`)
-  console.log(`  ${BOLD}➜${RESET}  ${DIM}Docs 文档:    ${local}/openapi/${RESET}`)
+  console.log(`  ${BOLD}➜${RESET}  ${DIM}API 接口:     ${local}/api${RESET}`)
+  console.log(`  ${BOLD}➜${RESET}  ${DIM}Admin 管理:   ${local}/_admin${RESET}`)
+  console.log(`  ${BOLD}➜${RESET}  ${DIM}Docs 文档:    ${local}/openapi${RESET}`)
   console.log()
 }
 

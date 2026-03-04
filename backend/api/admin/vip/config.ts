@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'vip',
+  name: '管理 - VIP',
+  description: 'VIP等级和资源管理接口',
   permissions: [
     // VIP 等级
     { code: 'vip:admin:tier:list', name: '查看VIP等级列表', description: '获取VIP等级列表' },

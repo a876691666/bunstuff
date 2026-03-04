@@ -6,7 +6,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { dictPlugin } from '@/plugins/dict'
 
-export default new Elysia({ tags: ['客户端 - 字典'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   .use(vipPlugin())

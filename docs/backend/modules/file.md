@@ -4,13 +4,13 @@
 
 ## 🎯 功能概述
 
-| 功能 | 说明 |
-|------|------|
-| **文件上传** | 支持单文件/多文件上传，自动生成唯一文件名 |
-| **文件下载** | 支持文件下载和流式读取 |
-| **MD5 去重** | 相同文件不重复存储 |
-| **按日期分目录** | 文件按 `YYYY/MM` 自动归档 |
-| **多存储方式** | 本地存储 / S3 兼容云存储 |
+| 功能             | 说明                                      |
+| ---------------- | ----------------------------------------- |
+| **文件上传**     | 支持单文件/多文件上传，自动生成唯一文件名 |
+| **文件下载**     | 支持文件下载和流式读取                    |
+| **MD5 去重**     | 相同文件不重复存储                        |
+| **按日期分目录** | 文件按 `YYYY/MM` 自动归档                 |
+| **多存储方式**   | 本地存储 / S3 兼容云存储                  |
 
 ## 🔌 filePlugin
 
@@ -18,12 +18,12 @@
 
 ### 注入上下文
 
-| 方法 | 说明 |
-|------|------|
-| `file.uploadLocal(file)` | 上传文件到本地存储 |
-| `file.getFile(id)` | 获取文件元信息 |
+| 方法                      | 说明               |
+| ------------------------- | ------------------ |
+| `file.uploadLocal(file)`  | 上传文件到本地存储 |
+| `file.getFile(id)`        | 获取文件元信息     |
 | `file.getFileContent(id)` | 获取文件内容（流） |
-| `file.getFileUrl(id)` | 获取文件访问 URL |
+| `file.getFileUrl(id)`     | 获取文件访问 URL   |
 
 ### 使用示例
 
@@ -41,20 +41,20 @@
 
 ## 🗄️ SysFile 模型
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `id` | `number` | 主键 |
-| `originalName` | `string` | 原始文件名 |
-| `fileName` | `string` | 存储文件名 |
-| `filePath` | `string` | 存储路径 |
-| `fileSize` | `number` | 文件大小（字节） |
-| `mimeType` | `string` | MIME 类型 |
-| `md5` | `string` | 文件 MD5 哈希 |
-| `storageType` | `string` | 存储类型：`local` / `s3` |
-| `url` | `string` | 文件访问 URL |
-| `createdBy` | `number` | 上传者 ID |
-| `createdAt` | `datetime` | 上传时间 |
-| `updatedAt` | `datetime` | 更新时间 |
+| 字段           | 类型       | 说明                     |
+| -------------- | ---------- | ------------------------ |
+| `id`           | `number`   | 主键                     |
+| `originalName` | `string`   | 原始文件名               |
+| `fileName`     | `string`   | 存储文件名               |
+| `filePath`     | `string`   | 存储路径                 |
+| `fileSize`     | `number`   | 文件大小（字节）         |
+| `mimeType`     | `string`   | MIME 类型                |
+| `md5`          | `string`   | 文件 MD5 哈希            |
+| `storageType`  | `string`   | 存储类型：`local` / `s3` |
+| `url`          | `string`   | 文件访问 URL             |
+| `createdBy`    | `number`   | 上传者 ID                |
+| `createdAt`    | `datetime` | 上传时间                 |
+| `updatedAt`    | `datetime` | 更新时间                 |
 
 ## 📂 存储策略
 
@@ -87,18 +87,18 @@ uploads/
 
 ### 客户端 API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `POST` | `/api/_/file/upload` | 上传文件 |
-| `GET` | `/api/_/file/:id` | 获取文件信息 |
-| `GET` | `/api/_/file/download/:id` | 下载文件 |
+| 方法   | 路径                       | 说明         |
+| ------ | -------------------------- | ------------ |
+| `POST` | `/api/_/file/upload`       | 上传文件     |
+| `GET`  | `/api/_/file/:id`          | 获取文件信息 |
+| `GET`  | `/api/_/file/download/:id` | 下载文件     |
 
 ### 管理端 API
 
-| 方法 | 路径 | 说明 | 权限 |
-|------|------|------|------|
-| `GET` | `/api/admin/file` | 文件列表（分页） | `file:admin:list` |
-| `DELETE` | `/api/admin/file/:id` | 删除文件 | `file:admin:delete` |
+| 方法     | 路径                  | 说明             | 权限                |
+| -------- | --------------------- | ---------------- | ------------------- |
+| `GET`    | `/api/admin/file`     | 文件列表（分页） | `file:admin:list`   |
+| `DELETE` | `/api/admin/file/:id` | 删除文件         | `file:admin:delete` |
 
 ::: tip MD5 去重
 上传文件时会计算 MD5 哈希值。如果已存在相同 MD5 的文件，将复用已有文件而不重复存储，节省磁盘空间。

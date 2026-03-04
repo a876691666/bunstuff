@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'rbac',
+  name: '管理 - RBAC权限',
+  description: 'RBAC权限管理接口',
   permissions: [
     { code: 'rbac:admin:roles-tree', name: '查看角色列表', description: '获取所有角色（扁平列表）' },
     { code: 'rbac:admin:cache-status', name: '查看缓存状态', description: '获取RBAC缓存状态' },

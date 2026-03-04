@@ -81,8 +81,7 @@ export const rbacAdminApi = {
   // ============ 角色数据权限相关 ============
 
   /** 获取角色数据权限规则列表 */
-  getRoleScopes: (roleId: string) =>
-    http.get<ScopeRule[]>(`/admin/rbac/roles/${roleId}/scopes`),
+  getRoleScopes: (roleId: string) => http.get<ScopeRule[]>(`/admin/rbac/roles/${roleId}/scopes`),
 
   /** 获取角色SSQL过滤规则 */
   getRoleSsqlRules: (roleId: string, tableName: string) =>

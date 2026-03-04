@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'job-log',
+  name: '管理 - 任务日志',
+  description: '定时任务执行日志接口',
   permissions: [
     { code: 'jobLog:admin:list', name: '查看任务日志', description: '获取任务执行日志列表' },
     { code: 'jobLog:admin:read', name: '查看任务日志详情', description: '获取任务日志详情' },

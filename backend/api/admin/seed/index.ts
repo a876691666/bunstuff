@@ -4,7 +4,7 @@ import { R, SuccessResponse, MessageResponse, ErrorResponse } from '@/services/r
 import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 
-export default new Elysia({ tags: ['管理 - Seed'] })
+export default new Elysia()
   .use(authPlugin())
   .use(rbacPlugin())
   /** 获取所有 Seed 日志 */

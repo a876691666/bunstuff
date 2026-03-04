@@ -1,15 +1,6 @@
 <script setup lang="ts">
 import { h } from 'vue'
-import {
-  NButton,
-  NTag,
-  NSpace,
-  useMessage,
-  NForm,
-  NFormItem,
-  NInput,
-  NSelect,
-} from 'naive-ui'
+import { NButton, NTag, NSpace, useMessage, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { CrudTable, CrudSearch, CrudModal, CrudConfirm, type SearchField } from '@/components'
 import { useTable, useModal } from '@/composables'

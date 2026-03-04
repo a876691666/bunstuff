@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'seed',
+  name: '管理 - Seed',
+  description: '数据库Seed管理接口',
   permissions: [
     { code: 'seed:admin:list', name: '查看Seed列表', description: '获取已注册的Seed列表' },
     { code: 'seed:admin:logs', name: '查看Seed日志', description: '获取Seed执行日志' },

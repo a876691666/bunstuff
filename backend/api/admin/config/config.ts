@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'config',
+  name: '管理 - 参数配置',
+  description: '系统参数配置管理接口',
   permissions: [
     { code: 'config:admin:list', name: '查看配置列表', description: '获取系统配置列表' },
     { code: 'config:admin:read', name: '查看配置详情', description: '获取系统配置详情' },

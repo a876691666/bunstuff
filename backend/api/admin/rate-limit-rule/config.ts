@@ -2,6 +2,8 @@ import { defineConfig } from '@/core/policy'
 
 export default defineConfig({
   module: 'rate-limit-rule',
+  name: '管理 - 限流规则',
+  description: '限流规则管理接口',
   permissions: [
     { code: 'rateLimit:admin:rule:list', name: '查看限流规则列表', description: '获取限流规则列表' },
     { code: 'rateLimit:admin:rule:read', name: '查看限流规则详情', description: '获取限流规则详情' },

@@ -8,13 +8,13 @@
 
 ### 步骤总览
 
-| 步骤 | 内容 | 涉及 |
-|------|------|------|
-| 1 | 定义搜索字段 | `searchFields` 配置 |
-| 2 | 初始化 useTable | API + query + opMap |
-| 3 | 初始化 useModal | defaultData + API + 回调 |
-| 4 | 定义表格列 | `columns` 配置 |
-| 5 | 编写模板 | CrudSearch + CrudTable + CrudModal |
+| 步骤 | 内容            | 涉及                               |
+| ---- | --------------- | ---------------------------------- |
+| 1    | 定义搜索字段    | `searchFields` 配置                |
+| 2    | 初始化 useTable | API + query + opMap                |
+| 3    | 初始化 useModal | defaultData + API + 回调           |
+| 4    | 定义表格列      | `columns` 配置                     |
+| 5    | 编写模板        | CrudSearch + CrudTable + CrudModal |
 
 ### 步骤 1：定义搜索字段
 
@@ -41,7 +41,7 @@ const table = useTable<User, UserQuery>({
     username: 'like',
     status: 'eq',
     createdAt: 'between',
-  }
+  },
 })
 ```
 
@@ -61,7 +61,7 @@ const modal = useModal<CreateUserDto, number>({
   onSuccess: () => {
     message.success(modal.isEdit.value ? '更新成功' : '创建成功')
     table.reload()
-  }
+  },
 })
 ```
 
@@ -76,7 +76,7 @@ const columns: DataTableColumn<User>[] = [
   {
     title: '状态',
     key: 'status',
-    render: (row) => getStatusLabel(row.status)
+    render: (row) => getStatusLabel(row.status),
   },
   { title: '创建时间', key: 'createdAt', width: 180 },
   {
@@ -84,7 +84,7 @@ const columns: DataTableColumn<User>[] = [
     key: 'action',
     width: 200,
     fixed: 'right',
-  }
+  },
 ]
 ```
 
@@ -100,7 +100,9 @@ const columns: DataTableColumn<User>[] = [
     <CrudTable :use-table="table" :columns="columns">
       <template #toolbar>
         <NButton type="primary" @click="modal.open()">
-          <template #icon><NIcon><AddOutline /></NIcon></template>
+          <template #icon
+            ><NIcon><AddOutline /></NIcon
+          ></template>
           新增
         </NButton>
       </template>
@@ -164,17 +166,17 @@ const filter = where()
 
 ### 支持的操作符
 
-| 方法 | SSQL 符号 | SQL 等价 |
-|------|-----------|----------|
-| `eq(key, value)` | `=` | `= value` |
-| `ne(key, value)` | `!=` | `!= value` |
-| `gt(key, value)` | `>` | `> value` |
-| `gte(key, value)` | `>=` | `>= value` |
-| `lt(key, value)` | `<` | `< value` |
-| `lte(key, value)` | `<=` | `<= value` |
-| `like(key, value)` | `~` | `LIKE '%value%'` |
-| `in(key, values)` | `@` | `IN (values)` |
-| `between(key, a, b)` | `><` | `BETWEEN a AND b` |
+| 方法                 | SSQL 符号 | SQL 等价          |
+| -------------------- | --------- | ----------------- |
+| `eq(key, value)`     | `=`       | `= value`         |
+| `ne(key, value)`     | `!=`      | `!= value`        |
+| `gt(key, value)`     | `>`       | `> value`         |
+| `gte(key, value)`    | `>=`      | `>= value`        |
+| `lt(key, value)`     | `<`       | `< value`         |
+| `lte(key, value)`    | `<=`      | `<= value`        |
+| `like(key, value)`   | `~`       | `LIKE '%value%'`  |
+| `in(key, values)`    | `@`       | `IN (values)`     |
+| `between(key, a, b)` | `><`      | `BETWEEN a AND b` |
 
 :::tip
 `useTable` 的 `opMap` 配置在内部会自动调用 SSQL Builder，大多数场景无需手动使用。仅在需要自定义复杂查询时才需要直接使用 `where()` 构建器。

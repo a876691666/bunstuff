@@ -73,28 +73,28 @@
 
 高度固定 **64px**，包含三个区域：
 
-| 区域 | 组件 | 说明 |
-|------|------|------|
-| 左侧 | Logo | 系统 Logo 和名称 |
-| 中间 | NMenu (horizontal) | 顶部一级菜单 |
-| 右侧 | UserDropdown | 用户头像 + 用户名 + 下拉菜单 |
+| 区域 | 组件               | 说明                         |
+| ---- | ------------------ | ---------------------------- |
+| 左侧 | Logo               | 系统 Logo 和名称             |
+| 中间 | NMenu (horizontal) | 顶部一级菜单                 |
+| 右侧 | UserDropdown       | 用户头像 + 用户名 + 下拉菜单 |
 
 ### UserDropdown 下拉菜单
 
-| 选项 | 图标 | 跳转/操作 |
-|------|------|-----------|
-| 个人资料 | PersonOutline | `/profile` |
-| 修改密码 | LockClosedOutline | `/change-password` |
-| 退出登录 | LogOutOutline | `authStore.logout()` |
+| 选项     | 图标              | 跳转/操作            |
+| -------- | ----------------- | -------------------- |
+| 个人资料 | PersonOutline     | `/profile`           |
+| 修改密码 | LockClosedOutline | `/change-password`   |
+| 退出登录 | LogOutOutline     | `authStore.logout()` |
 
 ## 📎 侧边栏
 
-| 属性 | 值 | 说明 |
-|------|------|------|
-| 展开宽度 | 240px | 正常状态 |
-| 折叠宽度 | 64px | 仅显示图标 |
-| 折叠方式 | `collapse-mode="width"` | 宽度过渡动画 |
-| 触发器 | `show-trigger` | 底部显示折叠按钮 |
+| 属性     | 值                      | 说明             |
+| -------- | ----------------------- | ---------------- |
+| 展开宽度 | 240px                   | 正常状态         |
+| 折叠宽度 | 64px                    | 仅显示图标       |
+| 折叠方式 | `collapse-mode="width"` | 宽度过渡动画     |
+| 触发器   | `show-trigger`          | 底部显示折叠按钮 |
 
 ### 菜单数据来源
 
@@ -103,11 +103,12 @@
 ```ts
 function convertMenuTree(items: MenuItem[]): MenuOption[] {
   return items
-    .filter(item => item.type !== 3) // 过滤按钮
-    .map(item => ({
-      label: () => item.type === 2
-        ? h(RouterLink, { to: item.path }, { default: () => item.title })
-        : item.title,
+    .filter((item) => item.type !== 3) // 过滤按钮
+    .map((item) => ({
+      label: () =>
+        item.type === 2
+          ? h(RouterLink, { to: item.path }, { default: () => item.title })
+          : item.title,
       key: item.path,
       icon: () => renderIcon(item.icon),
       children: item.children ? convertMenuTree(item.children) : undefined,
@@ -121,18 +122,22 @@ function convertMenuTree(items: MenuItem[]): MenuOption[] {
 
 ```ts
 import {
-  HomeOutline, PeopleOutline, SettingsOutline,
-  ShieldOutline, KeyOutline, DocumentOutline,
+  HomeOutline,
+  PeopleOutline,
+  SettingsOutline,
+  ShieldOutline,
+  KeyOutline,
+  DocumentOutline,
   // ...
 } from '@vicons/ionicons5'
 
 const iconMap: Record<string, Component> = {
-  'home': HomeOutline,
-  'people': PeopleOutline,
-  'settings': SettingsOutline,
-  'shield': ShieldOutline,
-  'key': KeyOutline,
-  'document': DocumentOutline,
+  home: HomeOutline,
+  people: PeopleOutline,
+  settings: SettingsOutline,
+  shield: ShieldOutline,
+  key: KeyOutline,
+  document: DocumentOutline,
   // ...更多映射
 }
 
@@ -149,11 +154,11 @@ function renderIcon(iconName: string) {
 ```ts
 const breadcrumbs = computed(() =>
   route.matched
-    .filter(r => r.meta?.title)
-    .map(r => ({
+    .filter((r) => r.meta?.title)
+    .map((r) => ({
       label: r.meta.title as string,
       path: r.path,
-    }))
+    })),
 )
 ```
 

@@ -57,13 +57,13 @@ if (token) {
 
 ## 📤 请求方法
 
-| 方法 | 用途 | 返回类型 |
-|------|------|----------|
-| `get<T>(url, params?)` | 获取单条/列表数据 | `Promise<T>` |
-| `getPage<T>(url, params?)` | 获取分页数据 | `Promise<PagedResult<T>>` |
-| `post<T>(url, body?)` | 创建资源 | `Promise<T>` |
-| `put<T>(url, body?)` | 更新资源 | `Promise<T>` |
-| `delete<T>(url)` | 删除资源 | `Promise<T>` |
+| 方法                       | 用途              | 返回类型                  |
+| -------------------------- | ----------------- | ------------------------- |
+| `get<T>(url, params?)`     | 获取单条/列表数据 | `Promise<T>`              |
+| `getPage<T>(url, params?)` | 获取分页数据      | `Promise<PagedResult<T>>` |
+| `post<T>(url, body?)`      | 创建资源          | `Promise<T>`              |
+| `put<T>(url, body?)`       | 更新资源          | `Promise<T>`              |
+| `delete<T>(url)`           | 删除资源          | `Promise<T>`              |
 
 ### 分页响应结构
 
@@ -97,12 +97,13 @@ async function request<T>(url: string, options: RequestInit): Promise<T> {
     throw new Error(json.message)
   }
 
-  return json.data  // 直接返回 data，调用方无需手动解包
+  return json.data // 直接返回 data，调用方无需手动解包
 }
 ```
 
 :::tip
 调用方只需关心业务数据，不再需要解构 `response.data`：
+
 ```ts
 // ✅ 直接获得 User[]
 const users = await http.get<User[]>('/user')
@@ -110,6 +111,7 @@ const users = await http.get<User[]>('/user')
 // ✅ 直接获得分页结果
 const { data, total } = await http.getPage<User>('/user', { page: 1, pageSize: 10 })
 ```
+
 :::
 
 ## ❌ 错误处理
@@ -118,7 +120,7 @@ const { data, total } = await http.getPage<User>('/user', { page: 1, pageSize: 1
 
 ```ts
 if (response.status === 401) {
-  setToken('')  // 清除无效 token
+  setToken('') // 清除无效 token
   router.push('/login')
   return
 }

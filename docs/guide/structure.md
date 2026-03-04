@@ -192,51 +192,51 @@ Bunstuff 采用 **Monorepo** 架构，在一个仓库中管理后端、前端、
 
 ### 后端模块 (`backend/`)
 
-| 目录 | 说明 | 关键文件 |
-|------|------|---------|
-| `api/` | API 路由定义 | 每个子目录为一条路由 |
-| `core/` | 核心框架 | `createApi()`, `CrudService`, `definePolicy` |
-| `models/` | 数据模型 | 每个子目录包含 `schema.ts` + `seed.ts` |
-| `services/` | 业务服务 | 继承 `CrudService`，封装业务逻辑 |
-| `plugins/` | 功能插件 | Elysia 插件，通过 `derive` 注入上下文 |
-| `packages/` | 自研工具包 | ORM、SSQL、Route Model |
-| `scripts/` | 脚本工具 | 代码生成器 |
-| `_generated/` | 生成文件 | 由脚本自动生成，勿手动修改 |
+| 目录          | 说明         | 关键文件                                     |
+| ------------- | ------------ | -------------------------------------------- |
+| `api/`        | API 路由定义 | 每个子目录为一条路由                         |
+| `core/`       | 核心框架     | `createApi()`, `CrudService`, `definePolicy` |
+| `models/`     | 数据模型     | 每个子目录包含 `schema.ts` + `seed.ts`       |
+| `services/`   | 业务服务     | 继承 `CrudService`，封装业务逻辑             |
+| `plugins/`    | 功能插件     | Elysia 插件，通过 `derive` 注入上下文        |
+| `packages/`   | 自研工具包   | ORM、SSQL、Route Model                       |
+| `scripts/`    | 脚本工具     | 代码生成器                                   |
+| `_generated/` | 生成文件     | 由脚本自动生成，勿手动修改                   |
 
 ### 前端模块 (`frontend/`)
 
-| 目录 | 说明 |
-|------|------|
-| `api/` | HTTP 请求封装，按模块组织 |
-| `components/` | 通用组件（PageTable、FormModal 等） |
+| 目录           | 说明                                      |
+| -------------- | ----------------------------------------- |
+| `api/`         | HTTP 请求封装，按模块组织                 |
+| `components/`  | 通用组件（PageTable、FormModal 等）       |
 | `composables/` | 组合式函数（useTable、useModal、useDict） |
-| `layouts/` | 布局组件（AdminLayout） |
-| `router/` | 路由配置，支持动态路由生成 |
-| `stores/` | Pinia 状态管理（authStore） |
-| `views/` | 页面视图，按功能模块组织 |
+| `layouts/`     | 布局组件（AdminLayout）                   |
+| `router/`      | 路由配置，支持动态路由生成                |
+| `stores/`      | Pinia 状态管理（authStore）               |
+| `views/`       | 页面视图，按功能模块组织                  |
 
 ## 🔍 快速定位指南
 
 ### 按功能定位
 
-| 功能需求 | 文件位置 |
-|---------|---------|
-| 用户登录/认证 | `backend/services/auth.ts` + `backend/plugins/auth.ts` |
+| 功能需求      | 文件位置                                                |
+| ------------- | ------------------------------------------------------- |
+| 用户登录/认证 | `backend/services/auth.ts` + `backend/plugins/auth.ts`  |
 | 角色/菜单管理 | `backend/services/rbac.ts` + `backend/services/menu.ts` |
-| 数据权限 | `backend/services/rbac.ts` → `buildWhere()` |
-| 文件上传下载 | `backend/services/file.ts` + `backend/plugins/file.ts` |
-| 定时任务 | `backend/services/job.ts` + `backend/plugins/job.ts` |
-| 字典缓存 | `backend/services/dict.ts` + `backend/plugins/dict.ts` |
-| 前端路由 | `frontend/src/router/` |
-| 前端状态 | `frontend/src/stores/` |
+| 数据权限      | `backend/services/rbac.ts` → `buildWhere()`             |
+| 文件上传下载  | `backend/services/file.ts` + `backend/plugins/file.ts`  |
+| 定时任务      | `backend/services/job.ts` + `backend/plugins/job.ts`    |
+| 字典缓存      | `backend/services/dict.ts` + `backend/plugins/dict.ts`  |
+| 前端路由      | `frontend/src/router/`                                  |
+| 前端状态      | `frontend/src/stores/`                                  |
 
 ### 按技术定位
 
-| 技术需求 | 文件位置 |
-|---------|---------|
-| ORM 操作 | `backend/packages/orm/` |
-| SQL 条件构建 | `backend/packages/ssql/` |
-| 路由 Schema | `backend/packages/route-model/` |
-| 代码生成 | `backend/scripts/gen-registry.ts` |
-| Docker 配置 | `Dockerfile` + `docker-compose.yml` |
-| 构建脚本 | `build.ts` + `build-docker.ts` |
+| 技术需求     | 文件位置                            |
+| ------------ | ----------------------------------- |
+| ORM 操作     | `backend/packages/orm/`             |
+| SQL 条件构建 | `backend/packages/ssql/`            |
+| 路由 Schema  | `backend/packages/route-model/`     |
+| 代码生成     | `backend/scripts/gen-registry.ts`   |
+| Docker 配置  | `Dockerfile` + `docker-compose.yml` |
+| 构建脚本     | `build.ts` + `build-docker.ts`      |

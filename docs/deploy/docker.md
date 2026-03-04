@@ -37,10 +37,10 @@ docker compose logs -f
 
 采用三阶段构建，最小化镜像体积：
 
-| 阶段 | 基础镜像 | 作用 |
-|------|---------|------|
-| `deps` | `oven/bun:1` | 安装后端依赖 |
-| `build` | `oven/bun:1` | 编译后端为单文件 bundle |
+| 阶段      | 基础镜像          | 作用                     |
+| --------- | ----------------- | ------------------------ |
+| `deps`    | `oven/bun:1`      | 安装后端依赖             |
+| `build`   | `oven/bun:1`      | 编译后端为单文件 bundle  |
 | `runtime` | `oven/bun:1-slim` | 最终运行（非 root 用户） |
 
 ### 安全特性
@@ -58,12 +58,12 @@ services:
     container_name: bunstuff
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
-      - ./frontend:/app/frontend:ro    # 管理端（只读）
-      - ./client:/app/client:ro        # 客户端（只读）
-      - ./data:/app/data               # 数据库（持久化）
-      - ./uploads:/app/uploads         # 上传文件（持久化）
+      - ./frontend:/app/frontend:ro # 管理端（只读）
+      - ./client:/app/client:ro # 客户端（只读）
+      - ./data:/app/data # 数据库（持久化）
+      - ./uploads:/app/uploads # 上传文件（持久化）
     environment:
       - NODE_ENV=production
       - SEED_AUTO_RUN=true
@@ -71,12 +71,12 @@ services:
 
 ### 挂载卷说明
 
-| 卷 | 容器路径 | 模式 | 说明 |
-|------|---------|------|------|
+| 卷           | 容器路径        | 模式 | 说明                     |
+| ------------ | --------------- | ---- | ------------------------ |
 | `./frontend` | `/app/frontend` | 只读 | 管理端静态资源，可热更新 |
-| `./client` | `/app/client` | 只读 | 客户端静态资源，可热更新 |
-| `./data` | `/app/data` | 读写 | SQLite 数据库 |
-| `./uploads` | `/app/uploads` | 读写 | 用户上传文件 |
+| `./client`   | `/app/client`   | 只读 | 客户端静态资源，可热更新 |
+| `./data`     | `/app/data`     | 读写 | SQLite 数据库            |
+| `./uploads`  | `/app/uploads`  | 读写 | 用户上传文件             |
 
 ## 🔄 更新策略
 

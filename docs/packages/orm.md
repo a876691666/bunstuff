@@ -4,14 +4,14 @@
 
 ## 🎯 核心能力
 
-| 功能 | 说明 |
-|------|------|
-| **Schema 定义** | 类式 Schema + `column` 链式 API |
-| **自动建表** | 根据 Schema 自动 CREATE / ALTER TABLE |
-| **CRUD** | `create` / `findOne` / `findMany` / `update` / `deleteMany` |
-| **分页** | `page()` / `list()` |
-| **getSchema** | 从 ORM Schema 生成 Elysia TypeBox Schema |
-| **多数据库** | 同一 API 适配 SQLite / MySQL / PostgreSQL |
+| 功能            | 说明                                                        |
+| --------------- | ----------------------------------------------------------- |
+| **Schema 定义** | 类式 Schema + `column` 链式 API                             |
+| **自动建表**    | 根据 Schema 自动 CREATE / ALTER TABLE                       |
+| **CRUD**        | `create` / `findOne` / `findMany` / `update` / `deleteMany` |
+| **分页**        | `page()` / `list()`                                         |
+| **getSchema**   | 从 ORM Schema 生成 Elysia TypeBox Schema                    |
+| **多数据库**    | 同一 API 适配 SQLite / MySQL / PostgreSQL                   |
 
 ## 📋 导出清单
 
@@ -125,20 +125,20 @@ const updateBody = Users.getSchema('pick', ['username', 'email'])
 
 ## 📋 column API
 
-| 构造器 | SQL 类型 | TS 类型 |
-|--------|---------|---------|
-| `column.string()` | TEXT | `string` |
-| `column.number()` | INTEGER | `number` |
-| `column.boolean()` | INTEGER | `boolean` |
-| `column.date()` | TEXT | `Date` |
-| `column.blob()` | BLOB | `Buffer` |
+| 构造器             | SQL 类型 | TS 类型   |
+| ------------------ | -------- | --------- |
+| `column.string()`  | TEXT     | `string`  |
+| `column.number()`  | INTEGER  | `number`  |
+| `column.boolean()` | INTEGER  | `boolean` |
+| `column.date()`    | TEXT     | `Date`    |
+| `column.blob()`    | BLOB     | `Buffer`  |
 
-| 修饰符 | 说明 |
-|--------|------|
-| `.primaryKey()` | 主键 |
-| `.autoIncrement()` | 自增 |
-| `.nullable()` | 允许 NULL |
-| `.unique()` | 唯一约束 |
-| `.default(val)` | 默认值 |
-| `.description(text)` | 字段描述 |
-| `.deserialize(fn)` | 写入时转换 |
+| 修饰符               | 说明       |
+| -------------------- | ---------- |
+| `.primaryKey()`      | 主键       |
+| `.autoIncrement()`   | 自增       |
+| `.nullable()`        | 允许 NULL  |
+| `.unique()`          | 唯一约束   |
+| `.default(val)`      | 默认值     |
+| `.description(text)` | 字段描述   |
+| `.deserialize(fn)`   | 写入时转换 |

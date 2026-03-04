@@ -224,8 +224,6 @@ export interface UpdateRoleRequest {
   status?: number
 }
 
-
-
 /** 创建VIP等级请求 */
 export interface CreateVipTierRequest {
   name: string
@@ -645,5 +643,3 @@ export interface UpdateIpBlacklistRequest {
   status?: number
   remark?: string
 }
-
-
