@@ -184,10 +184,10 @@ function scheduleJob(job: any) {
 /** 执行任务 */
 export async function executeJob(jobId: number, manualParams?: unknown): Promise<JobResult> {
   const job = await Job.findOne({ where: `id = ${jobId}` })
-  if (!job) return { success: false, error: '任务不存在' }
+  if (!job) throw new Error('任务不存在')
 
   const handler = handlers.get(job.handler)
-  if (!handler) return { success: false, error: `处理函数 ${job.handler} 未注册` }
+  if (!handler) throw new Error(`处理函数 ${job.handler} 未注册`)
 
   const startTime = new Date()
   const params = manualParams ?? (job.params ? JSON.parse(job.params) : undefined)
@@ -226,14 +226,14 @@ export async function executeJob(jobId: number, manualParams?: unknown): Promise
       costTime,
     })
 
-    return { success: false, error: errorMsg }
+    throw new Error(errorMsg)
   }
 }
 
 /** 触发任务（by handler） */
 export async function trigger(handler: string, params?: unknown): Promise<JobResult> {
   const job = await Job.findOne({ where: `handler = '${handler}'` })
-  if (!job) return { success: false, error: `任务 ${handler} 不存在` }
+  if (!job) throw new Error(`任务 ${handler} 不存在`)
   return executeJob(job.id, params)
 }
 

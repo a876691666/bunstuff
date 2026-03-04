@@ -14,6 +14,13 @@ const uploadsDir = resolve(rootPath, 'uploads')
 
 const app = new Elysia()
   .use(cors())
+  // 全局错误处理：service 层 throw 的 Error 自动转为 R.fail 响应
+  .onError({ as: 'global' }, ({ error, set }) => {
+    if (error instanceof Error && error.message) {
+      set.status = 200
+      return { code: 400, message: error.message }
+    }
+  })
   .use(
     openapi({
       documentation: {

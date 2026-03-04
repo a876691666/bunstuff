@@ -71,7 +71,7 @@ export default new Elysia({ tags: ['管理 - Seed'] })
     '/run/:name',
     async (ctx) => {
       const result = await seedService.runSeed(ctx.params.name, ctx.query.force)
-      return result.success ? R.success(result.message) : R.fail(result.message!)
+      return R.success(result.message)
     },
     {
       params: t.Object({ name: t.String({ description: 'Seed名称' }) }),

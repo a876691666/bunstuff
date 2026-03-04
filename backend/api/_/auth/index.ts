@@ -20,27 +20,37 @@ export default new Elysia({ tags: ['客户端 - 认证'] })
         request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
       const userAgent = request.headers.get('user-agent') || undefined
 
-      const result = await auth.login(body.username, body.password, {
-        ip,
-        userAgent,
-      })
+      try {
+        const result = await auth.login(body.username, body.password, {
+          ip,
+          userAgent,
+        })
 
-      // 记录登录日志
-      await loginLog.logLogin({
-        userId: result.user?.id,
-        username: body.username,
-        ip,
-        userAgent,
-        status: result.success ? 1 : 0,
-        action: 'login',
-        msg: result.message,
-      })
+        // 记录登录日志
+        await loginLog.logLogin({
+          userId: result.user.id,
+          username: body.username,
+          ip,
+          userAgent,
+          status: 1,
+          action: 'login',
+          msg: '登录成功',
+        })
 
-      if (!result.success) {
-        return R.badRequest(result.message!)
+        return R.ok({ token: result.token, user: result.user }, '登录成功')
+      } catch (error: any) {
+        // 记录失败登录日志
+        await loginLog.logLogin({
+          username: body.username,
+          ip,
+          userAgent,
+          status: 0,
+          action: 'login',
+          msg: error.message,
+        })
+
+        return R.badRequest(error.message)
       }
-
-      return R.ok({ token: result.token, user: result.user }, result.message)
     },
     {
       body: t.Object({
@@ -77,12 +87,7 @@ export default new Elysia({ tags: ['客户端 - 认证'] })
     '/register',
     async ({ body }) => {
       const result = await auth.register(body)
-
-      if (!result.success) {
-        return R.badRequest(result.message!)
-      }
-
-      return R.ok({ userId: result.userId }, result.message)
+      return R.ok({ userId: result.userId }, '注册成功')
     },
     {
       body: t.Object({
@@ -239,13 +244,8 @@ export default new Elysia({ tags: ['客户端 - 认证'] })
         return R.unauthorized()
       }
 
-      const result = await auth.changePassword(userId, ctx.body.oldPassword, ctx.body.newPassword)
-
-      if (!result.success) {
-        return R.badRequest(result.message!)
-      }
-
-      return R.success(result.message)
+      await auth.changePassword(userId, ctx.body.oldPassword, ctx.body.newPassword)
+      return R.success('密码修改成功')
     },
     {
       body: t.Object({

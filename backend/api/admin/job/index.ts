@@ -119,8 +119,7 @@ export default new Elysia({ tags: ['管理 - 定时任务'] })
   .post(
     '/:id/run',
     async (ctx) => {
-      const result = await jobService.executeJob(ctx.params.id)
-      if (!result.success) return R.fail(result.error || '执行失败')
+      await jobService.executeJob(ctx.params.id)
       return R.success('执行成功')
     },
     {

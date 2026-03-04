@@ -126,12 +126,8 @@ export default new Elysia({ tags: ['管理 - VIP'] })
     async (ctx) => {
       const existing = await vipService.findTierById(ctx.params.id, ctx)
       if (!existing) return R.notFound('VIP 等级')
-      try {
-        await vipService.deleteTier(ctx.params.id, ctx)
-        return R.ok(null, '删除成功')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      await vipService.deleteTier(ctx.params.id, ctx)
+      return R.ok(null, '删除成功')
     },
     {
       params: idParams({ label: 'VIP 等级' }),
@@ -172,13 +168,9 @@ export default new Elysia({ tags: ['管理 - VIP'] })
   .post(
     '/resource-limit',
     async (ctx) => {
-      try {
-        const data = await vipService.createResourceLimit(ctx.body, ctx)
-        if (!data) return R.forbidden('无权操作')
-        return R.ok(data, '创建成功')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      const data = await vipService.createResourceLimit(ctx.body, ctx)
+      if (!data) return R.forbidden('无权操作')
+      return R.ok(data, '创建成功')
     },
     {
       body: vipService.getResourceLimitSchema({
@@ -301,14 +293,10 @@ export default new Elysia({ tags: ['管理 - VIP'] })
   .post(
     '/upgrade',
     async (ctx) => {
-      try {
-        const data = await vipService.upgradeUserVip(ctx.body.userId, ctx.body.vipTierCode, {
-          expireTime: ctx.body.expireTime,
-        })
-        return R.ok(data, 'VIP 升级成功，等待确认绑定')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      const data = await vipService.upgradeUserVip(ctx.body.userId, ctx.body.vipTierCode, {
+        expireTime: ctx.body.expireTime,
+      })
+      return R.ok(data, 'VIP 升级成功，等待确认绑定')
     },
     {
       body: t.Object({
@@ -336,14 +324,10 @@ export default new Elysia({ tags: ['管理 - VIP'] })
   .post(
     '/upgrade-direct',
     async (ctx) => {
-      try {
-        const data = await vipService.upgradeUserVipDirect(ctx.body.userId, ctx.body.vipTierCode, {
-          expireTime: ctx.body.expireTime,
-        })
-        return R.ok(data, 'VIP 升级成功')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      const data = await vipService.upgradeUserVipDirect(ctx.body.userId, ctx.body.vipTierCode, {
+        expireTime: ctx.body.expireTime,
+      })
+      return R.ok(data, 'VIP 升级成功')
     },
     {
       body: t.Object({
@@ -371,12 +355,8 @@ export default new Elysia({ tags: ['管理 - VIP'] })
   .post(
     '/confirm-binding',
     async (ctx) => {
-      try {
-        const data = await vipService.confirmVipBinding(ctx.body.userVipId, ctx.body.confirm)
-        return R.ok(data, ctx.body.confirm ? '绑定确认成功' : '绑定已取消')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      const data = await vipService.confirmVipBinding(ctx.body.userVipId, ctx.body.confirm)
+      return R.ok(data, ctx.body.confirm ? '绑定确认成功' : '绑定已取消')
     },
     {
       body: t.Object({
@@ -400,12 +380,8 @@ export default new Elysia({ tags: ['管理 - VIP'] })
   .post(
     '/cancel/:userId',
     async (ctx) => {
-      try {
-        await vipService.cancelUserVip(ctx.params.userId)
-        return R.ok(null, 'VIP 已取消')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      await vipService.cancelUserVip(ctx.params.userId)
+      return R.ok(null, 'VIP 已取消')
     },
     {
       params: t.Object({ userId: t.Numeric({ description: '用户 ID' }) }),
@@ -462,16 +438,12 @@ export default new Elysia({ tags: ['管理 - VIP'] })
   .post(
     '/resource/increment',
     async (ctx) => {
-      try {
-        const data = await vipService.incrementResourceUsage(
-          ctx.body.userId,
-          ctx.body.resourceKey,
-          ctx.body.amount,
-        )
-        return R.ok(data, '资源使用已增加')
-      } catch (error: any) {
-        return R.badRequest(error.message)
-      }
+      const data = await vipService.incrementResourceUsage(
+        ctx.body.userId,
+        ctx.body.resourceKey,
+        ctx.body.amount,
+      )
+      return R.ok(data, '资源使用已增加')
     },
     {
       body: t.Object({

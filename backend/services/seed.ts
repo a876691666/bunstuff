@@ -44,11 +44,11 @@ export async function runSeed(
 ): Promise<{ success: boolean; message: string }> {
   const seed = seeds.get(name)
   if (!seed) {
-    return { success: false, message: `Seed "${name}" 不存在` }
+    throw new Error(`Seed "${name}" 不存在`)
   }
 
   if (!force && (await isExecuted(name))) {
-    return { success: false, message: `Seed "${name}" 已执行过` }
+    throw new Error(`Seed "${name}" 已执行过`)
   }
 
   const now = new Date().toISOString()
@@ -81,7 +81,7 @@ export async function runSeed(
       errorMessage,
     })
 
-    return { success: false, message: `Seed "${name}" 执行失败: ${errorMessage}` }
+    throw new Error(`Seed "${name}" 执行失败: ${errorMessage}`)
   }
 }
 
@@ -100,12 +100,12 @@ export async function runAll(
       continue
     }
 
-    const result = await runSeed(name, force)
-    results.push({ name, ...result })
-
-    if (result.success) {
+    try {
+      const result = await runSeed(name, force)
+      results.push({ name, ...result })
       success++
-    } else {
+    } catch (error: any) {
+      results.push({ name, success: false, message: error.message })
       failed++
     }
   }

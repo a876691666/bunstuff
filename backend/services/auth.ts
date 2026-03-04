@@ -6,10 +6,8 @@ const User = model.users
 
 /** 登录结果 */
 export interface LoginResult {
-  success: boolean
-  message: string
-  token?: string
-  user?: {
+  token: string
+  user: {
     id: number
     username: string
     nickname: string | null
@@ -17,13 +15,6 @@ export interface LoginResult {
     avatar: string | null
     roleId: string
   }
-}
-
-/** 注册结果 */
-export interface RegisterResult {
-  success: boolean
-  message: string
-  userId?: number
 }
 
 /** 密码哈希 */
@@ -45,18 +36,18 @@ export async function login(
   // 查找用户
   const user = await User.findOne({ where: `username = '${username}'` })
   if (!user) {
-    return { success: false, message: '用户名或密码错误' }
+    throw new Error('用户名或密码错误')
   }
 
   // 检查用户状态
   if (user.status !== 1) {
-    return { success: false, message: '用户已被禁用' }
+    throw new Error('用户已被禁用')
   }
 
   // 验证密码
   const valid = await verifyPassword(password, user.password)
   if (!valid) {
-    return { success: false, message: '用户名或密码错误' }
+    throw new Error('用户名或密码错误')
   }
 
   // 创建会话
@@ -69,8 +60,6 @@ export async function login(
   })
 
   return {
-    success: true,
-    message: '登录成功',
     token: sess.token,
     user: {
       id: user.id,
@@ -91,13 +80,13 @@ export async function register(data: {
   email?: string
   phone?: string
   roleId?: string
-}): Promise<RegisterResult> {
+}): Promise<{ userId: number }> {
   // 检查用户名是否已存在
   const existing = await User.findOne({
     where: `username = '${data.username}'`,
   })
   if (existing) {
-    return { success: false, message: '用户名已存在' }
+    throw new Error('用户名已存在')
   }
 
   // 检查邮箱是否已存在
@@ -106,7 +95,7 @@ export async function register(data: {
       where: `email = '${data.email}'`,
     })
     if (emailExists) {
-      return { success: false, message: '邮箱已被使用' }
+      throw new Error('邮箱已被使用')
     }
   }
 
@@ -127,11 +116,7 @@ export async function register(data: {
 
   const user = await User.create(userData)
 
-  return {
-    success: true,
-    message: '注册成功',
-    userId: user.id,
-  }
+  return { userId: user.id }
 }
 
 /** 获取当前用户信息 */
@@ -159,16 +144,16 @@ export async function changePassword(
   userId: number,
   oldPassword: string,
   newPassword: string,
-): Promise<{ success: boolean; message: string }> {
+): Promise<void> {
   const user = await User.findOne({ where: `id = ${userId}` })
   if (!user) {
-    return { success: false, message: '用户不存在' }
+    throw new Error('用户不存在')
   }
 
   // 验证旧密码
   const valid = await verifyPassword(oldPassword, user.password)
   if (!valid) {
-    return { success: false, message: '原密码错误' }
+    throw new Error('原密码错误')
   }
 
   // 哈希新密码
@@ -179,6 +164,4 @@ export async function changePassword(
 
   // 踢掉该用户的所有会话（可选：让用户重新登录）
   // session.kickUser(userId);
-
-  return { success: true, message: '密码修改成功' }
 }
