@@ -76,30 +76,39 @@ export async function generateRegistry(backendDir?: string) {
   // 确保输出目录存在
   await Bun.write(join(generatedDir, '.keep'), '')
 
-  // ===== 1. 扫描 models/*/schema.ts =====
-  const schemaGlob = new Glob('*/schema.ts')
+  // ===== 1. 扫描 models/**/schema.ts =====
+  const schemaGlob = new Glob('**/schema.ts')
   const schemas: { folder: string; tableName: string; className: string }[] = []
 
   for await (const file of schemaGlob.scan({ cwd: modelsDir })) {
-    const folder = file.replace(/\\/g, '/').split('/')[0]!
+    const normalFile = file.replace(/\\/g, '/')
+    // folder = 去掉尾部 /schema.ts 的相对路径，如 "topology/project" 或 "users"
+    const folder = normalFile.replace(/\/schema\.ts$/, '')
     const content = await Bun.file(join(modelsDir, file)).text()
     const tableName = extractTableName(content)
     if (!tableName) {
       console.warn(`⚠️ Skipping ${file}: cannot find tableName export`)
       continue
     }
-    schemas.push({ folder, tableName, className: kebabToPascal(folder) + 'Schema' })
+    // className 基于 tableName 生成（下划线分隔 → PascalCase + Schema）
+    const className = tableName
+      .split('_')
+      .map((w) => w[0]!.toUpperCase() + w.slice(1))
+      .join('') + 'Schema'
+    schemas.push({ folder, tableName, className })
   }
   schemas.sort((a, b) => a.tableName.localeCompare(b.tableName))
 
-  // ===== 2. 扫描 models/*/seed.ts =====
-  const seedGlob = new Glob('*/seed.ts')
+  // ===== 2. 扫描 models/**/seed.ts =====
+  const seedGlob = new Glob('**/seed.ts')
   const seeds: { folder: string; varName: string }[] = []
 
   for await (const file of seedGlob.scan({ cwd: modelsDir })) {
-    const folder = file.replace(/\\/g, '/').split('/')[0]!
-
-    seeds.push({ folder, varName: 'seed_' + kebabToCamel(folder) })
+    const normalFile = file.replace(/\\/g, '/')
+    const folder = normalFile.replace(/\/seed\.ts$/, '')
+    // varName: 将路径分段用 _ 连接并 camelCase，如 topology/project → seed_topology_project
+    const varName = 'seed_' + folder.split('/').map((seg) => kebabToCamel(seg)).join('_')
+    seeds.push({ folder, varName })
   }
   seeds.sort((a, b) => a.folder.localeCompare(b.folder))
 
@@ -182,16 +191,16 @@ export async function generateRegistry(backendDir?: string) {
   {
     const lines = header()
     for (const { folder, className } of schemas) {
-      const varTable = kebabToCamel(folder) + '_tableName'
+      const varTable = folder.split('/').map((seg) => kebabToCamel(seg)).join('_') + '_tableName'
       lines.push(
         `import ${className}, { tableName as ${varTable} } from '@/models/${folder}/schema'`,
       )
     }
     lines.push('')
-    lines.push('// Schema 模块注册表 — 自动生成自 models{/}*/schema.ts')
+    lines.push('// Schema 模块注册表 — 自动生成自 models/**/schema.ts')
     lines.push('export const schemaModules = [')
     for (const { className, folder } of schemas) {
-      const varTable = kebabToCamel(folder) + '_tableName'
+      const varTable = folder.split('/').map((seg) => kebabToCamel(seg)).join('_') + '_tableName'
       lines.push(`  { tableName: ${varTable}, Schema: ${className} },`)
     }
     lines.push(']')
@@ -230,7 +239,7 @@ export async function generateRegistry(backendDir?: string) {
       lines.push(`import * as ${varName} from '@/models/${folder}/seed'`)
     }
     lines.push('')
-    lines.push('// Seed 模块注册表 — 自动生成自 models{/}*/seed.ts')
+    lines.push('// Seed 模块注册表 — 自动生成自 models/**/seed.ts')
     lines.push('export const seedModules: Record<string, unknown>[] = [')
     for (const { varName } of seeds) {
       lines.push(`  ${varName},`)
