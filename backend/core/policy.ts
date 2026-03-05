@@ -88,6 +88,8 @@ export interface GroupConfig {
   name: string
   /** 分组描述 */
   description?: string
+  /** 菜单定义（可选，通常用于定义父级目录菜单） */
+  menus?: MenuDef[]
 }
 
 /** 定义分组配置（类型辅助，原样返回） */
@@ -156,9 +158,21 @@ export function collectPermissions(configs: ModuleConfig[]): PermissionDef[] {
  * 同 path 的菜单自动去重（第一个定义的属性优先）。
  * parent 字段通过路径匹配解析为 parentId。
  */
-export function collectAllMenus(configs: ModuleConfig[]): ResolvedMenu[] {
+export function collectAllMenus(configs: ModuleConfig[], groupConfigs?: GroupConfig[]): ResolvedMenu[] {
   // Step 1: 收集所有菜单，同 path 去重（先来的优先）
   const menuMap = new Map<string, MenuDef>()
+
+  // 先收集分组配置中的菜单（父级目录菜单优先）
+  if (groupConfigs) {
+    for (const gc of groupConfigs) {
+      if (!gc.menus?.length) continue
+      for (const menu of gc.menus) {
+        if (!menuMap.has(menu.path)) {
+          menuMap.set(menu.path, menu)
+        }
+      }
+    }
+  }
 
   for (const config of configs) {
     if (!config.menus?.length) continue

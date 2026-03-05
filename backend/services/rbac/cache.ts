@@ -1,6 +1,6 @@
 import { model } from '@/core/model'
 import { type ResolvedMenu, collectAllMenus } from '@/core/policy'
-import { allConfigs } from '@/_generated/configs.generated'
+import { allConfigs, allGroupConfigs } from '@/_generated/configs.generated'
 import * as casbin from './casbin'
 import type { Row } from '@/packages/orm'
 
@@ -47,7 +47,7 @@ export async function reload(): Promise<void> {
 
 async function loadLocalCache(): Promise<void> {
   const roles = await Role.findMany({ orderBy: [{ column: 'sort', order: 'ASC' }] })
-  const menus = collectAllMenus(allConfigs)
+  const menus = collectAllMenus(allConfigs, allGroupConfigs)
 
   state.roles.clear()
   state.menus.clear()

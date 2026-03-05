@@ -321,6 +321,13 @@ export async function generateRegistry(backendDir?: string) {
     }
     lines.push(']')
     lines.push('')
+    lines.push('// 分组配置注册表 — 自动生成自 api{/}**/config.ts（仅分组配置）')
+    lines.push('export const allGroupConfigs: GroupConfig[] = [')
+    for (const { varName } of groupConfigs) {
+      lines.push(`  ${varName},`)
+    }
+    lines.push(']')
+    lines.push('')
     lines.push('// 配置目录映射（含分组配置）— 用于 OpenAPI Tag 生成')
     lines.push('export const configByDir: Record<string, ModuleConfig | GroupConfig> = {')
     for (const { varName, dir } of allConfigFiles) {
