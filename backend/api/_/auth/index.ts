@@ -187,6 +187,7 @@ export default new Elysia()
             roleId: t.String({ description: '角色编码' }),
             email: t.Nullable(t.String({ description: '邮箱' })),
             phone: t.Nullable(t.String({ description: '手机号' })),
+            avatar: t.Nullable(t.String({ description: '头像URL' })),
             status: t.Number({ description: '状态：1-正常, 0-禁用' }),
           }),
           '当前登录用户详细信息',
@@ -231,6 +232,51 @@ export default new Elysia()
       detail: {
         summary: '刷新令牌',
         description: '刷新访问令牌的有效期，延长登录状态',
+      },
+    },
+  )
+
+  /** 更新个人资料 */
+  .put(
+    '/profile',
+    async (ctx) => {
+      const userId = (ctx as any).userId as number | null
+      if (!userId) return R.unauthorized()
+
+      try {
+        const user = await auth.updateProfile(userId, ctx.body)
+        return R.ok(user, '资料更新成功')
+      } catch (error: any) {
+        return R.badRequest(error.message)
+      }
+    },
+    {
+      body: t.Object({
+        nickname: t.Optional(t.String({ description: '昵称', maxLength: 50 })),
+        email: t.Optional(t.Nullable(t.String({ description: '邮箱', format: 'email' }))),
+        phone: t.Optional(t.Nullable(t.String({ description: '手机号' }))),
+        avatar: t.Optional(t.Nullable(t.String({ description: '头像URL' }))),
+      }),
+      response: {
+        200: SuccessResponse(
+          t.Object({
+            id: t.Number({ description: '用户ID' }),
+            username: t.String({ description: '用户名' }),
+            nickname: t.Nullable(t.String({ description: '昵称' })),
+            email: t.Nullable(t.String({ description: '邮箱' })),
+            phone: t.Nullable(t.String({ description: '手机号' })),
+            avatar: t.Nullable(t.String({ description: '头像URL' })),
+            roleId: t.String({ description: '角色编码' }),
+            status: t.Number({ description: '状态' }),
+          }),
+          '更新后的用户信息',
+        ),
+        400: ErrorResponse,
+        401: ErrorResponse,
+      },
+      detail: {
+        summary: '更新个人资料',
+        description: '更新当前登录用户的昵称、邮箱、手机号、头像等信息',
       },
     },
   )

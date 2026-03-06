@@ -11,7 +11,7 @@ const router = createRouter({
 })
 
 // 无需登录即可访问
-const PUBLIC_PATHS = ['/', '/login', '/register']
+const PUBLIC_PATHS = ['/', '/login', '/register', '/privacy', '/terms']
 // 登录后不应访问（访客页）
 const GUEST_ONLY_PATHS = ['/login', '/register']
 

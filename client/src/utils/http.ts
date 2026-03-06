@@ -1,4 +1,8 @@
+import { createDiscreteApi } from 'naive-ui'
+
 const BASE_URL = '/api'
+
+const { message } = createDiscreteApi(['message'])
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>
@@ -23,17 +27,37 @@ async function request<T = any>(url: string, options: RequestOptions = {}): Prom
   }
 
   const res = await fetch(fullUrl, { ...init, headers })
+
+  const json = await res.json().catch(() => null)
+
   if (res.status === 401) {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
     window.location.href = '/login'
     throw new Error('登录已过期，请重新登录')
   }
+
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: res.statusText }))
-    throw new Error(error.message || `HTTP ${res.status}`)
+    const errorMsg = json?.message || `HTTP ${res.status}`
+    message.error(errorMsg)
+    throw new Error(errorMsg)
   }
-  return res.json()
+
+  // 自动解包 ApiResponse：{ code, message, data }
+  if (json && typeof json === 'object' && 'code' in json) {
+    if (json.code !== 0 && json.code !== 200) {
+      const errorMsg = json.message || '请求失败'
+      message.error(errorMsg)
+      throw new Error(errorMsg)
+    }
+    // 分页响应：保留 data/total/page/pageSize
+    if ('total' in json) {
+      return { data: json.data, total: json.total, page: json.page, pageSize: json.pageSize } as T
+    }
+    return json.data as T
+  }
+
+  return json as T
 }
 
 export const http = {

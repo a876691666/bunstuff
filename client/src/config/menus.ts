@@ -1,7 +1,7 @@
 import type { MenuOption } from 'naive-ui'
 import { h } from 'vue'
 import { NIcon } from 'naive-ui'
-import { HomeOutline, InformationCircleOutline } from '@vicons/ionicons5'
+import { HomeOutline, InformationCircleOutline, GitNetworkOutline, ImagesOutline, PersonOutline } from '@vicons/ionicons5'
 import type { Component } from 'vue'
 
 function renderIcon(icon: Component) {
@@ -13,6 +13,11 @@ export const menuOptions: MenuOption[] = [
     label: '首页',
     key: '/space',
     icon: renderIcon(HomeOutline),
+  },
+  {
+    label: '个人中心',
+    key: '/space/profile',
+    icon: renderIcon(PersonOutline),
   },
   {
     label: '关于',

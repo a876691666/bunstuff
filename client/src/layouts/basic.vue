@@ -63,7 +63,12 @@ async function handleLogout() {
           </template>
         </n-button>
         <div class="flex items-center gap-2">
-          <n-text depth="3" class="text-sm" v-if="authUser">{{
+          <n-text
+            depth="3"
+            class="text-sm cursor-pointer hover:text-[var(--primary-color)]"
+            v-if="authUser"
+            @click="router.push('/space/profile')"
+          >{{
             authUser.nickname || authUser.username
           }}</n-text>
           <n-button quaternary circle @click="toggleTheme">

@@ -165,3 +165,23 @@ export async function changePassword(
   // 踢掉该用户的所有会话（可选：让用户重新登录）
   // session.kickUser(userId);
 }
+
+/** 更新个人资料 */
+export async function updateProfile(
+  userId: number,
+  data: { nickname?: string; email?: string | null; phone?: string | null; avatar?: string | null },
+) {
+  if (data.email) {
+    const emailExists = await User.findOne({
+      where: `email = '${data.email}' && id != ${userId}`,
+    })
+    if (emailExists) throw new Error('邮箱已被使用')
+  }
+
+  await User.update(userId, data)
+  const user = await User.findOne({ where: `id = ${userId}` })
+  if (!user) throw new Error('用户不存在')
+
+  const { password, ...rest } = user
+  return rest
+}

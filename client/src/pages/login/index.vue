@@ -140,9 +140,9 @@ async function handleLogin() {
 
         <n-text depth="3" class="text-xs text-center" style="line-height: 1.6">
           继续即表示您同意我们的
-          <n-button text size="tiny">服务条款</n-button>
+          <n-button text size="tiny" @click="router.push('/terms')">服务条款</n-button>
           和
-          <n-button text size="tiny">隐私政策</n-button>。
+          <n-button text size="tiny" @click="router.push('/privacy')">隐私政策</n-button>。
         </n-text>
 
         <n-divider />

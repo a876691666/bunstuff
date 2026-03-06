@@ -11,7 +11,7 @@ import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 export default defineConfig({
   plugins: [
     VueRouter({
-      dts: 'src/route-map.d.ts',
+      dts: 'src/types/route-map.d.ts',
     }),
     vue(),
     UnoCSS(),

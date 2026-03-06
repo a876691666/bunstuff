@@ -58,8 +58,8 @@ const router = useRouter()
         </div>
         <n-text depth="3" class="text-xs">© 2026 Platform. All rights reserved.</n-text>
         <div class="flex gap-4">
-          <n-button text size="tiny" depth="3">隐私政策</n-button>
-          <n-button text size="tiny" depth="3">服务条款</n-button>
+          <n-button text size="tiny" depth="3" @click="router.push('/privacy')">隐私政策</n-button>
+          <n-button text size="tiny" depth="3" @click="router.push('/terms')">服务条款</n-button>
           <n-button text size="tiny" depth="3">文档</n-button>
         </div>
       </div>
