@@ -1,4 +1,3 @@
-````skill
 ---
 name: new-module
 description: 构建新模块的完整最佳实践。从 Schema 定义、Seed 数据、Service 层、API 路由、Config 模块配置到代码生成的端到端流程。关键词：new module、schema、seed、service、api、config、crud、getSchema、defineConfig、buildWhere
@@ -542,5 +541,3 @@ export default defineConfig({
 | 4   | `api/admin/article/index.ts`  | `export default new Elysia()`       |
 | 5   | `api/admin/article/config.ts` | `export default defineConfig(...)`  |
 | 6   | 运行 `bun run generate`       | 自动注册                            |
-
-````

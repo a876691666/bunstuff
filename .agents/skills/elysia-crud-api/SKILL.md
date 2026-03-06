@@ -1,4 +1,3 @@
-````skill
 ---
 name: elysia-crud-api
 description: Elysia CRUD API 最佳实践。基于 Model.getSchema() 的增删改查接口开发规范，包含权限校验、响应类型、OpenAPI 文档配置。关键词：CRUD、getSchema、response、rbac、detail、PagedResponse、SuccessResponse
@@ -422,5 +421,3 @@ export default new Elysia()
 6. **业务校验前置** - 在 service 调用前进行业务逻辑验证
 7. **统一错误处理** - 使用 `R.notFound()`、`R.badRequest()` 等标准响应
 8. **数据脱敏** - 返回前移除敏感字段（如 password）
-
-````

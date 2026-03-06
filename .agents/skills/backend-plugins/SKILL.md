@@ -1,4 +1,3 @@
-````skill
 ---
 name: backend-plugins
 description: 后端 Elysia 插件系统开发指南。包含认证(auth)、权限(rbac)、VIP、操作日志(operLog)、文件(file)、通知(notice)、字典(dict)、配置(config)、登录日志(loginLog)、限流(rateLimit)、定时任务(job)等插件的使用和扩展方法。关键词：plugin、middleware、derive、context、scope、permission、role
@@ -271,5 +270,3 @@ export default new Elysia()
   .use(vipPlugin())
   .use(operLogPlugin())
 ```
-
-````
