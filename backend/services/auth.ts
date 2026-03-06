@@ -17,11 +17,6 @@ export interface LoginResult {
   }
 }
 
-/** 密码哈希 */
-export async function hashPassword(password: string): Promise<string> {
-  return await Bun.password.hash(password)
-}
-
 /** 验证密码 */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return await Bun.password.verify(password, hash)
@@ -99,13 +94,10 @@ export async function register(data: {
     }
   }
 
-  // 哈希密码
-  const hashedPassword = await hashPassword(data.password)
-
   // 创建用户
   const userData: Insert<typeof User> = {
     username: data.username,
-    password: hashedPassword,
+    password: data.password, // 注意：这里应该在 User 模型层进行哈希处理
     nickname: data.nickname ?? null,
     email: data.email ?? null,
     phone: data.phone ?? null,
@@ -156,11 +148,8 @@ export async function changePassword(
     throw new Error('原密码错误')
   }
 
-  // 哈希新密码
-  const hashedPassword = await hashPassword(newPassword)
-
   // 更新密码
-  await User.update(userId, { password: hashedPassword })
+  await User.update(userId, { password: newPassword })
 
   // 踢掉该用户的所有会话（可选：让用户重新登录）
   // session.kickUser(userId);
