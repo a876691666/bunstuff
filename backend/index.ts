@@ -7,11 +7,7 @@ import { rateLimitPlugin } from '@/plugins/rate-limit'
 import { bootstrap, printServerUrls } from '@/core/bootstrap'
 import { openApiTags } from '@/core'
 
-// ===== 执行初始化流程：目录 → Seeds → Services → API =====
 const { api, rootPath } = await bootstrap()
-
-// ===== 构建 Elysia 应用并启动 =====
-const uploadsDir = resolve(rootPath, 'uploads')
 
 const app = new Elysia()
   .use(cors())
@@ -47,7 +43,7 @@ const app = new Elysia()
   // 配置静态文件服务，提供 uploads 目录的文件访问
   .use(
     staticPlugin({
-      assets: uploadsDir,
+      assets: resolve(rootPath, 'uploads'),
       prefix: '/uploads',
     }),
   )

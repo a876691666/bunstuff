@@ -5,6 +5,7 @@ import { buildWhere, checkCreateScope, type CrudContext, type PageQuery } from '
 const SysFile = model.sys_file
 import * as path from 'path'
 import * as fs from 'fs'
+import { rootPath } from '@/core/bootstrap'
 
 // ============ 类型定义 ============
 
@@ -95,7 +96,7 @@ export async function uploadLocal(
   const storageName = `${Date.now()}_${md5}${extension}`
   const datePath = new Date().toISOString().slice(0, 10).replace(/-/g, '/')
   const relativePath = path.join(datePath, storageName)
-  const fullPath = path.join(config.localUploadPath, relativePath)
+  const fullPath = path.join(rootPath, config.localUploadPath, relativePath)
 
   // 确保目录存在
   const dir = path.dirname(fullPath)
@@ -263,6 +264,48 @@ export function getFileUrl(file: Row<typeof SysFile>, baseUrl: string = ''): str
     return `${config.s3Config.endpoint}/${file.s3Bucket}/${file.storagePath}`
   }
   return ''
+}
+
+/** 通过 storagePath 获取文件URL（用于静态访问） */
+export function getStaticUrl(storagePath: string): string {
+  return `/uploads/${storagePath.replace(/\\/g, '/')}`
+}
+
+/** 确认文件为永久存储（通过 storagePath） */
+export async function confirmFile(storagePath: string): Promise<boolean> {
+  if (!storagePath) return false
+  const n = await SysFile.updateMany(`storagePath = '${storagePath}' && confirmed = 0`, {
+    confirmed: 1,
+  })
+  return n > 0
+}
+
+/** 批量确认文件 */
+export async function confirmFiles(storagePaths: string[]): Promise<number> {
+  let count = 0
+  for (const sp of storagePaths) {
+    if (sp && (await confirmFile(sp))) count++
+  }
+  return count
+}
+
+/** 清理过期临时文件 */
+export async function cleanupTempFiles(maxAgeMs: number = 3600_000): Promise<number> {
+  const cutoff = new Date(Date.now() - maxAgeMs).toISOString()
+  const tempFiles = await SysFile.findMany({
+    where: `confirmed = 0 && createdAt < '${cutoff}'`,
+  })
+
+  let cleaned = 0
+  for (const file of tempFiles) {
+    if (file.storageType === 'local') {
+      const fullPath = path.join(config.localUploadPath, file.storagePath)
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath)
+    }
+    await SysFile.deleteMany(`id = ${file.id}`)
+    cleaned++
+  }
+  return cleaned
 }
 
 /** Schema 代理 */

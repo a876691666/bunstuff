@@ -271,11 +271,18 @@ export async function reload(jobId: number) {
 // ============ 注册默认任务处理函数 ============
 
 import * as session from '@/services/session'
+import * as fileServiceJob from '@/services/file'
 
 // 清理过期会话
 register('clearExpiredSessions', async () => {
   await session.cleanup()
   console.log('✅ Cleared expired sessions')
+})
+
+// 清理过期临时文件（1小时未确认）
+register('cleanupTempFiles', async () => {
+  const count = await fileServiceJob.cleanupTempFiles(3600_000)
+  if (count > 0) console.log(`✅ Cleaned ${count} temp files`)
 })
 
 // 注册默认Cron任务
@@ -285,6 +292,14 @@ registerCron({
   name: '清理过期会话',
   cron: '0 2 * * *',
   remark: '每天凌晨2点清理过期会话',
+})
+
+registerCron({
+  handler: 'cleanupTempFiles',
+  group: 'system',
+  name: '清理临时文件',
+  cron: '0 * * * *',
+  remark: '每小时清理未确认的临时上传文件',
 })
 /** Schema 代理 */
 

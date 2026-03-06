@@ -26,4 +26,6 @@ export default class SysFileSchema extends TimestampSchema {
   uploadBy = column.number().default(0).description('上传者ID')
   /** 文件MD5 */
   md5 = column.string().nullable().default(null).description('文件MD5')
+  /** 是否已确认: 0-临时 1-永久 */
+  confirmed = column.number().default(0).description('确认状态: 0临时 1永久')
 }

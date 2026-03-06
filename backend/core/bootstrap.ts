@@ -6,7 +6,7 @@ import { createApi } from '@/core'
 
 // ============ 配置 ============
 
-const rootPath = Bun.env.BUNSTUFF_DEV ? resolve(process.cwd(), '..') : process.cwd()
+export const rootPath = Bun.env.BUNSTUFF_DEV ? resolve(process.cwd(), '..') : process.cwd()
 
 export interface BootstrapOptions {
   /** 是否自动执行 Seeds，默认 true */

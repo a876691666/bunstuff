@@ -19,6 +19,10 @@ export interface FileContext {
   getFileUrl: (file: Row<typeof SysFile>, baseUrl?: string) => string
   /** 上传文件到本地 */
   uploadLocal: (file: File, uploadBy: number) => Promise<Row<typeof SysFile> | null>
+  /** 确认文件为永久存储（传 storagePath） */
+  confirmFile: (storagePath: string) => Promise<boolean>
+  /** 批量确认文件 */
+  confirmFiles: (storagePaths: string[]) => Promise<number>
 }
 
 /**
@@ -28,12 +32,9 @@ export interface FileContext {
  * ```ts
  * app
  *   .use(filePlugin())
- *   .get("/avatar/:id", async ({ file, params }) => {
- *     const result = await file.getFileContent(params.id);
- *     if (!result) return new Response("Not found", { status: 404 });
- *     return new Response(result.buffer, {
- *       headers: { "Content-Type": result.file.mimeType || "image/png" },
- *     });
+ *   .post("/save", async ({ file, body }) => {
+ *     // 提交时确认临时文件为永久
+ *     if (body.imageUrl) await file.confirmFile(body.imageUrl);
  *   })
  * ```
  */
@@ -45,6 +46,8 @@ export function filePlugin() {
       getFileStream: (id) => fileService.getFileStream(id),
       getFileUrl: (f, baseUrl) => fileService.getFileUrl(f, baseUrl),
       uploadLocal: (f, uploadBy) => fileService.uploadLocal(f, uploadBy),
+      confirmFile: (storagePath) => fileService.confirmFile(storagePath),
+      confirmFiles: (storagePaths) => fileService.confirmFiles(storagePaths),
     }
     return { file }
   })

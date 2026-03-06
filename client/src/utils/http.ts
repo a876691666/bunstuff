@@ -49,4 +49,7 @@ export const http = {
   delete<T = any>(url: string) {
     return request<T>(url, { method: 'DELETE' })
   },
+  upload<T = any>(url: string, formData: FormData) {
+    return request<T>(url, { method: 'POST', body: formData })
+  },
 }
