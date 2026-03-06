@@ -40,4 +40,3 @@ export async function remove(id: number, ctx?: CrudContext) {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof User)['getSchema'] = User.getSchema.bind(User)

@@ -200,7 +200,7 @@ export class Model<S extends SchemaDefinition, K extends string = string> {
     const {
       include,
       exclude = [],
-      partial = false,
+      partial = true,
       required = [],
       timestamps = true,
       description,

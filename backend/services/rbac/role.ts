@@ -48,7 +48,7 @@ export async function remove(id: string, ctx?: CrudContext) {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof Role)['getSchema'] = Role.getSchema.bind(Role)
+
 
 /** 获取角色列表（扁平，无树结构） */
 export async function getTree() {

@@ -6,6 +6,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { filePlugin } from '@/plugins/file'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -25,7 +26,7 @@ export default new Elysia()
       body: t.Object({
         file: t.File({ description: '上传的文件' }),
       }),
-      response: { 200: SuccessResponse(fileService.getSchema()), 400: ErrorResponse },
+      response: { 200: SuccessResponse(model.sys_file.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '上传文件',
         description: '上传文件到本地存储',

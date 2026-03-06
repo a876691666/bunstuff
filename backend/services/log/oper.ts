@@ -77,4 +77,4 @@ export async function log(data: {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof OperLog)['getSchema'] = OperLog.getSchema.bind(OperLog)
+

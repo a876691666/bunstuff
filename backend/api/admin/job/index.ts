@@ -11,6 +11,7 @@ import {
 import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -26,7 +27,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(jobService.getSchema(), '定时任务列表') },
+      response: { 200: PagedResponse(model.job.getSchema(), '定时任务列表') },
       detail: {
         summary: '获取任务列表',
         security: [{ bearerAuth: [] }],
@@ -45,7 +46,7 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '任务ID' }),
-      response: { 200: SuccessResponse(jobService.getSchema()), 404: ErrorResponse },
+      response: { 200: SuccessResponse(model.job.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取任务详情',
         security: [{ bearerAuth: [] }],
@@ -63,7 +64,7 @@ export default new Elysia()
       return R.ok(result, '创建成功')
     },
     {
-      body: jobService.getSchema({ exclude: ['id'], required: ['name', 'handler', 'cron'] }),
+      body: model.job.getSchema({ exclude: ['id'], required: ['name', 'handler', 'cron'] }),
       response: { 200: MessageResponse },
       detail: {
         summary: '创建任务',
@@ -84,7 +85,7 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '任务ID' }),
-      body: jobService.getSchema({ exclude: ['id'], partial: true }),
+      body: model.job.getSchema({ exclude: ['id'] }),
       response: { 200: MessageResponse, 404: ErrorResponse },
       detail: {
         summary: '更新任务',

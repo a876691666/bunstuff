@@ -13,6 +13,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -29,7 +30,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(ruleService.getSchema(), '限流规则列表') },
+      response: { 200: PagedResponse(model.rate_limit_rule.getSchema(), '限流规则列表') },
       detail: {
         summary: '获取限流规则列表',
         description: '分页获取限流规则列表\n\n🔐 **所需权限**: `rateLimit:admin:rule:list`',
@@ -67,7 +68,7 @@ export default new Elysia()
     {
       params: idParams({ label: '限流规则ID' }),
       response: {
-        200: SuccessResponse(ruleService.getSchema(), '限流规则详情'),
+        200: SuccessResponse(model.rate_limit_rule.getSchema(), '限流规则详情'),
         404: ErrorResponse,
       },
       detail: {
@@ -89,12 +90,12 @@ export default new Elysia()
       return R.ok(data, '创建成功')
     },
     {
-      body: ruleService.getSchema({
+      body: model.rate_limit_rule.getSchema({
         exclude: ['id'],
         required: ['name', 'code', 'mode', 'pathPattern'],
       }),
       response: {
-        200: SuccessResponse(ruleService.getSchema(), '新创建的限流规则'),
+        200: SuccessResponse(model.rate_limit_rule.getSchema(), '新创建的限流规则'),
         400: ErrorResponse,
       },
       detail: {
@@ -122,9 +123,9 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '限流规则ID' }),
-      body: ruleService.getSchema({ exclude: ['id'], partial: true }),
+      body: model.rate_limit_rule.getSchema({ exclude: ['id'] }),
       response: {
-        200: SuccessResponse(ruleService.getSchema(), '更新后的限流规则'),
+        200: SuccessResponse(model.rate_limit_rule.getSchema(), '更新后的限流规则'),
         400: ErrorResponse,
         404: ErrorResponse,
       },

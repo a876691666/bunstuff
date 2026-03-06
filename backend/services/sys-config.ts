@@ -81,4 +81,4 @@ export async function remove(id: number, ctx?: CrudContext) {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof SysConfig)['getSchema'] = SysConfig.getSchema.bind(SysConfig)
+

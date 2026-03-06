@@ -32,4 +32,4 @@ export async function clear(jobId?: number) {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof JobLog)['getSchema'] = JobLog.getSchema.bind(JobLog)
+

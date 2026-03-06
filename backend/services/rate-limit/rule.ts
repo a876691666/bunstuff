@@ -47,5 +47,4 @@ export async function remove(id: number, ctx?: CrudContext) {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof RateLimitRule)['getSchema'] =
-  RateLimitRule.getSchema.bind(RateLimitRule)
+

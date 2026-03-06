@@ -13,6 +13,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { noticePlugin } from '@/plugins/notice'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -28,7 +29,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(noticeService.getSchema(), '通知公告列表') },
+      response: { 200: PagedResponse(model.notice.getSchema(), '通知公告列表') },
       detail: {
         summary: '获取通知公告列表',
         security: [{ bearerAuth: [] }],
@@ -46,7 +47,7 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '通知公告ID' }),
-      response: { 200: SuccessResponse(noticeService.getSchema()), 404: ErrorResponse },
+      response: { 200: SuccessResponse(model.notice.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取通知公告详情',
         security: [{ bearerAuth: [] }],
@@ -63,12 +64,12 @@ export default new Elysia()
       return R.ok(data, '创建成功')
     },
     {
-      body: noticeService.getSchema({
+      body: model.notice.getSchema({
         exclude: ['id', 'createBy'],
         timestamps: false,
         required: ['title', 'content'],
       }),
-      response: { 200: SuccessResponse(noticeService.getSchema()), 400: ErrorResponse },
+      response: { 200: SuccessResponse(model.notice.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '创建通知公告',
         security: [{ bearerAuth: [] }],
@@ -87,9 +88,9 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '通知公告ID' }),
-      body: noticeService.getSchema({ exclude: ['id', 'createBy'], partial: true }),
+      body: model.notice.getSchema({ exclude: ['id', 'createBy'] }),
       response: {
-        200: SuccessResponse(noticeService.getSchema()),
+        200: SuccessResponse(model.notice.getSchema()),
         400: ErrorResponse,
         404: ErrorResponse,
       },

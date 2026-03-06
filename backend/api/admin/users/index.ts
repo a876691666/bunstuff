@@ -12,6 +12,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -29,7 +30,7 @@ export default new Elysia()
     {
       query: query(),
       response: {
-        200: PagedResponse(userService.getSchema(), '用户列表分页数据'),
+        200: PagedResponse(model.users.getSchema(), '用户列表分页数据'),
       },
       detail: {
         summary: '获取用户列表',
@@ -53,7 +54,7 @@ export default new Elysia()
     {
       params: idParams({ label: '用户ID' }),
       response: {
-        200: SuccessResponse(userService.getSchema(), '用户详情数据'),
+        200: SuccessResponse(model.users.getSchema(), '用户详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -75,14 +76,14 @@ export default new Elysia()
       return R.ok(data, '创建成功')
     },
     {
-      body: userService.getSchema(
+      body: model.users.getSchema(
         { exclude: ['id'], required: ['username', 'password'] },
         {
           confirmPassword: t.String({ description: '确认密码', minLength: 6, maxLength: 100 }),
         },
       ),
       response: {
-        200: SuccessResponse(userService.getSchema(), '新创建的用户信息'),
+        200: SuccessResponse(model.users.getSchema(), '新创建的用户信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -106,9 +107,9 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '用户ID' }),
-      body: userService.getSchema({ exclude: ['id', 'password'], partial: true }),
+      body: model.users.getSchema({ exclude: ['id', 'password'] }),
       response: {
-        200: SuccessResponse(userService.getSchema(), '更新后的用户信息'),
+        200: SuccessResponse(model.users.getSchema(), '更新后的用户信息'),
         404: ErrorResponse,
       },
       detail: {

@@ -266,4 +266,3 @@ export function getFileUrl(file: Row<typeof SysFile>, baseUrl: string = ''): str
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof SysFile)['getSchema'] = SysFile.getSchema.bind(SysFile)

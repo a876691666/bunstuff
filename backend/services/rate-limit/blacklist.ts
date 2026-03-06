@@ -79,5 +79,4 @@ export async function autoBlock(ip: string, ruleId: number, triggerCount: number
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof IpBlacklist)['getSchema'] =
-  IpBlacklist.getSchema.bind(IpBlacklist)
+

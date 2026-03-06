@@ -73,4 +73,4 @@ function parseUserAgent(userAgent?: string | null): { browser: string | null; os
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof LoginLog)['getSchema'] = LoginLog.getSchema.bind(LoginLog)
+

@@ -12,6 +12,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { noticePlugin } from '@/plugins/notice'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -33,7 +34,7 @@ export default new Elysia()
       }),
       response: {
         200: PagedResponse(
-          noticeService.getSchema({
+          model.notice.getSchema({
             isRead: t.Boolean({ description: '是否已读' }),
             readAt: t.Optional(t.Nullable(t.String({ description: '阅读时间' }))),
           }),

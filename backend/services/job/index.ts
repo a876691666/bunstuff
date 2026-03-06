@@ -287,5 +287,5 @@ registerCron({
   remark: '每天凌晨2点清理过期会话',
 })
 /** Schema 代理 */
-export const getSchema: (typeof Job)['getSchema'] = Job.getSchema.bind(Job)
+
 export const getLogSchema: (typeof JobLog)['getSchema'] = JobLog.getSchema.bind(JobLog)

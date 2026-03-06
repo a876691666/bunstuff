@@ -165,4 +165,3 @@ export async function getUnreadCount(userId: number): Promise<number> {
 }
 
 /** Schema 代理 */
-export const getSchema: (typeof Notice)['getSchema'] = Notice.getSchema.bind(Notice)

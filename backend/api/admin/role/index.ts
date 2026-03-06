@@ -12,6 +12,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -27,7 +28,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(roleService.getSchema(), '角色列表分页数据') },
+      response: { 200: PagedResponse(model.role.getSchema(), '角色列表分页数据') },
       detail: {
         summary: '获取角色列表',
         description: '分页获取角色列表\n\n🔐 **所需权限**: `role:admin:list`',
@@ -77,7 +78,7 @@ export default new Elysia()
     {
       params: t.Object({ id: t.String({ description: '角色编码' }) }),
       response: {
-        200: SuccessResponse(roleService.getSchema(), '角色详情数据'),
+        200: SuccessResponse(model.role.getSchema(), '角色详情数据'),
         404: ErrorResponse,
       },
       detail: {
@@ -98,9 +99,9 @@ export default new Elysia()
       return R.ok(data, '创建成功')
     },
     {
-      body: roleService.getSchema({ required: ['id', 'name'] }),
+      body: model.role.getSchema({ required: ['id', 'name'] }),
       response: {
-        200: SuccessResponse(roleService.getSchema(), '新创建的角色信息'),
+        200: SuccessResponse(model.role.getSchema(), '新创建的角色信息'),
         400: ErrorResponse,
       },
       detail: {
@@ -123,9 +124,9 @@ export default new Elysia()
     },
     {
       params: t.Object({ id: t.String({ description: '角色编码' }) }),
-      body: roleService.getSchema({ exclude: ['id'], partial: true }),
+      body: model.role.getSchema({ exclude: ['id'] }),
       response: {
-        200: SuccessResponse(roleService.getSchema(), '更新后的角色信息'),
+        200: SuccessResponse(model.role.getSchema(), '更新后的角色信息'),
         400: ErrorResponse,
         404: ErrorResponse,
       },

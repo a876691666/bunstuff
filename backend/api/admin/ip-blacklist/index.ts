@@ -13,6 +13,7 @@ import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -29,7 +30,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(blacklistService.getSchema(), 'IP黑名单列表') },
+      response: { 200: PagedResponse(model.ip_blacklist.getSchema(), 'IP黑名单列表') },
       detail: {
         summary: '获取IP黑名单列表',
         description: '分页获取IP黑名单\n\n🔐 **所需权限**: `rateLimit:admin:blacklist:list`',
@@ -50,7 +51,7 @@ export default new Elysia()
     {
       params: idParams({ label: 'IP黑名单ID' }),
       response: {
-        200: SuccessResponse(blacklistService.getSchema(), 'IP黑名单详情'),
+        200: SuccessResponse(model.ip_blacklist.getSchema(), 'IP黑名单详情'),
         404: ErrorResponse,
       },
       detail: {
@@ -79,12 +80,12 @@ export default new Elysia()
       return R.ok(data, '添加成功')
     },
     {
-      body: blacklistService.getSchema({
+      body: model.ip_blacklist.getSchema({
         exclude: ['id', 'source', 'ruleId', 'triggerCount'],
         required: ['ip'],
       }),
       response: {
-        200: SuccessResponse(blacklistService.getSchema(), '新增的黑名单记录'),
+        200: SuccessResponse(model.ip_blacklist.getSchema(), '新增的黑名单记录'),
         400: ErrorResponse,
       },
       detail: {
@@ -108,12 +109,11 @@ export default new Elysia()
     },
     {
       params: idParams({ label: 'IP黑名单ID' }),
-      body: blacklistService.getSchema({
+      body: model.ip_blacklist.getSchema({
         exclude: ['id', 'source', 'ruleId', 'triggerCount'],
-        partial: true,
       }),
       response: {
-        200: SuccessResponse(blacklistService.getSchema(), '更新后的黑名单记录'),
+        200: SuccessResponse(model.ip_blacklist.getSchema(), '更新后的黑名单记录'),
         404: ErrorResponse,
       },
       detail: {

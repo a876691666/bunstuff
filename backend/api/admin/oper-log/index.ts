@@ -10,6 +10,7 @@ import {
 } from '@/services/response'
 import { authPlugin } from '@/plugins/auth'
 import { rbacPlugin } from '@/plugins/rbac'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -23,7 +24,7 @@ export default new Elysia()
     {
       query: query(),
       response: {
-        200: PagedResponse(operLogService.getSchema({ timestamps: false }), '操作日志列表'),
+        200: PagedResponse(model.oper_log.getSchema({ timestamps: false }), '操作日志列表'),
       },
       detail: {
         summary: '获取操作日志列表',
@@ -44,7 +45,7 @@ export default new Elysia()
     {
       params: idParams({ label: '操作日志ID' }),
       response: {
-        200: SuccessResponse(operLogService.getSchema({ timestamps: false })),
+        200: SuccessResponse(model.oper_log.getSchema({ timestamps: false })),
         404: ErrorResponse,
       },
       detail: {

@@ -13,6 +13,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { filePlugin } from '@/plugins/file'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -28,7 +29,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(fileService.getSchema(), '文件列表') },
+      response: { 200: PagedResponse(model.sys_file.getSchema(), '文件列表') },
       detail: {
         summary: '获取文件列表',
         security: [{ bearerAuth: [] }],
@@ -46,7 +47,7 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '文件ID' }),
-      response: { 200: SuccessResponse(fileService.getSchema()), 404: ErrorResponse },
+      response: { 200: SuccessResponse(model.sys_file.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取文件详情',
         security: [{ bearerAuth: [] }],
@@ -75,7 +76,7 @@ export default new Elysia()
         file: t.File({ description: '上传的文件' }),
         storageType: t.Optional(t.String({ description: '存储类型：local/s3', default: 'local' })),
       }),
-      response: { 200: SuccessResponse(fileService.getSchema()), 400: ErrorResponse },
+      response: { 200: SuccessResponse(model.sys_file.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '上传文件',
         security: [{ bearerAuth: [] }],

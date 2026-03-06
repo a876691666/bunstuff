@@ -13,6 +13,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { configPlugin } from '@/plugins/config'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -28,7 +29,7 @@ export default new Elysia()
     },
     {
       query: query(),
-      response: { 200: PagedResponse(configService.getSchema(), '参数配置列表') },
+      response: { 200: PagedResponse(model.sys_config.getSchema(), '参数配置列表') },
       detail: {
         summary: '获取参数配置列表',
         security: [{ bearerAuth: [] }],
@@ -46,7 +47,7 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '参数配置ID' }),
-      response: { 200: SuccessResponse(configService.getSchema()), 404: ErrorResponse },
+      response: { 200: SuccessResponse(model.sys_config.getSchema()), 404: ErrorResponse },
       detail: {
         summary: '获取参数配置详情',
         security: [{ bearerAuth: [] }],
@@ -64,8 +65,8 @@ export default new Elysia()
       return R.ok(data, '创建成功')
     },
     {
-      body: configService.getSchema({ exclude: ['id'], required: ['name', 'key', 'value'] }),
-      response: { 200: SuccessResponse(configService.getSchema()), 400: ErrorResponse },
+      body: model.sys_config.getSchema({ exclude: ['id'], required: ['name', 'key', 'value'] }),
+      response: { 200: SuccessResponse(model.sys_config.getSchema()), 400: ErrorResponse },
       detail: {
         summary: '创建参数配置',
         security: [{ bearerAuth: [] }],
@@ -89,9 +90,9 @@ export default new Elysia()
     },
     {
       params: idParams({ label: '参数配置ID' }),
-      body: configService.getSchema({ exclude: ['id'], partial: true }),
+      body: model.sys_config.getSchema({ exclude: ['id'] }),
       response: {
-        200: SuccessResponse(configService.getSchema()),
+        200: SuccessResponse(model.sys_config.getSchema()),
         400: ErrorResponse,
         404: ErrorResponse,
       },

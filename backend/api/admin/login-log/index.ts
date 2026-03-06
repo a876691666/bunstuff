@@ -13,6 +13,7 @@ import { rbacPlugin } from '@/plugins/rbac'
 import { vipPlugin } from '@/plugins/vip'
 import { loginLogPlugin } from '@/plugins/login-log'
 import { operLogPlugin } from '@/plugins/oper-log'
+import { model } from '@/core/model'
 
 export default new Elysia()
   .use(authPlugin())
@@ -30,7 +31,7 @@ export default new Elysia()
       query: query(),
       response: {
         200: PagedResponse(
-          loginLogService.getSchema({ exclude: [], timestamps: false }),
+          model.login_log.getSchema({ exclude: [], timestamps: false }),
           '登录日志列表',
         ),
       },
@@ -52,7 +53,7 @@ export default new Elysia()
     {
       params: idParams({ label: '登录日志ID' }),
       response: {
-        200: SuccessResponse(loginLogService.getSchema({ exclude: [], timestamps: false })),
+        200: SuccessResponse(model.login_log.getSchema({ exclude: [], timestamps: false })),
         404: ErrorResponse,
       },
       detail: {
